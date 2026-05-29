@@ -54,7 +54,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     </script>
 
     <!-- Speculation Rules: prerender internal links on hover (Chromium). -->
-    <script type="speculationrules">
+    <script is:inline type="speculationrules">
       {
         "prerender": [
           {
