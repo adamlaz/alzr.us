@@ -4,7 +4,6 @@ const year = new Date().getFullYear();
 const links = [
   { href: 'https://github.com/adamlaz', label: 'GitHub' },
   { href: 'https://www.linkedin.com/in/adamlaz/', label: 'LinkedIn' },
-  { href: 'https://bsky.app/profile/adamlaz.bsky.social', label: 'Bluesky' },
 ];
 ---
 
@@ -56,7 +55,9 @@ const links = [
     color: inherit;
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    transition: color 120ms ease, border-color 120ms ease;
+    transition:
+      color 120ms ease,
+      border-color 120ms ease;
   }
 
   a:hover {
