@@ -1,0 +1,26 @@
+# Pre-commit + commit-msg hooks. Mirror what CI runs.
+
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: '*.{js,mjs,cjs,ts,tsx,json,jsonc,astro}'
+      run: |
+        npx @biomejs/biome check --write --no-errors-on-unmatched {staged_files} \
+          && git add {staged_files}
+
+commit-msg:
+  commands:
+    commitlint:
+      run: npx commitlint --edit {1}
+    gitmoji:
+      run: |
+        FIRST=$(head -1 {1})
+        # Subject must start with a non-alphanumeric (emoji or :shortcode:).
+        if ! printf '%s' "$FIRST" | head -c 4 | grep -qE '^([^a-zA-Z0-9 ]|:[a-z_]+:)'; then
+          echo ""
+          echo "BLOCKED: commit subject must start with a gitmoji."
+          echo "Example: ✨ feat(home): wordmark breath"
+          echo "See CONTRIBUTING.md for the legend."
+          exit 1
+        fi
