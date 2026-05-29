@@ -1,0 +1,20 @@
+---
+interface Props {
+  hero?: boolean;
+  href?: string;
+  text?: string;
+}
+
+const { hero = false, href, text = 'alzr.us' } = Astro.props;
+const className = ['wordmark', hero ? 'wordmark--hero' : ''].filter(Boolean).join(' ');
+---
+
+{
+  href ? (
+    <a href={href} class={className} aria-label="alzr.us — home">
+      {text}
+    </a>
+  ) : (
+    <span class={className}>{text}</span>
+  )
+}

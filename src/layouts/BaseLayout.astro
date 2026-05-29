@@ -1,0 +1,139 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title = 'Adam Lazarus',
+  description = "Adam Lazarus — Director of Engineering. Writing about AI-augmented engineering teams, vault automation, and the work behind the work.",
+  ogImage = '/og.png',
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Cross-document view transitions opt-in -->
+    <meta name="view-transition" content="same-origin" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(ogImage, Astro.site).toString()} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Pre-paint theme to avoid FOUC. System → localStorage → data-theme. -->
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored ?? (prefersDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <!-- Speculation Rules: prerender internal links on hover (Chromium). -->
+    <script type="speculationrules">
+      {
+        "prerender": [
+          {
+            "source": "document",
+            "where": {
+              "and": [
+                { "href_matches": "/*" },
+                { "not": { "selector_matches": "[rel~=external], [data-no-prerender]" } }
+              ]
+            },
+            "eagerness": "moderate"
+          }
+        ]
+      }
+    </script>
+
+    <ClientRouter />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Nav />
+    <main id="main" class="site-main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // Re-apply theme + reattach toggle after view transitions.
+      const applyTheme = () => {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored ?? (prefersDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      };
+
+      const wireToggle = () => {
+        const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+        if (!btn || btn.dataset.wired === '1') return;
+        btn.dataset.wired = '1';
+        btn.addEventListener('click', () => {
+          const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('theme', next);
+          document.documentElement.dataset.theme = next;
+        });
+      };
+
+      applyTheme();
+      wireToggle();
+      document.addEventListener('astro:after-swap', () => {
+        applyTheme();
+        wireToggle();
+      });
+    </script>
+
+    <style>
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: 0.5rem;
+        background: var(--accent);
+        color: var(--bg);
+        padding: 0.5rem 0.75rem;
+        text-decoration: none;
+        border-radius: 4px;
+        z-index: 100;
+      }
+      .skip-link:focus {
+        left: 0.5rem;
+      }
+      .site-main {
+        max-width: 68ch;
+        margin: 0 auto;
+        padding: 4rem 1.5rem 6rem;
+      }
+      @media (min-width: 768px) {
+        .site-main {
+          padding-top: 6rem;
+        }
+      }
+    </style>
+  </body>
+</html>

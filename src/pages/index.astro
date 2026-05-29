@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Wordmark from '../components/Wordmark.astro';
+---
+
+<BaseLayout
+  title="Adam Lazarus"
+  description="Director of Engineering. Writing about AI-augmented engineering teams, vault automation, and the work behind the work."
+>
+  <section class="hero">
+    <Wordmark hero text="alzr.us" />
+    <p class="lede">
+      Adam Lazarus. Director of Engineering at Legacybox, founder of Translation Layer.
+      I work on AI-augmented engineering teams, family-memory products, and the small
+      automations that make a day possible.
+    </p>
+    <p class="lede">
+      Based in St. Petersburg, FL. Building from a vault.
+    </p>
+
+    <ul class="link-list">
+      <li><a href="/writing">Writing</a></li>
+      <li><a href="/projects">Projects</a></li>
+      <li><a href="/now">What I'm on now</a></li>
+      <li><a href="https://github.com/adamlaz" rel="external me" data-no-prerender>GitHub →</a></li>
+      <li><a href="https://www.linkedin.com/in/adamlaz/" rel="external me" data-no-prerender>LinkedIn →</a></li>
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-top: 1rem;
+  }
+
+  .lede {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 24, 'SOFT' 50, 'WONK' 0;
+    font-size: clamp(1.125rem, 0.95rem + 0.8vw, 1.375rem);
+    line-height: 1.45;
+    color: var(--text-soft);
+    margin-top: 2rem;
+    text-wrap: pretty;
+  }
+
+  .link-list {
+    list-style: none;
+    margin: 3rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+  }
+
+  .link-list a {
+    text-decoration: none;
+    color: var(--accent);
+    border-bottom: 1px solid color-mix(in oklch, var(--accent) 40%, transparent);
+    padding-bottom: 1px;
+    transition: border-color 140ms ease, color 140ms ease;
+  }
+
+  .link-list a:hover {
+    color: var(--accent-hover);
+    border-bottom-color: currentColor;
+  }
+</style>
