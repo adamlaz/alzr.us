@@ -12,7 +12,8 @@
     "astro": "astro",
     "lint": "biome lint .",
     "format": "biome format --write .",
-    "check": "biome check ."
+    "check": "biome check .",
+    "prepare": "lefthook install"
   },
   "dependencies": {
     "@astrojs/mdx": "^6.0.1",
@@ -26,7 +27,12 @@
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.16"
+    "@astrojs/check": "^0.9.9",
+    "@biomejs/biome": "^2.4.16",
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
+    "lefthook": "^2.1.8",
+    "typescript": "^6.0.3"
   },
   "overrides": {
     "vite": "^7"
