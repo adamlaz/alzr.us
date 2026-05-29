@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const projects = [
+  {
+    title: 'Translation Layer',
+    href: 'https://translationlayer.io',
+    period: '2024 — present',
+    summary:
+      "Consulting LLC. I help engineering orgs translate strategy into shipping — DORA / Westrum / DevEx audits, leadership coaching, AI-augmentation playbooks.",
+  },
+  {
+    title: 'Vault automation',
+    href: 'https://github.com/adamlaz',
+    period: '2024 — present',
+    summary:
+      'Personal Obsidian vault as a daily data pipeline. iMessage extraction, Amazon order ingestion, AI-classified email triage, daily reflections — all running on launchd, all logged to a single Activity Log spine.',
+  },
+  {
+    title: 'Legacybox',
+    href: 'https://legacybox.com',
+    period: '2024 — present',
+    summary: "Director of Engineering. We turn physical memories — old photos, tapes, film — into a digital archive families actually use.",
+  },
+];
+---
+
+<BaseLayout title="Projects — alzr.us" description="What Adam Lazarus is currently building.">
+  <h1>Projects</h1>
+  <p class="kicker">A short list. The ones with real time invested.</p>
+
+  <ul class="project-list">
+    {
+      projects.map((p) => (
+        <li>
+          <header>
+            <a href={p.href} rel="external" data-no-prerender>
+              {p.title}
+            </a>
+            <span class="period">{p.period}</span>
+          </header>
+          <p>{p.summary}</p>
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="more">
+    More code at <a href="https://github.com/adamlaz" rel="external me" data-no-prerender>github.com/adamlaz</a>.
+  </p>
+</BaseLayout>
+
+<style>
+  .kicker {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 18, 'SOFT' 50, 'WONK' 0;
+    font-size: 1.1rem;
+    color: var(--text-soft);
+    margin-bottom: 3rem;
+  }
+
+  .project-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .project-list li {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .project-list li:last-child {
+    border-bottom: 0;
+  }
+
+  .project-list header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .project-list a {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 32, 'SOFT' 50, 'WONK' 0;
+    font-size: 1.4rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .project-list a:hover {
+    color: var(--accent);
+  }
+
+  .period {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .project-list p {
+    color: var(--text-soft);
+    margin: 0;
+  }
+
+  .more {
+    margin-top: 3rem;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+</style>
