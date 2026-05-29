@@ -8,6 +8,7 @@ import Wordmark from '../components/Wordmark.astro';
   description="Adam Lazarus -- engineering leader, writer, builder. St. Petersburg, FL. Long-form posts on AI-augmented engineering, vault automation, and the operator's view."
 >
   <section class="hero">
+    <span class="welcome" data-visit-state="loading"></span>
     <Wordmark hero text="alzr.us" />
     <p class="lede">
       Adam Lazarus. Engineering leader, writer, builder. Currently running
@@ -25,9 +26,58 @@ import Wordmark from '../components/Wordmark.astro';
   </section>
 </BaseLayout>
 
+<script is:inline>
+  (() => {
+    const KEY = 'alzr_last_visit';
+    const el = document.querySelector('.welcome');
+    if (!el) return;
+    const now = new Date();
+    const prev = localStorage.getItem(KEY);
+    let state = 'first';
+    let days = 0;
+    if (prev) {
+      const prevDate = new Date(prev);
+      days = Math.max(0, Math.floor((now.getTime() - prevDate.getTime()) / 86400000));
+      if (days <= 7) state = 'recent';
+      else if (days <= 60) state = 'medium';
+      else state = 'distant';
+    }
+    el.setAttribute('data-days', String(days));
+    el.setAttribute('data-visit-state', state);
+    localStorage.setItem(KEY, now.toISOString());
+  })();
+</script>
+
 <style>
   .hero {
     padding-top: 1rem;
+  }
+
+  .welcome {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+    margin-bottom: 1rem;
+    min-height: 1.2em;
+  }
+
+  .welcome[data-visit-state='loading']::before {
+    content: '';
+  }
+  .welcome[data-visit-state='first']::before {
+    content: 'first time? hello.';
+  }
+  .welcome[data-visit-state='recent']::before {
+    content: attr(data-days) ' days. back so soon?';
+  }
+  .welcome[data-visit-state='medium']::before {
+    content: 'back again. it\'s been ' attr(data-days) ' days.';
+  }
+  .welcome[data-visit-state='distant']::before {
+    content: 'welcome back. you\'ve been gone a while.';
   }
 
   .lede {
