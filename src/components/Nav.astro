@@ -1,0 +1,115 @@
+---
+import Wordmark from './Wordmark.astro';
+
+const links = [
+  { href: '/writing', label: 'Writing' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/now', label: 'Now' },
+];
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+
+<header class="nav">
+  <Wordmark href="/" />
+  <nav aria-label="Primary">
+    <ul>
+      {
+        links.map(({ href, label }) => {
+          const active = path === href || path.startsWith(`${href}/`);
+          return (
+            <li>
+              <a href={href} aria-current={active ? 'page' : undefined}>
+                {label}
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+  <button type="button" data-theme-toggle aria-label="Toggle color theme">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+    </svg>
+  </button>
+</header>
+
+<style>
+  .nav {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 68ch;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1.25rem;
+    justify-content: center;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+  }
+
+  nav a {
+    color: var(--text-soft);
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 2px;
+  }
+
+  nav a:hover {
+    color: var(--accent);
+  }
+
+  /* :has()-driven underline for active route — no JS state. */
+  nav a[aria-current='page'] {
+    color: var(--text);
+    box-shadow: inset 0 -1px 0 0 var(--accent);
+  }
+
+  button[data-theme-toggle] {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--text-soft);
+    border-radius: 999px;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+
+  button[data-theme-toggle]:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  [data-theme='dark'] button[data-theme-toggle] svg {
+    /* Moon-ify: a single mask circle to look like a crescent without a second icon. */
+    transform: rotate(-20deg);
+  }
+
+  @media (max-width: 640px) {
+    .nav {
+      grid-template-columns: auto auto;
+      grid-template-rows: auto auto;
+    }
+    nav {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+    nav ul {
+      justify-content: flex-start;
+    }
+  }
+</style>
