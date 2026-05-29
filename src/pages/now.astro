@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const updated = new Date('2026-05-28');
+const formatted = updated.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout title="Now — alzr.us" description="What Adam Lazarus is working on this month.">
+  <h1>Now</h1>
+  <p class="kicker">
+    A <a href="https://nownownow.com/about" rel="external">/now page</a> — what I'm actually
+    working on this month. Refreshed every few weeks.
+  </p>
+
+  <ul class="now-list">
+    <li>
+      <strong>At Legacybox</strong> — building the playbook for AI-augmented engineering on a small team.
+      Less ticket-pushing, more taste.
+    </li>
+    <li>
+      <strong>Translation Layer engagements</strong> — wrapping a multi-month engineering org assessment
+      using a DORA / Westrum / DevEx kit. The findings have been useful enough to publish.
+    </li>
+    <li>
+      <strong>Writing</strong> — first long-form posts in queue: parallel Claude Code agents for hiring
+      research, the writing-voice guide for AI assistants, and the vault as a personal automation platform.
+    </li>
+    <li>
+      <strong>Vault</strong> — extending the daily 6 AM pipeline with research-narrative folds and a
+      Vercel deploy logger. Personal data infrastructure, paid in mornings.
+    </li>
+    <li>
+      <strong>Reading</strong> — the new wave of agent-orchestration patterns out of Anthropic +
+      the Claude Code SDK. Lots to steal.
+    </li>
+  </ul>
+
+  <p class="updated">
+    <em>Last updated: <time datetime={updated.toISOString()}>{formatted}</time></em>
+  </p>
+</BaseLayout>
+
+<style>
+  .kicker {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 18, 'SOFT' 50, 'WONK' 0;
+    font-size: 1.1rem;
+    color: var(--text-soft);
+    margin-bottom: 3rem;
+  }
+
+  .now-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .now-list li {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--rule);
+    color: var(--text);
+  }
+
+  .now-list li:last-child {
+    border-bottom: 0;
+  }
+
+  .now-list strong {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 18, 'SOFT' 50, 'WONK' 0;
+    font-weight: 500;
+    color: var(--text);
+    margin-right: 0.5rem;
+  }
+
+  .updated {
+    margin-top: 3rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+</style>
