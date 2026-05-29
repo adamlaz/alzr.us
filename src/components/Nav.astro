@@ -69,7 +69,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
     color: var(--accent);
   }
 
-  /* :has()-driven underline for active route — no JS state. */
+  /* :has()-driven underline for active route. No JS state. */
   nav a[aria-current='page'] {
     color: var(--text);
     box-shadow: inset 0 -1px 0 0 var(--accent);

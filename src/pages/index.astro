@@ -5,17 +5,14 @@ import Wordmark from '../components/Wordmark.astro';
 
 <BaseLayout
   title="Adam Lazarus"
-  description="Director of Engineering. Writing about AI-augmented engineering teams, vault automation, and the work behind the work."
+  description="Adam Lazarus -- engineering leader, writer, builder. St. Petersburg, FL. Long-form posts on AI-augmented engineering, vault automation, and the operator's view."
 >
   <section class="hero">
     <Wordmark hero text="alzr.us" />
     <p class="lede">
-      Adam Lazarus. Director of Engineering at Legacybox, founder of Translation Layer.
-      I work on AI-augmented engineering teams, family-memory products, and the small
-      automations that make a day possible.
-    </p>
-    <p class="lede">
-      Based in St. Petersburg, FL. Building from a vault.
+      Adam Lazarus. Engineering leader, writer, builder. Currently running
+      engineering at a consumer-tech company and an independent advisory practice
+      on the side.
     </p>
 
     <ul class="link-list">
@@ -59,7 +56,9 @@ import Wordmark from '../components/Wordmark.astro';
     color: var(--accent);
     border-bottom: 1px solid color-mix(in oklch, var(--accent) 40%, transparent);
     padding-bottom: 1px;
-    transition: border-color 140ms ease, color 140ms ease;
+    transition:
+      border-color 140ms ease,
+      color 140ms ease;
   }
 
   .link-list a:hover {

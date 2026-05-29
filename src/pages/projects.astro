@@ -3,29 +3,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const projects = [
   {
-    title: 'Translation Layer',
-    href: 'https://translationlayer.io',
-    period: '2024 — present',
+    title: 'Independent advisory',
+    period: '2024 -- present',
     summary:
-      "Consulting LLC. I help engineering orgs translate strategy into shipping — DORA / Westrum / DevEx audits, leadership coaching, AI-augmentation playbooks.",
+      "I run a small engineering consultancy. DORA / Westrum / DevEx audits, AI-augmentation playbooks, leadership coaching. Engagements are by referral.",
   },
   {
     title: 'Vault automation',
-    href: 'https://github.com/adamlaz',
-    period: '2024 — present',
+    period: '2024 -- present',
     summary:
-      'Personal Obsidian vault as a daily data pipeline. iMessage extraction, Amazon order ingestion, AI-classified email triage, daily reflections — all running on launchd, all logged to a single Activity Log spine.',
+      "A personal Obsidian vault that runs like a data pipeline. iMessage extraction, Amazon-order ingestion, AI-classified email triage, daily reflections. Everything logged to a single Activity Log spine. Scheduled via launchd, 6 AM ET.",
   },
   {
-    title: 'Legacybox',
-    href: 'https://legacybox.com',
-    period: '2024 — present',
-    summary: "Director of Engineering. We turn physical memories — old photos, tapes, film — into a digital archive families actually use.",
+    title: 'Day job',
+    period: '2024 -- present',
+    summary:
+      "Director of Engineering at a consumer-tech company that helps families preserve their memories. I'm building the playbook for AI-augmented engineering on a small team. Less ticket-pushing, more taste.",
   },
 ];
 ---
 
-<BaseLayout title="Projects — alzr.us" description="What Adam Lazarus is currently building.">
+<BaseLayout title="Projects -- alzr.us" description="What Adam Lazarus is currently building.">
   <h1>Projects</h1>
   <p class="kicker">A short list. The ones with real time invested.</p>
 
@@ -34,9 +32,7 @@ const projects = [
       projects.map((p) => (
         <li>
           <header>
-            <a href={p.href} rel="external" data-no-prerender>
-              {p.title}
-            </a>
+            <h2>{p.title}</h2>
             <span class="period">{p.period}</span>
           </header>
           <p>{p.summary}</p>
@@ -46,7 +42,7 @@ const projects = [
   </ul>
 
   <p class="more">
-    More code at <a href="https://github.com/adamlaz" rel="external me" data-no-prerender>github.com/adamlaz</a>.
+    Public code lives at <a href="https://github.com/adamlaz" rel="external me" data-no-prerender>github.com/adamlaz</a>.
   </p>
 </BaseLayout>
 
@@ -83,16 +79,12 @@ const projects = [
     flex-wrap: wrap;
   }
 
-  .project-list a {
+  .project-list h2 {
     font-family: var(--font-display);
     font-variation-settings: 'opsz' 32, 'SOFT' 50, 'WONK' 0;
     font-size: 1.4rem;
     color: var(--text);
-    text-decoration: none;
-  }
-
-  .project-list a:hover {
-    color: var(--accent);
+    margin: 0;
   }
 
   .period {

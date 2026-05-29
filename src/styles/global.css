@@ -4,7 +4,7 @@
 @import 'tailwindcss';
 
 /* ───────────────────────────────────────────────────────────────
-   alzr.us — editorial / paper-and-ink
+   alzr.us -- editorial / paper-and-ink
    Cobalt accent at hue 265 (deuteranopia-discriminable).
    ─────────────────────────────────────────────────────────────── */
 
@@ -29,7 +29,7 @@
   --color-rule-light: oklch(0.88 0.004 270);
   --color-rule-dark: oklch(0.28 0.008 270);
 
-  /* ── Status (kept from mm-engagement convention; never accent-tinted) ── */
+  /* ── Status (fixed palette, never accent-tinted) ── */
   --color-status-green: oklch(0.65 0.17 145);
   --color-status-amber: oklch(0.75 0.15 75);
   --color-status-red: oklch(0.6 0.2 25);
@@ -161,7 +161,7 @@ hr {
 }
 
 /* ───────────────────────────────────────────────────────────────
-   Wordmark — the signature flourish.
+   Wordmark -- the signature flourish.
    Idle: low opsz + neutral wonk. Hover: high opsz + wonk on.
    ─────────────────────────────────────────────────────────────── */
 
@@ -206,7 +206,7 @@ hr {
 }
 
 /* ───────────────────────────────────────────────────────────────
-   View transitions — cross-document + same-document.
+   View transitions -- cross-document + same-document.
    ─────────────────────────────────────────────────────────────── */
 
 @view-transition {
@@ -232,7 +232,7 @@ hr {
 }
 
 /* ───────────────────────────────────────────────────────────────
-   Reduced motion — kill the show.
+   Reduced motion -- kill the show.
    ─────────────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

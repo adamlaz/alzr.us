@@ -12,7 +12,7 @@ interface Props {
 
 const {
   title = 'Adam Lazarus',
-  description = "Adam Lazarus — Director of Engineering. Writing about AI-augmented engineering teams, vault automation, and the work behind the work.",
+  description = "Adam Lazarus -- engineering leader, writer, builder. St. Petersburg, FL. Long-form posts on AI-augmented engineering, vault automation, and the operator's view.",
   ogImage = '/og.png',
 } = Astro.props;
 
@@ -43,7 +43,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- Pre-paint theme to avoid FOUC. System → localStorage → data-theme. -->
+    <!-- Pre-paint theme to avoid FOUC. System then localStorage then data-theme. -->
     <script is:inline>
       (() => {
         const stored = localStorage.getItem('theme');

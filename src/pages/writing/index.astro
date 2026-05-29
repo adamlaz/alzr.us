@@ -8,18 +8,16 @@ const posts = (await getCollection('writing', ({ data }) => !data.draft)).sort(
 );
 ---
 
-<BaseLayout title="Writing — alzr.us" description="Long-form posts by Adam Lazarus.">
+<BaseLayout title="Writing -- alzr.us" description="Long-form posts by Adam Lazarus.">
   <h1>Writing</h1>
   <p class="kicker">
-    Posts about AI-augmented engineering, vault automation, and the operator's view
-    of building software in 2026.
+    Long-form posts. AI-augmented engineering, vault automation, the operator's view.
   </p>
 
   {
     posts.length === 0 ? (
       <p class="empty">
-        First post coming soon. In the meantime, see{' '}
-        <a href="/projects">what I'm currently building</a>.
+        First post coming soon. In the meantime, see <a href="/projects">what I'm currently building</a>.
       </p>
     ) : (
       <div class="post-list">
