@@ -4,7 +4,7 @@
 @import 'tailwindcss';
 
 /* ───────────────────────────────────────────────────────────────
-   alzr.us -- editorial / paper-and-ink
+   alzr.us --editorial / paper-and-ink
    Cobalt accent at hue 265 (deuteranopia-discriminable).
    ─────────────────────────────────────────────────────────────── */
 
@@ -161,7 +161,7 @@ hr {
 }
 
 /* ───────────────────────────────────────────────────────────────
-   Wordmark -- the signature flourish.
+   Wordmark --the signature flourish.
    Idle: low opsz + neutral wonk. Hover: high opsz + wonk on.
    ─────────────────────────────────────────────────────────────── */
 
@@ -189,6 +189,14 @@ hr {
   animation: wordmark-settle 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .wordmark--hero {
+    animation:
+      wordmark-settle 900ms cubic-bezier(0.16, 1, 0.3, 1) both,
+      wordmark-breath 5200ms ease-in-out 900ms infinite alternate;
+  }
+}
+
 @keyframes wordmark-settle {
   0% {
     font-variation-settings: 'opsz' 14, 'SOFT' 100, 'WONK' 1;
@@ -205,8 +213,18 @@ hr {
   }
 }
 
+/* Wordmark breath: barely-perceptible variable-axis oscillation, hero only. */
+@keyframes wordmark-breath {
+  from {
+    font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 0;
+  }
+  to {
+    font-variation-settings: 'opsz' 138, 'SOFT' 42, 'WONK' 0.04;
+  }
+}
+
 /* ───────────────────────────────────────────────────────────────
-   View transitions -- cross-document + same-document.
+   View transitions --cross-document + same-document.
    ─────────────────────────────────────────────────────────────── */
 
 @view-transition {
@@ -232,7 +250,7 @@ hr {
 }
 
 /* ───────────────────────────────────────────────────────────────
-   Reduced motion -- kill the show.
+   Reduced motion --kill the show.
    ─────────────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
