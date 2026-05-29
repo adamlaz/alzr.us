@@ -5,6 +5,15 @@ const links = [
   { href: 'https://github.com/adamlaz', label: 'GitHub' },
   { href: 'https://www.linkedin.com/in/adamlaz/', label: 'LinkedIn' },
 ];
+
+// Vercel injects these at build time. Fall back to a local-build label.
+const sha = (import.meta.env.VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7);
+const builtAt = new Date();
+const builtLabel = builtAt
+  .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  .toLowerCase();
+const buildLine = sha ? `built ${builtLabel} · sha ${sha}` : `local build · ${builtLabel}`;
+const buildHref = sha ? `https://github.com/adamlaz/alzr.us/commit/${sha}` : undefined;
 ---
 
 <footer class="site-footer">
@@ -23,6 +32,18 @@ const links = [
       }
     </ul>
   </div>
+  <p class="build">
+    <span class="dot" aria-hidden="true"></span>
+    {
+      buildHref ? (
+        <a href={buildHref} rel="external" data-no-prerender>
+          {buildLine}
+        </a>
+      ) : (
+        <span>{buildLine}</span>
+      )
+    }
+  </p>
 </footer>
 
 <style>
@@ -51,7 +72,7 @@ const links = [
     gap: 1.25rem;
   }
 
-  a {
+  .row a {
     color: inherit;
     text-decoration: none;
     border-bottom: 1px solid transparent;
@@ -60,8 +81,53 @@ const links = [
       border-color 120ms ease;
   }
 
-  a:hover {
+  .row a:hover {
     color: var(--accent);
     border-bottom-color: var(--accent);
+  }
+
+  .build {
+    margin: 1.5rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .build a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .build a:hover {
+    color: var(--accent);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .dot {
+      animation: build-pulse 3s ease-in-out infinite;
+    }
+  }
+
+  @keyframes build-pulse {
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.65;
+    }
   }
 </style>
