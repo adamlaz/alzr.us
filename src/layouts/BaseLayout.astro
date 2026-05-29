@@ -71,6 +71,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
       }
     </script>
 
+    <!-- DevTools signature: a small hello to anyone who opens the console. -->
+    <script is:inline>
+      console.log(
+        '%c built deliberately %c\n  github.com/adamlaz/alzr.us\n  ~ adam, from a vault in st. pete',
+        'background: oklch(0.42 0.18 265); color: oklch(0.97 0.005 90); padding: 4px 8px; border-radius: 3px; font-family: monospace; font-weight: 500;',
+        'color: inherit; font-family: monospace; line-height: 1.6;',
+      );
+    </script>
+
     <ClientRouter />
   </head>
   <body>
