@@ -1,7 +1,75 @@
-@import '@fontsource-variable/fraunces';
-@import '@fontsource-variable/inter';
-@import '@fontsource-variable/geist-mono';
 @import 'tailwindcss';
+
+/* ───────────────────────────────────────────────────────────────
+   Fonts -- self-scoped to latin + latin-ext only.
+   The @fontsource barrel imports ship 16 subsets (cyrillic, greek,
+   vietnamese, symbols2) this English site never renders, and the
+   Fraunces barrel resolves to the wght-only file -- which has none
+   of the opsz/SOFT/WONK axes the wordmark animates. Declaring the
+   faces here drops the unused subsets from the deploy + critical CSS
+   and points Fraunces at the `full` file so the wordmark works.
+   unicode-range lets the browser fetch only the subset it needs.
+   ─────────────────────────────────────────────────────────────── */
+
+/* Inter Variable (body) -- wght axis */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Fraunces Variable (display + wordmark) -- full axes: opsz, SOFT, WONK, wght */
+@font-face {
+  font-family: 'Fraunces Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/fraunces/files/fraunces-latin-full-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Fraunces Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/fraunces/files/fraunces-latin-ext-full-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Geist Mono Variable (code + metadata) -- wght axis */
+@font-face {
+  font-family: 'Geist Mono Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Geist Mono Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/geist-mono/files/geist-mono-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
 
 /* ───────────────────────────────────────────────────────────────
    alzr.us --editorial / paper-and-ink
@@ -56,6 +124,30 @@
   --accent-subtle: color-mix(in oklch, var(--accent) 8%, var(--bg));
   --rule: var(--color-rule-light);
   --ring: var(--accent);
+
+  /* ── Spacing scale (4pt base) ──
+     One defined set. No arbitrary values in component styles. */
+  --space-3xs: 0.25rem; /*  4px */
+  --space-2xs: 0.5rem;  /*  8px */
+  --space-xs: 0.75rem;  /* 12px */
+  --space-sm: 1rem;     /* 16px */
+  --space-md: 1.5rem;   /* 24px */
+  --space-lg: 2rem;     /* 32px */
+  --space-xl: 3rem;     /* 48px */
+  --space-2xl: 4rem;    /* 64px */
+  --space-3xl: 6rem;    /* 96px */
+
+  /* ── Layout: single source of truth for measure, gutter, page rhythm ──
+     The column width and gutter live here, not redeclared per component.
+     Fluid tokens breathe with the viewport (brand register). */
+  --measure: 65ch;       /* body copy */
+  --measure-wide: 68ch;  /* main column / nav / footer */
+  --page-pad-x: 1.5rem;
+  --page-pad-top: clamp(3rem, 2rem + 5vw, 6rem);
+  --page-pad-bottom: clamp(4rem, 3.25rem + 3vw, 6rem);
+  --section-gap: clamp(2.5rem, 2rem + 2.6vw, 4rem); /* major separations */
+  --intro-gap: clamp(2rem, 1.5rem + 2vw, 3rem);     /* title block → content */
+  --list-gap: var(--space-md);                       /* top-level list rhythm */
 }
 
 [data-theme='dark'] {
@@ -161,6 +253,20 @@ hr {
 }
 
 /* ───────────────────────────────────────────────────────────────
+   Shared page primitives
+   ─────────────────────────────────────────────────────────────── */
+
+/* The standfirst under a page <h1>. Tightly grouped with the heading
+   above it; the generous break belongs after the pair, not inside it. */
+.kicker {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 18, 'SOFT' 50, 'WONK' 0;
+  font-size: 1.1rem;
+  color: var(--text-soft);
+  margin: 0 0 var(--intro-gap);
+}
+
+/* ───────────────────────────────────────────────────────────────
    Wordmark --the signature flourish.
    Idle: low opsz + neutral wonk. Hover: high opsz + wonk on.
    ─────────────────────────────────────────────────────────────── */
@@ -169,31 +275,62 @@ hr {
   font-family: var(--font-display);
   font-weight: 500;
   letter-spacing: -0.02em;
+  display: inline-grid;
+  justify-items: start;
+  transition: color 200ms ease;
+}
+
+/* The sizer + live layers share one grid cell. The hidden sizer is pinned to
+   the idle (widest) optical size, so the box is reserved at its largest width
+   and the animating live layer can shrink without resizing the box. That kills
+   the hover reflow that shifted the nav left. */
+.wordmark__sizer,
+.wordmark__live {
+  grid-area: 1 / 1;
+}
+
+.wordmark__sizer {
+  visibility: hidden;
   font-variation-settings: 'opsz' 14, 'SOFT' 30, 'WONK' 0;
-  transition:
-    font-variation-settings 480ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    color 200ms ease;
-  display: inline-block;
+}
+
+.wordmark__live {
+  font-variation-settings: 'opsz' 14, 'SOFT' 30, 'WONK' 0;
+  transition: font-variation-settings 480ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .wordmark:hover,
 .wordmark:focus-visible {
-  font-variation-settings: 'opsz' 144, 'SOFT' 100, 'WONK' 1;
   color: var(--accent);
 }
 
+.wordmark:not(.wordmark--hero):hover .wordmark__live,
+.wordmark:not(.wordmark--hero):focus-visible .wordmark__live {
+  font-variation-settings: 'opsz' 144, 'SOFT' 100, 'WONK' 1;
+}
+
+/* Hero stands alone with nothing to its right, so it needs no width reservation
+   -- drop the sizer and let the live layer animate freely (settle, then breath). */
 .wordmark--hero {
   font-size: clamp(4rem, 12vw, 9rem);
   line-height: 0.9;
+}
+
+.wordmark--hero .wordmark__sizer {
+  display: none;
+}
+
+.wordmark--hero .wordmark__live {
   font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 0;
+  transition: none;
   animation: wordmark-settle 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .wordmark--hero {
+  .wordmark--hero .wordmark__live {
     animation:
       wordmark-settle 900ms cubic-bezier(0.16, 1, 0.3, 1) both,
-      wordmark-breath 5200ms ease-in-out 900ms infinite alternate;
+      wordmark-breath 5600ms ease-in-out 1100ms infinite alternate;
   }
 }
 
@@ -213,13 +350,16 @@ hr {
   }
 }
 
-/* Wordmark breath: barely-perceptible variable-axis oscillation, hero only. */
+/* Breath: a slow, now-perceptible axis oscillation -- opsz eases the letters
+   from display-tight toward a softer optical size while SOFT rounds the
+   terminals and a faint WONK leans in. Hero only, motion-gated. Continuous
+   from the settle end state (opsz 144) for a seamless handoff. */
 @keyframes wordmark-breath {
   from {
     font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 0;
   }
   to {
-    font-variation-settings: 'opsz' 138, 'SOFT' 42, 'WONK' 0.04;
+    font-variation-settings: 'opsz' 108, 'SOFT' 76, 'WONK' 0.5;
   }
 }
 
