@@ -1,0 +1,88 @@
+---
+interface Footnote {
+  id: string;
+  body: string;
+}
+
+interface Props {
+  notes: Footnote[];
+}
+
+const { notes } = Astro.props;
+---
+
+{
+  notes.length > 0 && (
+    <section class="footnotes" aria-labelledby="footnotes-heading">
+      <h2 id="footnotes-heading">Notes</h2>
+      <ol>
+        {notes.map((note) => (
+          <li id={`fn-${note.id}`}>
+            <span class="fn-body" set:html={note.body} />{' '}
+            <a
+              href={`#fnref-${note.id}`}
+              class="fn-back"
+              aria-label={`Back to reference ${note.id}`}
+            >
+              ↩
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
+
+<style>
+  .footnotes {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .footnotes h2 {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 36, 'SOFT' 50, 'WONK' 0;
+    font-size: 1.15rem;
+    color: var(--text);
+    margin: 0 0 1.25rem;
+  }
+
+  .footnotes ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 0.92rem;
+    color: var(--text-soft);
+  }
+
+  .footnotes li {
+    margin-bottom: 0.75rem;
+    line-height: 1.55;
+  }
+
+  .footnotes li:last-child {
+    margin-bottom: 0;
+  }
+
+  .fn-back {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-left: 0.25rem;
+    transition: color 140ms ease;
+  }
+
+  .fn-back:hover {
+    color: var(--accent);
+  }
+
+  .fn-body :global(a) {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid
+      color-mix(in oklch, var(--accent) 35%, transparent);
+  }
+
+  .fn-body :global(a:hover) {
+    border-bottom-color: currentColor;
+  }
+</style>

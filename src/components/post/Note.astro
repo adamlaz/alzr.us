@@ -1,0 +1,35 @@
+---
+interface Props {
+  id: string | number;
+}
+
+const { id } = Astro.props;
+const idStr = String(id);
+---
+
+<sup class="fn-ref" id={`fnref-${idStr}`}>
+  <a href={`#fn-${idStr}`} aria-label={`Footnote ${idStr}`}>{idStr}</a>
+</sup>
+
+<style>
+  .fn-ref {
+    font-family: var(--font-mono);
+    font-size: 0.7em;
+    line-height: 0;
+    margin-left: 0.1em;
+  }
+
+  .fn-ref a {
+    color: var(--accent);
+    text-decoration: none;
+    padding: 0 0.15em;
+    border-radius: 2px;
+    transition:
+      background 140ms ease,
+      color 140ms ease;
+  }
+
+  .fn-ref a:hover {
+    background: color-mix(in oklch, var(--accent) 12%, transparent);
+  }
+</style>
