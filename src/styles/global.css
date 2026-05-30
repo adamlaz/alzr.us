@@ -109,6 +109,37 @@
 }
 
 /* ───────────────────────────────────────────────────────────────
+   Kinetic type axes -- registered so they interpolate.
+   `--p` is the per-glyph proximity (0..1) the pointer engine writes; the
+   transition on it (see `.glyph`) is what makes the bloom smooth while JS
+   updates sparsely. The `--base-*` axes inherit into glyphs and are animated
+   by the wordmark settle/breath; registering them keeps that animation smooth
+   instead of snapping between keyframes. `font-variation-settings` itself can't
+   be transitioned, so all easing rides on these numbers + calc().
+   ─────────────────────────────────────────────────────────────── */
+
+@property --p {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+@property --base-opsz {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 14;
+}
+@property --base-soft {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 30;
+}
+@property --base-wonk {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+/* ───────────────────────────────────────────────────────────────
    Semantic tokens
    ─────────────────────────────────────────────────────────────── */
 
@@ -403,7 +434,8 @@ hr {
   }
 
   .wordmark,
-  .wordmark--hero {
+  .wordmark--hero,
+  [data-kinetic] .glyph {
     animation: none;
     transition: none;
   }
