@@ -1,0 +1,56 @@
+---
+title: 'Post title here'
+date: 2026-05-28
+description: 'One-sentence summary for the preview card, RSS, and OG meta description.'
+draft: true
+ogTreatment: default
+pullQuote: 'The single line worth pulling out and setting in display serif.'
+tags: ['example']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Callout from '../../components/post/Callout.astro';
+import Figure from '../../components/post/Figure.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+
+Opening paragraph. Lead with the finding or the central argument, then the
+reasoning. Aim for a hook in the first three sentences that passes the
+Attribution Test.<Note id="1" />
+
+## A section heading
+
+Body copy. Use specific numbers, named tools, real anecdotes. Anonymize names
+when needed but keep the texture concrete.
+
+<PullQuote>
+  The strongest line of the piece, pulled out and set in display serif.
+</PullQuote>
+
+## Another section
+
+More body. Use `<Callout>` for asides:
+
+<Callout variant="note" title="Heads up">
+  This is the note variant. There's also `aside` and `warn`.
+</Callout>
+
+Reference an external resource for the citation block at the bottom.<Note id="2" />
+
+## Closing
+
+End with a deliberate landing, not a taper. The last sentence should be one
+the reader could screenshot.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: 'Citation or expansion for the first reference. <a href="https://example.com">Source</a>.',
+    },
+    {
+      id: '2',
+      body: 'Citation for the second reference.',
+    },
+  ]}
+/>

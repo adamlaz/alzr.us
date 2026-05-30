@@ -1,0 +1,254 @@
+---
+title: 'Running candidate background research with parallel Claude Code agents'
+date: 2026-05-28
+description: "I built a parallel-agent workflow to make candidate background research faster. It made the research deeper instead -- because running ten investigations at once turns a noisy classifier into a confident one. The speedup was the bonus."
+draft: false
+ogTreatment: candidate-grid
+pullQuote: 'Any single AI-tell is just noise. Run ten investigations in parallel and the same fingerprint shows up on three resumes at once. The cluster is the fingerprint.'
+tags: ['ai-augmented-engineering', 'hiring', 'claude-code']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+
+I built a parallel-agent workflow to make candidate background research
+faster. It made the research deeper instead. The speedup is real: about
+five hours of total work this spring where the serial version would have
+run fifteen to twenty-five. The part I didn't plan for is more useful
+than the speedup.
+
+The setup. I'm hiring for a senior mobile role. Ten candidates so far,
+across three rounds. Each one wants real public-footprint work before a
+calendar invite goes out: resume cross-reference, GitHub search, App Store
+verification, conference and podcast checks, employer-city sanity tests,
+and a Sherlock OSINT sweep for username discovery across 400+ sites.
+Twenty-five minutes per candidate, done seriously. Done serially, the
+arithmetic doesn't survive contact with a normal week. Done in parallel
+through Claude Code, it does.
+
+## The shape of the workflow
+
+For each candidate I spin up one general-purpose agent with `run_in_background:
+true`.<Note id="1" /> Each agent gets the same brief: candidate identity, resume path,
+the full application content, the curated Sherlock dump, the role-specific
+signals to chase, and the sub-page template to fill out. I launch all ten
+in a single message and let them work.
+
+The brief is the most-asked-for artifact when I describe this. Here it
+is, lightly redacted:
+
+```
+Background research on a job candidate. Public internet only. ~25 min budget.
+Role: [Senior X Engineer at $COMPANY] -- [1-line role context].
+Be candid -- surface signal, not be diplomatic.
+
+# Candidate
+- Name: ...
+- Email: ...
+- LinkedIn: ...
+- Status: ...
+- Resume: [path] ([size] KB)
+
+# Application content
+**Brief intro:** [paste]
+**Deep-dive:** [paste]
+
+# Role-specific research signals
+[Strong / yellow / red flags -- pulled from the role's hiring rubric]
+
+# Research targets
+1. LinkedIn -- WebFetch (usually auth-walled; supplement with Google snippets)
+2. GitHub -- handle variants; check for relevant language footprint
+3. Personal site / blog / portfolio
+4. Social: Twitter/X, Bluesky, Mastodon, Threads
+5. Medium / Substack / dev.to
+6. Conference talks, podcasts
+7. App Store / Play Store -- verify any claimed apps + developer name
+8. Employer verification (do the offices in claimed cities actually exist?)
+9. Targeted verification of yellow flags from triage
+
+# Sherlock results
+Curated hits at [path]
+
+# Time budget
+~25 min. If you can't verify a yellow flag in 10 min, document the gap.
+
+# Output format
+[Notion sub-page template -- sources reviewed, confirmed claims with
+confidence tags, surfaced (not in resume), flagged for interview, 3-5
+interview questions, internet personality, public footprint summary]
+```
+
+While the agents run, I curate the raw Sherlock output (50-100 hits per
+username, maybe 5% actionable) and prep interview kits for candidates I
+already know will advance. Twenty minutes later, ten structured research
+pages exist. I read them in order, write a one-page recap with verdicts,
+and we move.
+
+Round one took two hours for four candidates. Round two: ninety minutes for
+three. Round three: seventy-five minutes for three. The agents have not
+gotten faster. My brief has gotten tighter.
+
+## What four signals look like together
+
+Running ten agents at once surfaced something I didn't plan for. Call it
+cluster detection. Any single AI-tell on a resume is noise -- plenty of
+explanations besides "AI wrote this." But lay ten investigations side by
+side in one comparison table and the same three or four signals fire on the
+same three resumes. That cluster is the fingerprint.
+
+Four signals showed up reliably across the pass-grade resumes in the pool:
+
+1. **Resume file size under 10 KB.** Resumes built in real document editors
+   land between 100 and 200 KB. Resumes built from minimal AI templates
+   land around 8 to 9 KB. This is the fastest first-pass signal in the
+   pipeline -- essentially a `ls -la`. It is also not deterministic; one
+   real candidate's spartan one-pager landed at 5.9 KB and turned out to
+   verify cleanly on every other axis. File size is a flag, never a verdict.
+
+2. **Verbatim job-description vocabulary in the cover letter.** Specific
+   bespoke phrases from the JD reproduced verbatim in the cover letter, in
+   the order the JD lists them. Authentic candidates rearrange and rephrase.
+
+3. **GitHub absence at staff-or-senior level.** Real career engineers in
+   most stacks have *something* public after a decade. A five-year-old
+   dotfiles repo. A CocoaPod. A Stack Overflow answer. A gist. Total absence
+   at ten years' claimed seniority is the loudest signal of the four. (One
+   real exception: engineers who spent a decade inside a company that owns
+   their work product. Verify the employer claim before treating GitHub
+   absence as evidence.)<Note id="2" />
+
+4. **Resume claims that don't survive employer-by-employer verification.**
+   A claimed regional office of the employer that doesn't actually exist in
+   that city. A claimed enterprise app on the App Store that isn't there
+   under the named publisher. A resume bullet about a platform technology
+   that the employer doesn't actually work on. An App Store link that
+   points to an app from an entirely different developer. Each takes about
+   five minutes to verify if you go looking.
+
+Two on a resume is worth a closer look. Three is the routing decision
+below.
+
+<PullQuote>
+  Any single AI-tell is just noise. Run ten investigations in parallel and
+  the same fingerprint shows up on three resumes at once. The cluster is
+  the fingerprint.
+</PullQuote>
+
+## Cluster detection isn't only useful against AI fakes
+
+The parallel approach also catches things that have nothing to do with AI
+generation.
+
+One candidate's cover letter framed him as an actively-shipping engineer.
+A local press hit told a different story: he had stood up a full-time
+retail business more than a year earlier and was running it as his primary
+occupation. Both things were true. The application just neglected one of
+them. A single researcher might have missed the press hit entirely. The
+parallel agent flagged it because it was looking for that exact kind of
+cross-reference, on a brief written in advance.
+
+The inverse case was more interesting. Another candidate's application was
+thin -- a one-sentence intro, an empty deep-dive box. On its own it read
+as low effort. The resume plus the public footprint surfaced a senior
+mobile developer with directly-relevant streaming and TV-platform
+experience, plus a prior research role building communication technology
+adjacent to the product we were hiring for. He does not market himself
+well. Triage alone would have killed him in round one. The agent surfaced
+the gap between the thin application and the dense reality.
+
+## When three signals fire on a real candidate
+
+The obvious counterargument. A candidate's resume is compactly formatted
+because they prefer one-pagers. They have no GitHub because they spent
+a decade inside a company that owns the work product. They quoted the JD
+in their cover letter because they read it carefully. Three signals fire.
+You miss a real candidate.
+
+The answer is the cluster threshold, plus the verification step. Three
+yellow flags doesn't pass the candidate. It downgrades them to *aggressive
+phone screen*. The screen probes the specific signals that fired. If the
+employer claim verifies, the GitHub absence has a believable cause, the
+quoted JD phrasing turns out to be the candidate's own framing of a hard
+problem we both care about -- all three signals dissolve and the candidate
+advances. Cluster detection is a routing decision, not a rejection
+decision.
+
+Every candidate the workflow flagged hardest also failed the screen on
+independent grounds. The sample is small, so the false-positive count
+doesn't generalize -- but the asymmetry I care about does. The
+false-negative cost (interviewing a candidate whose claims don't survive
+contact) was the cost I was trying to avoid in the first place.
+
+## What this workflow doesn't do
+
+OSINT sweeps across 400+ public sites surface personal information that
+has no business in a hiring decision: dating profiles, religious
+community forums, family-status signals, political affiliations. The
+curation step discards all of it. The agent brief is scoped to the
+candidate's professional surface area -- the work they've built, the
+venues they've spoken at, the public artifacts they own. Personal-life
+surface area is filtered out before anything reaches the hiring panel.
+The discipline matters legally (EEOC-protected attributes can't enter the
+evaluation file) and operationally (hiring decisions should turn on the
+work, not the person).
+
+## Sherlock and the curation discipline
+
+I lean on Sherlock for username discovery across 400+ public sites in one
+pass.<Note id="3" /> What I do *not* do is treat raw Sherlock hits as evidence. A
+common username generates fifty to a hundred matches, most of them
+different people. The signal lives in the *curated* set: which platforms
+had a profile that actually matched the candidate's job history, location,
+and stated interests. Real curation rate hovers around five percent. The
+other ninety-five is collision.
+
+Sherlock surfaces. I verify. The split is the whole point.
+
+## Cost, and the arms race
+
+Five hours of my own time across ten candidates. The agent token cost
+lands well under one senior-engineer-hour. I haven't tallied it more
+precisely than that.
+
+It's an arms race. AI-generated resumes exist because candidates are
+running their own parallel-agent workflows, tailoring ten applications to
+ten roles in the time it used to take to write one. The defender side of
+that equation is what this post describes. Same underlying capability,
+different ends.
+
+## What stays when the model changes
+
+Triage moves earlier in v2. A five-minute application-triage step using
+just file size + JD-vocab check + App Store link verification catches the
+obvious fakes before any agent runs. The agents then point only at
+candidates who survived triage, not at fabricated ones who would waste
+the depth.
+
+The deeper compounding return is something else. The brief is the
+artifact, not the agents. The agents are fungible -- Claude Code today,
+whatever Anthropic ships next year, whatever Cursor or OpenAI builds for
+the same job. The brief is what survives a model change, a tool change,
+a team-member change. The brief is the institutional knowledge. The
+agents render it.
+
+Hiring depth at speed used to cost a week. Now it costs an afternoon.
+The cluster detection was the surprise.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: 'Claude Code\'s subagents and the <code>run_in_background</code> pattern are documented in the official SDK: <a href="https://docs.claude.com/en/docs/claude-code/sub-agents">docs.claude.com</a>. The mechanic is straightforward; the discipline is in the brief.',
+    },
+    {
+      id: '2',
+      body: 'GitHub\'s <a href="https://octoverse.github.com">Octoverse</a> reports cover public-footprint baselines for staff-level engineers across roles. The short version: most career-stage engineers leave some public artifact, even when the bulk of their work is private. The exception class -- engineers who worked for a decade inside a company that owns their work product -- is real and deserves the verification step before treating absence as evidence.',
+    },
+    {
+      id: '3',
+      body: 'Sherlock Project: <a href="https://github.com/sherlock-project/sherlock">github.com/sherlock-project/sherlock</a>. OSINT username enumeration across hundreds of public platforms.',
+    },
+  ]}
+/>
