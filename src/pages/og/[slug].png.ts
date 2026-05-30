@@ -276,7 +276,7 @@ function struckEmDash(title: string) {
 }
 
 function eraTimeline(title: string) {
-  const years = ['2010', '2014', '2018', '2024', 'now'];
+  const years = ['2005', '2010', '2015', '2020', 'now'];
   const filledIndex = 4;
   return {
     type: 'div',
