@@ -24,7 +24,7 @@ const formatted = date.toLocaleDateString('en-US', {
 
 <style>
   .post-card {
-    padding: 1.5rem 0;
+    padding: var(--list-gap) 0;
     border-bottom: 1px solid var(--rule);
   }
 
@@ -47,7 +47,7 @@ const formatted = date.toLocaleDateString('en-US', {
   }
 
   h2 {
-    margin: 0.25rem 0 0.5rem;
+    margin: var(--space-3xs) 0 var(--space-2xs);
     font-size: 1.5rem;
     transition: color 140ms ease;
   }

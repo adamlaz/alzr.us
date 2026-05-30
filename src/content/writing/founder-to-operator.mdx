@@ -1,0 +1,202 @@
+---
+title: 'What 15 years of founder/CTO work taught me about operator-mode'
+date: 2026-05-30
+description: "The muscle that ships a company from zero is not the muscle that keeps a company aimed. I have shifted between modes more than once. Each time, the habits that worked before were the habits I had to break first."
+draft: false
+ogTreatment: era-timeline
+pullQuote: "The slower path through the team usually produces a worse answer once and a better team forever. The founder reflex hates this trade. The operator reflex depends on it."
+tags: ['leadership', 'engineering-management', 'founder']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+
+I have shifted between founder mode and operator mode more than once over
+the last fifteen years. Early in the arc I carried the same habits across
+the line. The habits worked in founder mode. They burned the operator
+chair down. I had to learn that the work uses opposite muscles, not
+adjacent ones, and the reflex that wins one is the reflex that loses the
+other.
+
+Founder mode is deciding what gets built. Operator mode is deciding what
+doesn't.
+
+## The split
+
+Founder mode is generative. You stand at the front of an empty room and
+the job is to populate it with the right things: the right product, the
+right team, the right customers, the right narrative. The bias is toward
+action, because nothing exists yet and the cost of inaction is much
+higher than the cost of being slightly wrong about what to build. You
+move fast, decide a hundred small things a day, and revise as you learn.
+Most days you can't tell whether you're winning, but you can usually tell
+whether you're moving.
+
+Operator mode is selective. The room is full. The job is to make sure the
+right things stay and the wrong things leave. The bias is toward saying
+no, because anything you say yes to gets built, and the cost of building
+the wrong thing now compounds across a team that has to maintain it. You
+move slower, make fewer decisions per day, and the decisions you make
+matter more. The score is unclear; the calls you got wrong show up in
+three months in a calendar of meetings that didn't need to happen.
+
+## What actually changes when you shift
+
+Three things.
+
+**Calendar shape.** In founder mode I spent most of my week building or
+talking to customers. Two or three hours of meetings a day, no more. In
+operator mode the calendar *is* the work. Five hours of meetings is a
+light day, because the meetings are where the team negotiates which
+things stay and which things leave. A founder hearing that thinks *that
+sounds awful*, and is correct. It is awful as a founder. It is the job
+as an operator.
+
+**Decision count.** Founders make dozens of decisions a day, most of them
+small, most of them reversible. Operators make a handful a week, most of
+them hard to reverse without a real cost to people on the team. The
+number went down by an order of magnitude when I shifted. The weight
+went up by an order of magnitude. The first time I noticed I'd been
+running a quiet week was the moment I realized I'd quietly made three
+decisions in three meetings, and that was the week.
+
+**Information shape.** In founder mode information came through whichever
+channel was fastest: the customer call, the bug report, the analytics
+dashboard. In operator mode information comes through people. The team
+is the filter. If the team is calibrated, the read is clear. If the team
+is not calibrated, the read is distorted, and the calibration is the
+operator's actual job.
+
+## Four habits I had to break
+
+Each one worked for me in founder mode. Each one stopped working at the
+operator boundary.
+
+1. **Fix it yourself.** As a founder, the fastest path from "something is
+   broken" to "something is shipped" was usually me. The first time I
+   tried this from the operator chair, I rewrote three customer-facing
+   bugs at midnight instead of paging the engineer who owned them. The
+   bugs got fixed. The engineer noticed. The team noticed who noticed.
+   Now I name the owner first and let the owner work.
+
+2. **Fastest path to the answer.** Founders optimize for *getting* the
+   answer. Operators optimize for *the team learning* the answer. The
+   slower path through the team usually produces a worse answer once and
+   a better team forever.
+
+3. **The strong opinion in the room.** As a founder, the strongest
+   opinion in the room is usually yours, and that's fine: the company is
+   small enough that the opinion is the strategy. As an operator, the
+   strongest opinion in the room is a self-silencing device. The whole
+   meeting becomes a search for what the loudest person already decided.
+   Now I ask the question first, listen second, and put my opinion in
+   the room last, if at all.
+
+4. **The all-hands tactical.** Founders use the all-hands to coordinate
+   tactically: this week we're doing X, here's what to expect. Operators
+   use the all-hands for the longer arc -- where we are, why this
+   quarter matters, what changes if we win it. The tactical work belongs
+   in smaller forums where the trade-offs can be debated honestly. An
+   all-hands that runs tactical is a sign the org's middle layer isn't
+   doing its job, not a feature.
+
+## Four habits I had to build
+
+The new ones don't come naturally. They get practiced.
+
+1. **Ask the question that doesn't have an answer yet.** Operators get
+   paid to ask the questions the team hasn't thought to ask. Most of
+   mine arrive in the form *what would have to be true for this to break
+   in six months?* The question earns nothing in founder mode and earns
+   its weight every quarter in operator mode.
+
+2. **Name the tradeoff in public.** Founders make tradeoffs in their
+   head and ship the result. Operators name what got chosen, what got
+   declined, and what the consequence of being wrong looks like, in front
+   of the team. The public-ness is what makes the decision reviewable --
+   by the team, by the board, by future-me.
+
+3. **Defend the boring infrastructure work.** Nobody on the team lobbies
+   for the migration that pays back in two quarters. The lobbying job is
+   the operator's. Founders ship features. Operators also ship the
+   conditions that let the team keep shipping features.
+
+4. **Hold the quality line when the team would ship.** The hardest
+   operator habit. Operators sometimes decide that something *should* be
+   built better, even when the team is ready to ship it as-is. Holding
+   that line looks like a brake. It is actually the spec.
+
+<PullQuote>
+  The slower path through the team usually produces a worse answer once
+  and a better team forever. The founder reflex hates this trade. The
+  operator reflex depends on it.
+</PullQuote>
+
+## Both modes live in the same week
+
+Most engineering leaders I respect run both modes inside a single week,
+not in separate phases of a career. A fifty-person org needs zero-to-one
+initiatives *and* selective pruning, often from the same person,
+sometimes the same day. This post treats the modes as serial because the
+*shift* is what's hard to talk about. Inside any given role they live
+next to each other on the calendar. The challenge is rarely *which mode
+to be in.* The challenge is noticing which mode the room needs in this
+hour, and finding the reflex for that mode on demand.
+
+## On "Founder Mode"
+
+Paul Graham's "Founder Mode" essay landed in 2024 and got broader
+treatment than it asked for.<Note id="1" /> The essay names a real thing: founders
+run companies differently than career managers, and at some sizes the
+founder's way produces strictly better results. The argument is precise
+on its narrow claim.
+
+The argument this post makes is in tension with that one. Paul Graham's
+essay reads as a permission slip to stay in founder mode longer than the
+career-manager class will tell you to. This post is the opposite
+permission slip. The same instincts that make a great zero-to-one CEO
+actively damage a 200-person org. Founder mode is a mode you can stay in
+too long. Operator mode is a mode some founders never learn to enter,
+and the company eats itself when they don't.
+
+The two arguments are both true. Founder mode is a useful, undervalued,
+non-default operating style at scale. Operator mode is a useful,
+underwritten, second-act operating style for the same person. The
+question isn't which mode is better. The question is whether you can
+move between them when the company needs you to. Andy Grove's *High
+Output Management* and Will Larson's *An Elegant Puzzle* are both
+operator-mode books written without apology for the operator side of the
+work.<Note id="2" />
+
+## What I'm still bad at
+
+Holding the quality line, mostly. Letting the team ship while disagreeing
+with them out loud about the spec. The founder reflex says *ship it,
+revise after.* The operator reflex says *the spec is the spec and we
+agreed.* Both reflexes are useful. Knowing which one to run on a Tuesday
+afternoon is a skill I have not finished learning.
+
+Also: operator mode as the only person in the room running it. Earlier
+in my career I worked alongside people whose dispositions covered the
+modes I wasn't running. *Operator mode in the abstract* and *operator
+mode when the team is calibrating to whether you'll actually sit in the
+chair* are different shapes of the same skill, and the second one only
+shows up when nobody else is doing it for you.
+
+When I shift again I want to read this and find at least one claim I now
+think is wrong. That's the test of whether the work was actual learning
+or just a clean story.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: 'Paul Graham, <a href="https://paulgraham.com/foundermode.html">"Founder Mode"</a> (September 2024).',
+    },
+    {
+      id: '2',
+      body: 'Andy Grove, <em>High Output Management</em> (1983). Will Larson, <em>An Elegant Puzzle</em> (2019). Ben Horowitz, <em>The Hard Thing About Hard Things</em> (2014) -- particularly the peacetime CEO / wartime CEO chapter, which is the same observation through a different lens.',
+    },
+  ]}
+/>

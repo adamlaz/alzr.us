@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
+import readingTime from 'reading-time';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 export async function getStaticPaths() {
@@ -18,12 +19,28 @@ const formatted = post.data.date.toLocaleDateString('en-US', {
   month: 'long',
   day: 'numeric',
 });
+
+const rt = readingTime(post.body ?? '');
+const minutes = Math.max(1, Math.round(rt.minutes));
+const readMin = `${minutes} min read`;
+
+const ogImage = `/og/${post.id}.png`;
 ---
 
-<BaseLayout title={`${post.data.title} -- alzr.us`} description={post.data.description}>
+<BaseLayout
+  title={`${post.data.title} -- alzr.us`}
+  description={post.data.description}
+  ogImage={ogImage}
+  ogType="article"
+  publishedTime={post.data.date}
+>
   <article class="post">
     <header>
-      <time datetime={post.data.date.toISOString()}>{formatted}</time>
+      <p class="meta">
+        <time datetime={post.data.date.toISOString()}>{formatted}</time>
+        <span class="dot" aria-hidden="true">·</span>
+        <span class="reading-time">{readMin}</span>
+      </p>
       <h1>{post.data.title}</h1>
       <p class="description">{post.data.description}</p>
     </header>
@@ -38,14 +55,18 @@ const formatted = post.data.date.toLocaleDateString('en-US', {
 
 <style>
   .post {
-    padding-top: 1rem;
+    padding-top: var(--space-sm);
   }
 
   header {
-    margin-bottom: 2.5rem;
+    margin-bottom: var(--space-lg);
   }
 
-  time {
+  .meta {
+    margin: 0 0 var(--space-3xs);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     font-family: var(--font-mono);
     font-size: 0.78rem;
     color: var(--text-muted);
@@ -53,8 +74,12 @@ const formatted = post.data.date.toLocaleDateString('en-US', {
     text-transform: uppercase;
   }
 
+  .meta .dot {
+    color: var(--rule);
+  }
+
   h1 {
-    margin: 0.4rem 0 0.75rem;
+    margin: var(--space-3xs) 0 var(--space-xs);
   }
 
   .description {
@@ -65,9 +90,36 @@ const formatted = post.data.date.toLocaleDateString('en-US', {
     margin: 0;
   }
 
+  /* Anchor links on headings: # reveals on hover */
   .body :global(h2),
   .body :global(h3) {
     margin-top: 2.5rem;
+    position: relative;
+  }
+
+  .body :global(.heading-anchor) {
+    position: absolute;
+    left: -1.5rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 140ms ease;
+    font-weight: normal;
+    font-size: 0.7em;
+    padding: 0 0.2rem;
+  }
+
+  .body :global(h2:hover .heading-anchor),
+  .body :global(h3:hover .heading-anchor),
+  .body :global(.heading-anchor:focus) {
+    opacity: 1;
+  }
+
+  @media (max-width: 720px) {
+    .body :global(.heading-anchor) {
+      left: -1.1rem;
+    }
   }
 
   .body :global(pre) {
@@ -88,11 +140,39 @@ const formatted = post.data.date.toLocaleDateString('en-US', {
     margin: 1.5rem 0;
   }
 
+  .body :global(p) {
+    line-height: 1.7;
+  }
+
+  .body :global(a) {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid
+      color-mix(in oklch, var(--accent) 35%, transparent);
+    transition:
+      border-color 140ms ease,
+      color 140ms ease;
+  }
+
+  .body :global(a:hover) {
+    color: var(--accent-hover);
+    border-bottom-color: currentColor;
+  }
+
   footer {
-    margin-top: 4rem;
-    padding-top: 1.5rem;
+    margin-top: var(--section-gap);
+    padding-top: var(--space-md);
     border-top: 1px solid var(--rule);
     font-family: var(--font-sans);
     font-size: 0.95rem;
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    color: var(--accent-hover);
   }
 </style>

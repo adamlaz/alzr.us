@@ -35,20 +35,10 @@ const posts = (await getCollection('writing', ({ data }) => !data.draft)).sort(
 </BaseLayout>
 
 <style>
-  .kicker {
-    font-family: var(--font-display);
-    font-variation-settings: 'opsz' 18, 'SOFT' 50, 'WONK' 0;
-    font-size: 1.1rem;
-    color: var(--text-soft);
-    margin-bottom: 3rem;
-  }
-
+  /* .kicker is a shared primitive in global.css. The intro gap it carries
+     is the single break before the list -- no extra margin stacked here. */
   .empty {
     color: var(--text-muted);
     font-style: italic;
-  }
-
-  .post-list {
-    margin-top: 2rem;
   }
 </style>
