@@ -16,11 +16,15 @@ commit-msg:
     gitmoji:
       run: |
         FIRST=$(head -1 {1})
-        # Subject must start with a non-alphanumeric (emoji or :shortcode:).
-        if ! printf '%s' "$FIRST" | head -c 4 | grep -qE '^([^a-zA-Z0-9 ]|:[a-z_]+:)'; then
-          echo ""
-          echo "BLOCKED: commit subject must start with a gitmoji."
-          echo "Example: ✨ feat(home): wordmark breath"
-          echo "See CONTRIBUTING.md for the legend."
-          exit 1
+        # Subject must start with a gitmoji (any emoji) or a :shortcode:.
+        # Match in byte mode (LC_ALL=C) over the whole line so multi-byte emoji --
+        # including ones with a variation selector like ♻️ or ⚙️ -- are recognised
+        # whole. The old `head -c 4` sliced six-byte emoji apart and rejected them.
+        if printf '%s' "$FIRST" | LC_ALL=C grep -qE '^([^ -~]|:[a-z0-9_+-]+:)'; then
+          exit 0
         fi
+        echo ""
+        echo "BLOCKED: commit subject must start with a gitmoji (or :shortcode:)."
+        echo "Example: ✨ feat(home): wordmark breath"
+        echo "See CONTRIBUTING.md for the legend."
+        exit 1
