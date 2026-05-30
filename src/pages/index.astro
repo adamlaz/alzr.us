@@ -11,21 +11,12 @@ import Wordmark from '../components/Wordmark.astro';
     <span class="welcome" data-visit-state="loading"></span>
     <Wordmark hero text="alzr.us" />
     <p class="lede">
-      Adam Lazarus. St. Petersburg, FL. I started a web-design business at 13,
-      spent fifteen years building consumer products and co-founding a handful
-      of small companies, and now lead engineering on a consumer-tech team and
-      run an independent advisory practice on the side. On, around, or under
-      the water as often as I can be -- scuba a few times a month, friends
-      spearfish, I record.
+      Adam Lazarus. St. Petersburg, FL. Director of Engineering at a small
+      consumer-tech company. Independent advisory practice bridging business,
+      engineering, and AI. Fifteen years of shipping consumer products,
+      founder-side and operator-side. Scuba a few times a month, skiing when
+      the snow's right.
     </p>
-
-    <ul class="link-list">
-      <li><a href="/writing">Writing</a></li>
-      <li><a href="/projects">Projects</a></li>
-      <li><a href="/now">What I'm on now</a></li>
-      <li><a href="https://github.com/adamlaz" rel="external me" data-no-prerender>GitHub →</a></li>
-      <li><a href="https://www.linkedin.com/in/adamlaz/" rel="external me" data-no-prerender>LinkedIn →</a></li>
-    </ul>
   </section>
 </BaseLayout>
 
@@ -94,29 +85,4 @@ import Wordmark from '../components/Wordmark.astro';
     max-width: var(--measure);
   }
 
-  .link-list {
-    list-style: none;
-    margin: var(--space-xl) 0 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2xs) var(--space-md);
-    font-family: var(--font-sans);
-    font-size: 1rem;
-  }
-
-  .link-list a {
-    text-decoration: none;
-    color: var(--accent);
-    border-bottom: 1px solid color-mix(in oklch, var(--accent) 40%, transparent);
-    padding-bottom: 1px;
-    transition:
-      border-color 140ms ease,
-      color 140ms ease;
-  }
-
-  .link-list a:hover {
-    color: var(--accent-hover);
-    border-bottom-color: currentColor;
-  }
 </style>
