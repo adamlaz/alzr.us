@@ -132,6 +132,8 @@ const ogImageUrl = new URL(ogImage, Astro.site).toString();
     <Footer />
 
     <script>
+      import { init as initKineticType } from '../scripts/kinetic-type';
+
       // Re-apply theme + reattach toggle after view transitions.
       const applyTheme = () => {
         const stored = localStorage.getItem('theme');
@@ -153,9 +155,11 @@ const ogImageUrl = new URL(ogImage, Astro.site).toString();
 
       applyTheme();
       wireToggle();
+      initKineticType();
       document.addEventListener('astro:after-swap', () => {
         applyTheme();
         wireToggle();
+        initKineticType();
       });
     </script>
 

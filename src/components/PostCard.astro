@@ -17,7 +17,7 @@ const formatted = date.toLocaleDateString('en-US', {
 <article class="post-card">
   <a href={href}>
     <time datetime={date.toISOString()}>{formatted}</time>
-    <h2>{title}</h2>
+    <h2 data-kinetic>{title}</h2>
     <p>{description}</p>
   </a>
 </article>

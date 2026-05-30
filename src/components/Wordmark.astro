@@ -13,12 +13,12 @@ const className = ['wordmark', hero ? 'wordmark--hero' : ''].filter(Boolean).joi
   href ? (
     <a href={href} class={className} aria-label="alzr.us home">
       <span class="wordmark__sizer" aria-hidden="true">{text}</span>
-      <span class="wordmark__live">{text}</span>
+      <span class="wordmark__live" data-kinetic>{text}</span>
     </a>
   ) : (
     <span class={className}>
       <span class="wordmark__sizer" aria-hidden="true">{text}</span>
-      <span class="wordmark__live">{text}</span>
+      <span class="wordmark__live" data-kinetic>{text}</span>
     </span>
   )
 }

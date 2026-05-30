@@ -109,6 +109,37 @@
 }
 
 /* ───────────────────────────────────────────────────────────────
+   Kinetic type axes -- registered so they interpolate.
+   `--p` is the per-glyph proximity (0..1) the pointer engine writes; the
+   transition on it (see `.glyph`) is what makes the bloom smooth while JS
+   updates sparsely. The `--base-*` axes inherit into glyphs and are animated
+   by the wordmark settle/breath; registering them keeps that animation smooth
+   instead of snapping between keyframes. `font-variation-settings` itself can't
+   be transitioned, so all easing rides on these numbers + calc().
+   ─────────────────────────────────────────────────────────────── */
+
+@property --p {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+@property --base-opsz {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 14;
+}
+@property --base-soft {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 30;
+}
+@property --base-wonk {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+/* ───────────────────────────────────────────────────────────────
    Semantic tokens
    ─────────────────────────────────────────────────────────────── */
 
@@ -273,20 +304,46 @@ hr {
 
 .wordmark {
   font-family: var(--font-display);
-  font-weight: 500;
   letter-spacing: -0.02em;
   display: inline-grid;
   justify-items: start;
   transition: color 200ms ease;
+
+  /* Kinetic axes: base = rest state, peak = full bloom under the cursor. The
+     shared `.glyph` rule interpolates base -> peak by per-glyph proximity.
+     Nav defaults: opsz stays modest (base 14 -> 28) so the letters swell rather
+     than narrow, and weight does the heavy lifting (500 -> 850) -- at ~1rem the
+     weight swing is what reads, where the hero leans on opsz/soft at display
+     size. The hero overrides --peak-opsz back to 144 (its base) and its own
+     --peak-wght so its bloom keeps the same soften/embolden motion. */
+  --base-wght: 500;
+  --peak-opsz: 28;
+  --peak-soft: 100;
+  --peak-wonk: 1;
+  --peak-wght: 850;
 }
 
 /* The sizer + live layers share one grid cell. The hidden sizer is pinned to
    the idle (widest) optical size, so the box is reserved at its largest width
-   and the animating live layer can shrink without resizing the box. That kills
+   and the blooming live layer can narrow without resizing the box. That kills
    the hover reflow that shifted the nav left. */
 .wordmark__sizer,
 .wordmark__live {
   grid-area: 1 / 1;
+}
+
+/* Nav variant: pin the live layer out of flow so only the fixed-width sizer
+   sizes the grid track. Per-glyph spans shape a hair differently than the
+   single-run sizer, so without this the column jitters sub-pixel on bloom and
+   nudges the nav. The hero has nothing to its right, so its live layer stays
+   in flow (it's what gives the element its size). */
+.wordmark:not(.wordmark--hero) {
+  position: relative;
+}
+
+.wordmark:not(.wordmark--hero) .wordmark__live {
+  position: absolute;
+  inset: 0;
 }
 
 .wordmark__sizer {
@@ -294,19 +351,22 @@ hr {
   font-variation-settings: 'opsz' 14, 'SOFT' 30, 'WONK' 0;
 }
 
+/* Fallback for the un-split case (engine off, e.g. reduced motion / touch):
+   render the whole live layer from the base axes. Once the engine splits it
+   into `.glyph` spans, those take over per-letter. */
 .wordmark__live {
-  font-variation-settings: 'opsz' 14, 'SOFT' 30, 'WONK' 0;
-  transition: font-variation-settings 480ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  font-variation-settings:
+    'opsz' var(--base-opsz),
+    'SOFT' var(--base-soft),
+    'WONK' var(--base-wonk),
+    'wght' var(--base-wght);
 }
 
-.wordmark:hover,
-.wordmark:focus-visible {
+/* Link-scoped: the nav wordmark is an <a> (home), so cobalt-on-hover is a real
+   affordance. The hero is a decorative <span> -- it blooms but never colors. */
+a.wordmark:hover,
+a.wordmark:focus-visible {
   color: var(--accent);
-}
-
-.wordmark:not(.wordmark--hero):hover .wordmark__live,
-.wordmark:not(.wordmark--hero):focus-visible .wordmark__live {
-  font-variation-settings: 'opsz' 144, 'SOFT' 100, 'WONK' 1;
 }
 
 /* Hero stands alone with nothing to its right, so it needs no width reservation
@@ -314,15 +374,20 @@ hr {
 .wordmark--hero {
   font-size: clamp(4rem, 12vw, 9rem);
   line-height: 0.9;
+  --peak-opsz: 144;
+  --peak-wght: 640;
 }
 
 .wordmark--hero .wordmark__sizer {
   display: none;
 }
 
+/* Hero drives its base axes through settle (then breath); the static values
+   here are the resting state used when motion is reduced. */
 .wordmark--hero .wordmark__live {
-  font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 0;
-  transition: none;
+  --base-opsz: 144;
+  --base-soft: 30;
+  --base-wonk: 0;
   animation: wordmark-settle 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -334,9 +399,14 @@ hr {
   }
 }
 
+/* Settle + breath animate the registered `--base-*` numbers (not
+   `font-variation-settings`, which can't be interpolated), so glyphs blend the
+   live base with their proximity delta seamlessly. */
 @keyframes wordmark-settle {
   0% {
-    font-variation-settings: 'opsz' 14, 'SOFT' 100, 'WONK' 1;
+    --base-opsz: 14;
+    --base-soft: 100;
+    --base-wonk: 1;
     opacity: 0;
     transform: translateY(0.4em);
   }
@@ -344,23 +414,69 @@ hr {
     opacity: 1;
   }
   100% {
-    font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 0;
+    --base-opsz: 144;
+    --base-soft: 30;
+    --base-wonk: 0;
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Breath: a slow, now-perceptible axis oscillation -- opsz eases the letters
-   from display-tight toward a softer optical size while SOFT rounds the
-   terminals and a faint WONK leans in. Hero only, motion-gated. Continuous
-   from the settle end state (opsz 144) for a seamless handoff. */
+/* Breath: a slow, perceptible axis oscillation -- opsz eases the letters from
+   display-tight toward a softer optical size while SOFT rounds the terminals
+   and a faint WONK leans in. Hero only, motion-gated. Continuous from the
+   settle end state (opsz 144) for a seamless handoff. */
 @keyframes wordmark-breath {
   from {
-    font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 0;
+    --base-opsz: 144;
+    --base-soft: 30;
+    --base-wonk: 0;
   }
   to {
-    font-variation-settings: 'opsz' 108, 'SOFT' 76, 'WONK' 0.5;
+    --base-opsz: 108;
+    --base-soft: 76;
+    --base-wonk: 0.5;
   }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   Kinetic glyphs -- shared by the wordmark + writing titles.
+   Each glyph renders base + (peak - base) * proximity per axis. The transition
+   rides on `--p` (a registered number) so the bloom eases even though the
+   engine writes target values sparsely. Axis-only: the effect is the optical
+   size, softness, and weight swelling toward the cursor -- no color, no glow.
+   ─────────────────────────────────────────────────────────────── */
+
+[data-kinetic] .glyph {
+  font-variation-settings:
+    'opsz' calc(var(--base-opsz) + (var(--peak-opsz) - var(--base-opsz)) * var(--p)),
+    'SOFT' calc(var(--base-soft) + (var(--peak-soft) - var(--base-soft)) * var(--p)),
+    'WONK' calc(var(--base-wonk) + (var(--peak-wonk) - var(--base-wonk)) * var(--p)),
+    'wght' calc(var(--base-wght) + (var(--peak-wght) - var(--base-wght)) * var(--p));
+  transition: --p 300ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Writing titles join the kinetic system. Base mirrors today's h1/h2 axes so
+   the rest state is pixel-identical; peak adds the bloom. */
+.post header h1[data-kinetic],
+.post-card h2[data-kinetic] {
+  --base-wonk: 0;
+  --base-wght: 500;
+  --peak-soft: 90;
+  --peak-wonk: 1;
+  --peak-wght: 640;
+}
+
+.post header h1[data-kinetic] {
+  --base-opsz: 144;
+  --base-soft: 30;
+  --peak-opsz: 144;
+}
+
+.post-card h2[data-kinetic] {
+  --base-opsz: 72;
+  --base-soft: 40;
+  --peak-opsz: 120;
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -403,7 +519,8 @@ hr {
   }
 
   .wordmark,
-  .wordmark--hero {
+  .wordmark--hero,
+  [data-kinetic] .glyph {
     animation: none;
     transition: none;
   }
