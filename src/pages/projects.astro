@@ -6,7 +6,7 @@ const projects = [
     title: 'Independent advisory',
     period: '2024 -- present',
     summary:
-      "I run a small engineering consultancy. DORA / Westrum / DevEx audits, AI-augmentation playbooks, leadership coaching. Engagements are by referral.",
+      "I run a small engineering consultancy. DORA / Westrum / DevEx audits for engineering orgs in the 50-200 range. AI-augmented engineering rollouts on small teams. Occasional 1:1 work with newly-promoted directors. By referral.",
   },
   {
     title: 'Vault automation',
@@ -18,14 +18,35 @@ const projects = [
     title: 'Day job',
     period: '2024 -- present',
     summary:
-      "Director of Engineering at a consumer-tech company that helps families preserve their memories. I'm building the playbook for AI-augmented engineering on a small team. Less ticket-pushing, more taste.",
+      "Director of Engineering at a small consumer-tech company. The bet is AI-augmented engineering on a team that ships product, not tickets. Less middle-management, more taste.",
+  },
+];
+
+const priorWork = [
+  {
+    period: '2018 -- 2024',
+    title: 'Consumer health platform',
+    summary:
+      'Director of Product & Software Dev at a large consumer-health ecommerce platform. Owned the P&L for mobile + web, scaled the engineering org through a CPaaS migration, ran the design system and DevEx workstream.',
+  },
+  {
+    period: '2010 -- 2018',
+    title: 'Multi-venture founder era',
+    summary:
+      "Co-founder and CTO across four small companies -- one stuck, three didn't. Built early-stage iOS, fintech-adjacent web, and the systems plumbing for a couple of vertical SaaS swings.",
+  },
+  {
+    period: '2010 -- 2016',
+    title: 'iOS apps shipped',
+    summary:
+      "Native iOS for a backend-as-a-service (open source, ~200 repos in the org), a TensorFlow self-driving game demo that had a moment in 2017, a couple of consumer apps that didn't.",
   },
 ];
 ---
 
-<BaseLayout title="Projects -- alzr.us" description="What Adam Lazarus is currently building.">
+<BaseLayout title="Projects -- alzr.us" description="What Adam Lazarus is currently building, and the prior work that got him here.">
   <h1>Projects</h1>
-  <p class="kicker">A short list. The ones with real time invested.</p>
+  <p class="kicker">A short list. The ones with real time invested in them.</p>
 
   <ul class="project-list">
     {
@@ -41,20 +62,34 @@ const projects = [
     }
   </ul>
 
+  <section class="prior">
+    <h2 class="prior-title">Prior work</h2>
+    <p class="prior-kicker">
+      Fifteen years before the current chapter. Anonymized on purpose -- the
+      methods stay, the affiliations don't.
+    </p>
+    <ol class="timeline">
+      {
+        priorWork.map((p) => (
+          <li>
+            <span class="timeline-period">{p.period}</span>
+            <div class="timeline-body">
+              <h3>{p.title}</h3>
+              <p>{p.summary}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
   <p class="more">
     Public code lives at <a href="https://github.com/adamlaz" rel="external me" data-no-prerender>github.com/adamlaz</a>.
   </p>
 </BaseLayout>
 
 <style>
-  .kicker {
-    font-family: var(--font-display);
-    font-variation-settings: 'opsz' 18, 'SOFT' 50, 'WONK' 0;
-    font-size: 1.1rem;
-    color: var(--text-soft);
-    margin-bottom: 3rem;
-  }
-
+  /* .kicker is a shared primitive in global.css. */
   .project-list {
     list-style: none;
     margin: 0;
@@ -62,7 +97,7 @@ const projects = [
   }
 
   .project-list li {
-    padding: 1.5rem 0;
+    padding: var(--list-gap) 0;
     border-bottom: 1px solid var(--rule);
   }
 
@@ -74,8 +109,8 @@ const projects = [
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 1rem;
-    margin-bottom: 0.5rem;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-2xs);
     flex-wrap: wrap;
   }
 
@@ -100,8 +135,84 @@ const projects = [
     margin: 0;
   }
 
+  /* Prior work -- typographic micro-timeline. A major section break
+     (rule + generous space), then a denser sub-list for deliberate
+     rhythm contrast against the top-level project list above. */
+  .prior {
+    margin-top: var(--section-gap);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--rule);
+  }
+
+  .prior-title {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 32, 'SOFT' 50, 'WONK' 0;
+    font-size: 1.4rem;
+    color: var(--text);
+    margin: 0 0 var(--space-2xs);
+  }
+
+  .prior-kicker {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 16, 'SOFT' 60, 'WONK' 0;
+    font-style: italic;
+    color: var(--text-soft);
+    margin: 0 0 var(--space-lg);
+  }
+
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .timeline li {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .timeline li:last-child {
+    border-bottom: 0;
+  }
+
+  .timeline-period {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding-top: 0.4rem;
+  }
+
+  .timeline h3 {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 28, 'SOFT' 50, 'WONK' 0;
+    font-size: 1.15rem;
+    color: var(--text);
+    margin: 0 0 var(--space-3xs);
+  }
+
+  .timeline p {
+    color: var(--text-soft);
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  @media (max-width: 540px) {
+    .timeline li {
+      grid-template-columns: 1fr;
+      gap: var(--space-3xs);
+    }
+    .timeline-period {
+      padding-top: 0;
+    }
+  }
+
   .more {
-    margin-top: 3rem;
+    margin-top: var(--space-xl);
     font-size: 0.95rem;
     color: var(--text-muted);
   }
