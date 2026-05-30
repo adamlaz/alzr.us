@@ -2,8 +2,9 @@
 const year = new Date().getFullYear();
 
 const links = [
-  { href: 'https://github.com/adamlaz', label: 'GitHub' },
-  { href: 'https://www.linkedin.com/in/adamlaz/', label: 'LinkedIn' },
+  { href: '/rss.xml', label: 'RSS', external: false },
+  { href: 'https://github.com/adamlaz', label: 'GitHub', external: true },
+  { href: 'https://www.linkedin.com/in/adamlaz/', label: 'LinkedIn', external: true },
 ];
 
 // Vercel injects these at build time. Fall back to a local-build label.
@@ -22,9 +23,12 @@ const buildHref = sha ? `https://github.com/adamlaz/alzr.us/commit/${sha}` : und
     <p>© {year} Adam Lazarus</p>
     <ul>
       {
-        links.map(({ href, label }) => (
+        links.map(({ href, label, external }) => (
           <li>
-            <a href={href} rel="external me" data-no-prerender>
+            <a
+              href={href}
+              {...(external ? { rel: 'external me', 'data-no-prerender': true } : {})}
+            >
               {label}
             </a>
           </li>
@@ -48,9 +52,9 @@ const buildHref = sha ? `https://github.com/adamlaz/alzr.us/commit/${sha}` : und
 
 <style>
   .site-footer {
-    max-width: 68ch;
+    max-width: var(--measure-wide);
     margin: 0 auto;
-    padding: 0 1.5rem 3rem;
+    padding: 0 var(--page-pad-x) var(--space-xl);
     font-family: var(--font-sans);
     font-size: 0.875rem;
     color: var(--text-muted);
@@ -60,7 +64,7 @@ const buildHref = sha ? `https://github.com/adamlaz/alzr.us/commit/${sha}` : und
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space-sm);
     flex-wrap: wrap;
   }
 
@@ -69,7 +73,7 @@ const buildHref = sha ? `https://github.com/adamlaz/alzr.us/commit/${sha}` : und
     margin: 0;
     padding: 0;
     display: flex;
-    gap: 1.25rem;
+    gap: var(--space-md);
   }
 
   .row a {
@@ -87,7 +91,7 @@ const buildHref = sha ? `https://github.com/adamlaz/alzr.us/commit/${sha}` : und
   }
 
   .build {
-    margin: 1.5rem 0 0;
+    margin: var(--space-md) 0 0;
     font-family: var(--font-mono);
     font-size: 0.72rem;
     color: var(--text-muted);

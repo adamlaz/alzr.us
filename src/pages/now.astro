@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const updated = new Date('2026-05-28');
+const updated = new Date('2026-05-30');
 const formatted = updated.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
@@ -18,24 +18,28 @@ const formatted = updated.toLocaleDateString('en-US', {
 
   <ul class="now-list">
     <li>
-      <strong>Day job-</strong> building the playbook for AI-augmented engineering on a small team.
-      Less ticket-pushing, more taste.
+      <strong>Day job-</strong> in the operator chair this month, not the founder one.
+      Spec defense, holding the quality line on a release the team is ready to ship.
+      Tested directly by <a href="/writing/founder-to-operator">the operator-mode post</a> above.
     </li>
     <li>
-      <strong>Advisory engagements-</strong> wrapping a multi-month engineering org assessment
-      using a DORA / Westrum / DevEx kit. The findings have been useful enough to publish.
+      <strong>Advisory-</strong> a multi-month DORA / Westrum / DevEx engagement wraps in June.
+      Findings useful enough to publish; the sanitized version goes in the writing queue after.
     </li>
     <li>
-      <strong>Writing-</strong> first long-form posts in queue: parallel Claude Code agents for hiring
-      research, the writing-voice guide for AI assistants, and the vault as a personal automation platform.
+      <strong>Writing-</strong> first three posts shipped:
+      <a href="/writing/parallel-agents-for-hiring-research">parallel Claude Code agents for hiring research</a>,
+      <a href="/writing/writing-voice-guide-for-ai-assistants">the writing-voice guide for AI assistants</a>,
+      and <a href="/writing/founder-to-operator">what fifteen years of founder/CTO work taught me about operator-mode</a>.
+      Cadence target: one post a month.
     </li>
     <li>
-      <strong>Vault-</strong> extending the daily 6 AM pipeline with research-narrative folds and a
-      Vercel deploy logger. Personal data infrastructure, paid in mornings.
+      <strong>Vault-</strong> extending the daily 6 AM pipeline with research-narrative folds
+      and a Vercel deploy logger. Personal data infrastructure, paid in mornings.
     </li>
     <li>
-      <strong>Reading-</strong> the new wave of agent-orchestration patterns out of Anthropic and
-      the Claude Code SDK. Lots to steal.
+      <strong>Reading-</strong> agent-orchestration patterns out of Anthropic and the Claude
+      Code SDK docs, plus the Karpathy autoresearch piece. Lots to steal.
     </li>
   </ul>
 
@@ -45,14 +49,7 @@ const formatted = updated.toLocaleDateString('en-US', {
 </BaseLayout>
 
 <style>
-  .kicker {
-    font-family: var(--font-display);
-    font-variation-settings: 'opsz' 18, 'SOFT' 50, 'WONK' 0;
-    font-size: 1.1rem;
-    color: var(--text-soft);
-    margin-bottom: 3rem;
-  }
-
+  /* .kicker is a shared primitive in global.css. */
   .now-list {
     list-style: none;
     margin: 0;
@@ -60,7 +57,7 @@ const formatted = updated.toLocaleDateString('en-US', {
   }
 
   .now-list li {
-    padding: 1.25rem 0;
+    padding: var(--list-gap) 0;
     border-bottom: 1px solid var(--rule);
     color: var(--text);
   }
@@ -74,11 +71,11 @@ const formatted = updated.toLocaleDateString('en-US', {
     font-variation-settings: 'opsz' 18, 'SOFT' 50, 'WONK' 0;
     font-weight: 500;
     color: var(--text);
-    margin-right: 0.5rem;
+    margin-right: var(--space-2xs);
   }
 
   .updated {
-    margin-top: 3rem;
+    margin-top: var(--space-xl);
     font-family: var(--font-mono);
     font-size: 0.82rem;
     color: var(--text-muted);

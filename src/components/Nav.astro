@@ -41,10 +41,10 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 1.5rem;
-    max-width: 68ch;
+    gap: var(--space-md);
+    max-width: var(--measure-wide);
     margin: 0 auto;
-    padding: 1.5rem 1.5rem 0;
+    padding: var(--page-pad-x) var(--page-pad-x) 0;
   }
 
   nav ul {
@@ -52,7 +52,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
     margin: 0;
     padding: 0;
     display: flex;
-    gap: 1.25rem;
+    gap: var(--space-sm);
     justify-content: center;
     font-family: var(--font-sans);
     font-size: 0.95rem;
