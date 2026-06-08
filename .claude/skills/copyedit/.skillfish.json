@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "copyedit",
+  "owner": "agude",
+  "repo": "agude.github.io",
+  "path": ".claude/skills/copyedit",
+  "branch": "main",
+  "sha": "90d17762262749366108d48752c9c4dcd22e2fb9",
+  "source": "manual"
+}
