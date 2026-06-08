@@ -10,13 +10,13 @@ const { attribution } = Astro.props;
   <blockquote>
     <slot />
   </blockquote>
-  {attribution && <figcaption>{attribution}</figcaption>}
+  {attribution && <figcaption class="eyebrow">{attribution}</figcaption>}
 </figure>
 
 <style>
   .pull-quote {
-    margin: 3rem 0;
-    padding: 2rem 0;
+    margin: var(--space-xl) 0;
+    padding: var(--space-lg) 0;
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
     text-align: center;
@@ -40,11 +40,7 @@ const { attribution } = Astro.props;
   }
 
   figcaption {
-    margin-top: 1rem;
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    /* visual recipe comes from the shared .eyebrow utility */
+    margin-top: var(--space-sm);
   }
 </style>
