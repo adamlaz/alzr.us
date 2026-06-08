@@ -8,14 +8,15 @@ import Wordmark from '../components/Wordmark.astro';
   description="Adam Lazarus -- engineering leader at a consumer-tech company, independent advisor at the business / engineering / AI seam. Long-form posts on AI-augmented engineering and what works on small teams. St. Petersburg, FL."
 >
   <section class="hero">
+    <h1 class="visually-hidden">Adam Lazarus</h1>
     <span class="welcome" data-visit-state="loading"></span>
     <Wordmark hero text="alzr.us" />
     <p class="lede">
-      Adam Lazarus. St. Petersburg, FL. Director of Engineering at a small
-      consumer-tech company; independent advisor at the business /
-      engineering / AI seam. Two decades of shipping consumer products,
-      founder-side and operator-side. Scuba a few times a month, skiing when
-      the snow's right.
+      Adam Lazarus. St. Petersburg, FL. Director of Engineering at a
+      consumer-tech company; advisor at the business /
+      engineering / AI seam. Two decades of building teams and shipping consumer
+      products and bleeding-edge tech, founder-side and operator-side. Scuba a
+      few times a month, skiing when the snow's right.
     </p>
   </section>
 </BaseLayout>
@@ -50,9 +51,9 @@ import Wordmark from '../components/Wordmark.astro';
   .welcome {
     display: block;
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: var(--text-eyebrow);
     color: var(--text-muted);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: lowercase;
     margin-bottom: var(--space-sm);
     min-height: 1.2em;
