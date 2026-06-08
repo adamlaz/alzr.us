@@ -80,12 +80,33 @@ const buildHref = sha ? `https://github.com/adamlaz/alzr.us/commit/${sha}` : und
     color: inherit;
     text-decoration: none;
     border-bottom: 1px solid transparent;
+    position: relative;
+    display: inline-block;
     transition:
       color 120ms ease,
       border-color 120ms ease;
   }
 
-  .row a:hover {
+  /* 44px tap strip without vertical padding, so the hover underline keeps
+     hugging the text baseline. The 24px row gap stops strips from touching. */
+  .row a::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: var(--tap);
+    transform: translateY(-50%);
+  }
+
+  @media (hover: hover) {
+    .row a:hover {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+  }
+
+  .row a:active {
     color: var(--accent);
     border-bottom-color: var(--accent);
   }
@@ -95,18 +116,36 @@ const buildHref = sha ? `https://github.com/adamlaz/alzr.us/commit/${sha}` : und
     font-family: var(--font-mono);
     font-size: 0.72rem;
     color: var(--text-muted);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-eyebrow);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2xs);
   }
 
   .build a {
     color: inherit;
     text-decoration: none;
+    position: relative;
+    display: inline-block;
   }
 
-  .build a:hover {
+  .build a::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: var(--tap);
+    transform: translateY(-50%);
+  }
+
+  @media (hover: hover) {
+    .build a:hover {
+      color: var(--accent);
+    }
+  }
+
+  .build a:active {
     color: var(--accent);
   }
 
@@ -132,6 +171,22 @@ const buildHref = sha ? `https://github.com/adamlaz/alzr.us/commit/${sha}` : und
     }
     50% {
       opacity: 0.65;
+    }
+  }
+
+  /* md (40rem): below this width the copyright + links wrap anyway, and
+     space-between does nothing once wrapped. Stack them as a deliberate column.
+     Bumping the build margin to --space-lg pushes its 44px tap strip clear of
+     the link row's strip (they'd otherwise overlap once everything is stacked
+     left and the build line is a link in production). */
+  @media (max-width: 40rem) {
+    .row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-md);
+    }
+    .build {
+      margin-top: var(--space-lg);
     }
   }
 </style>
