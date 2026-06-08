@@ -10,7 +10,7 @@ const formatted = updated.toLocaleDateString('en-US', {
 ---
 
 <BaseLayout title="Now -- alzr.us" description="What Adam Lazarus is working on this month.">
-  <h1>Now</h1>
+  <h1 class="route-title" transition:name="route-now">Now</h1>
   <p class="kicker">
     A <a href="https://nownownow.com/about" rel="external">/now page</a>. What I'm actually
     working on this month. Refreshed every few weeks.
@@ -45,7 +45,7 @@ const formatted = updated.toLocaleDateString('en-US', {
   </ul>
 
   <p class="updated">
-    <em>Last updated: <time datetime={updated.toISOString()}>{formatted}</time></em>
+    Last updated: <time datetime={updated.toISOString()}>{formatted}</time>
   </p>
 </BaseLayout>
 
@@ -78,7 +78,7 @@ const formatted = updated.toLocaleDateString('en-US', {
   .updated {
     margin-top: var(--space-xl);
     font-family: var(--font-mono);
-    font-size: 0.82rem;
+    font-size: var(--text-eyebrow);
     color: var(--text-muted);
   }
 </style>

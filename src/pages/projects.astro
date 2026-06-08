@@ -63,7 +63,7 @@ const priorWork = [
 ---
 
 <BaseLayout title="Work -- alzr.us" description="What Adam Lazarus is currently building, and the prior work that got him here.">
-  <h1>Work</h1>
+  <h1 class="route-title" transition:name="route-projects">Work</h1>
   <p class="kicker">A short list. The ones with real time invested in them.</p>
 
   <ul class="project-list">
@@ -72,7 +72,7 @@ const priorWork = [
         <li>
           <header>
             <h2>{p.title}</h2>
-            <span class="period">{p.period}</span>
+            <span class="period eyebrow">{p.period}</span>
           </header>
           <p>{p.summary}</p>
         </li>
@@ -90,7 +90,7 @@ const priorWork = [
       {
         priorWork.map((p) => (
           <li>
-            <span class="timeline-period">{p.period}</span>
+            <span class="timeline-period eyebrow">{p.period}</span>
             <div class="timeline-body">
               <h3>{p.title}</h3>
               <p>{p.summary}</p>
@@ -102,7 +102,7 @@ const priorWork = [
   </section>
 
   <p class="more">
-    Public code lives at <a href="https://github.com/adamlaz" rel="external me" data-no-prerender>github.com/adamlaz</a>.
+    Public code lives at <a href="https://github.com/adamlaz" rel="external" data-no-prerender>github.com/adamlaz</a>.
   </p>
 </BaseLayout>
 
@@ -135,17 +135,10 @@ const priorWork = [
   .project-list h2 {
     font-family: var(--font-display);
     font-variation-settings: 'opsz' 32, 'SOFT' 50, 'WONK' 0;
-    font-size: 1.4rem;
+    /* matches the PostCard list-item title so /writing and /projects align */
+    font-size: 1.5rem;
     color: var(--text);
     margin: 0;
-  }
-
-  .period {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
 
   .project-list p {
@@ -197,11 +190,7 @@ const priorWork = [
   }
 
   .timeline-period {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    /* visual recipe comes from the shared .eyebrow utility */
     padding-top: 0.4rem;
   }
 
@@ -219,10 +208,13 @@ const priorWork = [
     line-height: 1.55;
   }
 
-  @media (max-width: 540px) {
+  /* md (40rem): stack the period above its entry, matching the width the nav
+     reflows at so the whole site drops to its small layout together. The 8px
+     gap (was 4px) keeps the stacked period from crowding the heading. */
+  @media (max-width: 40rem) {
     .timeline li {
       grid-template-columns: 1fr;
-      gap: var(--space-3xs);
+      gap: var(--space-2xs);
     }
     .timeline-period {
       padding-top: 0;

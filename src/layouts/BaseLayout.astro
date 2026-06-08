@@ -10,20 +10,23 @@ interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  ogImageAlt?: string;
   ogType?: 'website' | 'article';
   publishedTime?: Date;
 }
 
 const {
   title = 'Adam Lazarus',
-  description = "Adam Lazarus. Fifteen years of shipping consumer products, founder-side and operator-side. St. Petersburg, FL. Long-form posts on AI-augmented engineering and what works on small teams.",
+  description = "Adam Lazarus. Two decades of shipping consumer products, founder-side and operator-side. St. Petersburg, FL. Long-form posts on AI-augmented engineering and what works on small teams.",
   ogImage = '/og.png',
+  ogImageAlt,
   ogType = 'website',
   publishedTime,
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const ogImageUrl = new URL(ogImage, Astro.site).toString();
+const ogImageAltText = ogImageAlt ?? title;
 ---
 
 <!doctype html>
@@ -64,6 +67,10 @@ const ogImageUrl = new URL(ogImage, Astro.site).toString();
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAltText} />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="alzr.us" />
     {publishedTime && (
       <meta
@@ -75,6 +82,7 @@ const ogImageUrl = new URL(ogImage, Astro.site).toString();
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={ogImageAltText} />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link
@@ -94,9 +102,26 @@ const ogImageUrl = new URL(ogImage, Astro.site).toString();
       })();
     </script>
 
-    <!-- Speculation Rules: prerender internal links on hover (Chromium). -->
+    <!-- Speculation Rules (Chromium).
+         prerender: full render on hover/pointerdown -- desktop's big win.
+         prefetch:  eager document fetch so touch (no hover) still gets a head
+                    start. Prefetch only caches the response, so the ClientRouter
+                    still drives the same-document title morph from cache; prerender
+                    activation would bypass it, so we don't escalate that. -->
     <script is:inline type="speculationrules">
       {
+        "prefetch": [
+          {
+            "source": "document",
+            "where": {
+              "and": [
+                { "href_matches": "/*" },
+                { "not": { "selector_matches": "[rel~=external], [data-no-prerender]" } }
+              ]
+            },
+            "eagerness": "eager"
+          }
+        ],
         "prerender": [
           {
             "source": "document",
@@ -135,11 +160,20 @@ const ogImageUrl = new URL(ogImage, Astro.site).toString();
       import { init as initKineticType } from '../scripts/kinetic-type';
 
       // Re-apply theme + reattach toggle after view transitions.
+      // Name the action's destination, so the control announces its state.
+      const syncToggleLabel = (theme: string) => {
+        const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+        if (btn) {
+          btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+        }
+      };
+
       const applyTheme = () => {
         const stored = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = stored ?? (prefersDark ? 'dark' : 'light');
         document.documentElement.dataset.theme = theme;
+        syncToggleLabel(theme);
       };
 
       const wireToggle = () => {
@@ -150,15 +184,81 @@ const ogImageUrl = new URL(ogImage, Astro.site).toString();
           const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
           localStorage.setItem('theme', next);
           document.documentElement.dataset.theme = next;
+          syncToggleLabel(next);
+        });
+      };
+
+      // Smart sticky header (mobile): hide on scroll-down, reveal on scroll-up.
+      // The sticky position + translate live in CSS, gated to the mobile layout;
+      // this only toggles data-hidden. Bound once on window so it survives
+      // view-transition swaps; lastY resets per navigation so the first scroll on
+      // a new page reads the right direction.
+      let lastY = 0;
+      let stickyTicking = false;
+      const SHOW_NEAR_TOP = 64;
+
+      const updateSticky = () => {
+        stickyTicking = false;
+        const nav = document.querySelector('[data-sticky-nav]');
+        if (!nav) return;
+        const y = window.scrollY;
+        if (y < SHOW_NEAR_TOP || y < lastY) {
+          nav.removeAttribute('data-hidden'); // near top, or scrolling up
+        } else if (y > lastY) {
+          nav.setAttribute('data-hidden', 'true'); // scrolling down
+        }
+        lastY = y;
+      };
+
+      const onStickyScroll = () => {
+        if (stickyTicking) return;
+        stickyTicking = true;
+        requestAnimationFrame(updateSticky);
+      };
+
+      const wireStickyHeader = () => {
+        const w = window as Window & { __stickyBound?: boolean };
+        if (w.__stickyBound) return;
+        // No hide/show under reduced motion -- the bar just stays put.
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        w.__stickyBound = true;
+        lastY = window.scrollY;
+        window.addEventListener('scroll', onStickyScroll, { passive: true });
+      };
+
+      // Nav-link <-> page-title morph, REVERSE ONLY. Nav links and the route pages'
+      // <h1>s share static route-* names. The forward direction (small nav label
+      // growing into a big destination title) flew the large letters at the viewer
+      // -- too in-your-face. So keep only the reverse: the OUTGOING page's title
+      // recedes (shrinks) into the destination's matching nav label. Forward's
+      // SOURCE is the clicked nav link, so strip the route names off the current
+      // page's nav links just before the view-transition snapshot
+      // (before-preparation runs before startViewTransition) -- forward can't fire.
+      // The current <h1> keeps its name and becomes the reverse source; the
+      // destination's nav link (fresh, in the incoming doc) is the reverse target.
+      // post-title-* (the post-card morph) is untouched. Inline 'none' beats Astro's
+      // scoped transition:name rule -- '' would just fall back to it.
+      const wireNavMorph = () => {
+        const w = window as Window & { __navMorphBound?: boolean };
+        if (w.__navMorphBound) return;
+        w.__navMorphBound = true;
+        document.addEventListener('astro:before-preparation', () => {
+          for (const a of document.querySelectorAll<HTMLElement>('[data-sticky-nav] nav a')) {
+            a.style.viewTransitionName = 'none';
+          }
         });
       };
 
       applyTheme();
       wireToggle();
+      wireStickyHeader();
+      wireNavMorph();
       initKineticType();
       document.addEventListener('astro:after-swap', () => {
         applyTheme();
         wireToggle();
+        wireStickyHeader();
+        lastY = window.scrollY;
         initKineticType();
       });
     </script>
