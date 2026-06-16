@@ -41,34 +41,48 @@ anything. The technical problem is the one I cared about.
 
 ## The June 2026 landscape, fast
 
-The market splits cleanly on this one task.<Note id="1" />
+The market splits cleanly on this one task.<Note id="1" /> Most of the 2026
+headline models are the wrong tool: they write a whole new track, and I already
+have a track.
 
-Most of the headline models are the wrong tool. LeVo and the SongGeneration
-line, ACE-Step, the open-weights generators that got the demos this spring,
-all write a whole track from a prompt and lyrics. Brilliant, irrelevant. They
-make new songs; I have a song.
+| Tool | What it is | Does this task? |
+|---|---|---|
+| LeVo, SongGeneration, ACE-Step | Open-weights song generators | No. They write new songs from a prompt. Brilliant, irrelevant. |
+| Suno v5.5 | Commercial covers + section-replace | Only on tracks Suno itself generated, not an arbitrary commercial master. |
+| Lyria 3 Pro (Vertex) | Commercial prompt-to-song | Generates, but over-refuses proper nouns in vocals. More below. |
+| YingMusic | Open-source diffusion melody-editor | The one built for exactly this: a melody clip plus edited lyrics, no manual alignment. |
 
-The commercial editors are closer. Suno's v5.5 added a covers-and-replace flow
-that genuinely does section-level edits, but only on tracks Suno itself
-generated, not on an arbitrary commercial master. Google's Lyria 3 Pro
-generates from a prompt through Vertex. Hold that one; it comes back later.
-
-And then there's the one open-source model built for exactly this. YingMusic
-came out of an academic lab and a games company in March 2026. It's diffusion
-based, around seven hundred million parameters, and it takes a melody clip
-plus modified lyrics plus an optional timbre reference and edits the vocal
-without you hand-aligning a single syllable. It outputs clean 44.1 kHz stereo.
-On paper it is the tool. Six months ago it did not exist.
+YingMusic came out of an academic lab and a games company in March 2026, around
+seven hundred million parameters, clean 44.1 kHz stereo, no syllable-aligning by
+hand. On paper it is the tool. Six months ago it did not exist.
 
 ## The part the demo videos skip
 
 I cloned it onto an M4 Max and started paying the tax nobody films. The model
-ships CUDA-first, so getting it onto Apple's GPU meant teaching its device
-selector about Metal, stripping a CUDA-only quantization dependency that has no
-business on a Mac, and pinning an audio-decode library to the one version that
-matches the ABI of the PyTorch I had. Then the phoneme step crashed because it
-couldn't find the speech library underneath it, until I pointed an environment
-variable at the exact Homebrew path of the dylib.
+ships CUDA-first; getting it onto Apple's GPU was four small patches, none hard,
+all the part the demos skip:
+
+```python
+# 1. route the model to Apple's GPU (the branch the repo didn't have)
+def get_device():
+    if torch.cuda.is_available():
+        return "cuda:0"
+    if torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+# 2. a CUDA-only quantization dep that has no business on a Mac
+#    requirements.txt: bitsandbytes==0.48.1; sys_platform != "darwin"
+
+# 3. pin the audio decoder to the build that matches PyTorch 2.6's ABI
+#    requirements.txt: torchcodec==0.10.0
+
+# 4. point phonemizer at the espeak dylib it can't find on macOS
+os.environ.setdefault(
+    "PHONEMIZER_ESPEAK_LIBRARY",
+    "/opt/homebrew/.../libespeak-ng.dylib",
+)
+```
 
 None of that is hard. All of it is the part the demo videos skip. Forty-five
 minutes of yak-shaving stood between "git clone" and the first sound, and in my
@@ -129,22 +143,25 @@ removed the name itself, and it generated happily.
 
 <Callout variant="note" title="Where the gate actually sits">
   Lyria's filter wasn't objecting to a real person. It blocks proper nouns in
-  sung lyrics as a class. A name in a vocal line trips it whether the name is
+  sung lyrics as a class.<Note id="2" /> A name in a vocal line trips it whether the name is
   a celebrity or your buddy. The cloud tool over-refuses by category, which is
   a defensible safety choice and a useless one for the thing I was doing.
 </Callout>
 
 ## The honest verdict
 
-Three tiers of the stack, each wrong in its own way. The general-purpose cloud
-model over-refuses on policy. The general-purpose open-source model
-under-articulates out-of-distribution words. The specialized commercial
-product, Suno's cover-and-replace, actually does the job, and the moment you
-land there you're paying ten dollars a month for a feature instead of building
-a pipeline. The lesson wasn't "open source isn't ready" or "cloud is too
-locked down." It was that picking the right *level* of the stack mattered more
-than picking the most powerful tool, and for this task the right level was a
-paid product I'd been too stubborn to start with.
+Three tiers of the stack, each wrong in its own way:
+
+| Stack level | Tool | Why it failed |
+|---|---|---|
+| General-purpose cloud | Lyria 3 Pro | Over-refuses: blocks proper nouns in vocals as a class |
+| General-purpose open source | YingMusic | Under-articulates the name, out-of-distribution consonants |
+| Specialized commercial | Suno cover + replace | Actually does the job, at ten dollars a month |
+
+The lesson wasn't "open source isn't ready" or "cloud is too locked down." It
+was that picking the right *level* of the stack mattered more than picking the
+most powerful tool, and for this task the right level was a paid product I'd
+been too stubborn to start with.
 
 ## How close it actually is
 
