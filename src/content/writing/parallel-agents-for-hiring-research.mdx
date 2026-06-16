@@ -105,53 +105,17 @@ same resumes. That cluster is the fingerprint. At ten candidates it was
 suggestive. At sixty-four it is the most reliable thing the workflow does.
 
 Six signals show up reliably across the pass-grade resumes. The first four
-were there from the start. The last two are what the bigger sample
-surfaced, and one of them is the arms race escalating in real time:
+were there from the start; the last two are what the bigger sample
+surfaced.<Note id="2" />
 
-1. **Resume file size under 10 KB.** Resumes built in real document editors
-   land between 100 and 200 KB. Resumes built from minimal AI templates
-   land around 8 to 9 KB. This is the fastest first-pass signal in the
-   pipeline -- essentially an `ls -la`. It is also not deterministic; one
-   real candidate's spartan one-pager landed at 5.9 KB and turned out to
-   verify cleanly on every other axis. File size is a flag, never a verdict.
-
-2. **Verbatim job-description vocabulary in the cover letter.** Specific
-   bespoke phrases from the JD reproduced verbatim in the cover letter, in
-   the order the JD lists them. Authentic candidates rearrange and rephrase.
-
-3. **GitHub absence at staff-or-senior level.** Real career engineers in
-   most stacks have *something* public after a decade. A five-year-old
-   dotfiles repo. A CocoaPod. A Stack Overflow answer. A gist. Total absence
-   at ten years' claimed seniority is a loud signal. (One real exception:
-   engineers who spent a decade inside a company that owns their work
-   product. Verify the employer claim before treating GitHub absence as
-   evidence.)<Note id="2" />
-
-4. **Resume claims that don't survive employer-by-employer verification.**
-   A claimed regional office of the employer that doesn't actually exist in
-   that city. A claimed enterprise app on the App Store that isn't there
-   under the named publisher. A resume bullet about a platform technology
-   that the employer doesn't actually work on. Each takes about five minutes
-   to verify if you go looking.
-
-5. **A GitHub that was born for the application.** Signal three is *absence*.
-   The counter-move to absence is *presence*, freshly manufactured. Several
-   candidates now arrive with a public footprint built days or weeks before
-   they applied -- one Android engineer's portfolio repo was nine days old,
-   another's flagship "I use Claude Code" repos were six. A real ten-year
-   engineer's account has a decade of sediment: stale repos, abandoned
-   branches, a gist from 2019. A footprint with no sediment, all of it
-   timestamped to the week of the application, is its own tell. Check
-   creation dates, not just whether the handle exists.
-
-6. **A footprint stitched from more than one person.** The GitHub, LinkedIn,
-   or App Store link belongs to someone other than the claimed history. A
-   resume's GitHub commits are authored under a different name and email
-   than the candidate. An "App Store link" resolves to a different
-   developer's app entirely. This is the inverse of absence: the artifacts
-   exist, they just aren't the candidate's. One click on a commit author
-   catches it, and it's the signal I'd least want to miss, because it's
-   deliberate.
+| Signal | What it looks like | The read |
+|---|---|---|
+| Resume under 10 KB | Real document editors produce 100-200 KB; minimal AI templates land at 8-9 KB. The fastest first pass, basically an `ls -la`. | A flag, never a verdict. One real candidate's spartan one-pager was 5.9 KB and verified clean on every other axis. |
+| Verbatim JD vocabulary | Bespoke phrases from the job description reproduced word-for-word in the cover letter, in the order the JD lists them. | Authentic candidates rearrange and rephrase. |
+| GitHub absence at senior level | No public artifact after a claimed decade: no dotfiles repo, no CocoaPod, no gist, no Stack Overflow answer. | Loud, with one real exception: a decade inside a company that owns the work product. Verify the employer first. |
+| Claims that fail employer-by-employer checks | A regional office that isn't in that city; a claimed App Store app missing under the named publisher; a platform the employer doesn't work on. | About five minutes each to verify if you go looking. |
+| A GitHub born for the application | A "ten-year engineer" whose entire footprint is timestamped to the week they applied (portfolio repos six to nine days old). | Presence, freshly manufactured. Check creation dates, not just whether the handle exists. |
+| A footprint stitched from more than one person | Commits authored under a different name and email than the candidate; an "App Store link" that resolves to a different developer's app. | The inverse of absence, and the signal I'd least want to miss, because it's deliberate. |
 
 Two signals is worth a closer look. Three is a routing decision -- and at
 this sample size, routing got more granular than pass or fail. More on that
@@ -211,10 +175,18 @@ decision.
 
 At ten candidates, "route, don't reject" was a binary: aggressive screen,
 or advance. At sixty-four it fanned out into five buckets. The most recent
-sweep of thirty-four sorted into eleven interview-grade, eight screen-grade,
-four real-but-the-wrong-shape, five verify-first, and six pass. Verify-first
-is the interesting middle: a real person with real code whose resume
-embellishes hard enough to need a conversation first -- a team hackathon
+sweep of thirty-four sorted like this:
+
+| Bucket | Count | Next step |
+|---|---|---|
+| Interview-grade | 11 | Straight to a screen |
+| Screen-grade | 8 | Aggressive phone screen on the flagged signals |
+| Right person, wrong shape | 4 | Real and senior, wrong stack for this role |
+| Verify-first | 5 | A conversation before anything advances |
+| Pass | 6 | The only bucket that's a no |
+
+Verify-first is the interesting middle: a real person with real code whose
+resume embellishes hard enough to need a conversation first -- a team hackathon
 rebranded as a solo award, repos backdated to look older than they are. The
 buckets earn their keep because they route to different next steps, and only
 the bottom one is a no.
