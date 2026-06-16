@@ -73,17 +73,20 @@ ecosystem, journey, value add, paradigm shift, innovative, transformative,
 disrupt, thought leadership, best-in-class, world-class, cutting-edge,
 next-generation, turnkey, empower, ideate, solution.
 
-Zero of these appear in my writing. "Leverage our existing infrastructure"
-means nothing. "Reuse the read replica we stood up last quarter" means
-something. The list isn't a banned-word list. It's a *flag list*. When I
-brief an AI assistant on a draft, I don't say "don't use these." I share
-the list and ask the assistant to highlight any of them that appear in
-the draft. Every highlighted word is a place where the assistant
-defaulted to corporate abstraction instead of specificity.
+Zero of these appear in my writing, because flagging a word forces the
+sentence underneath it to get specific:
 
-That posture matters. Forbidding words pushes the model to find synonyms.
-Flagging words asks it to write more specifically. The first produces
-laundered slop. The second produces sharper sentences.
+| AI default | The rewrite |
+|---|---|
+| Leverage our existing infrastructure | Reuse the read replica we stood up last quarter |
+| Align on next steps | Decide who owns the migration by Friday |
+| A robust, scalable solution | Handles 10K events a minute on three nodes |
+
+The list isn't a banned-word list. It's a *flag list*. I don't tell the
+assistant "don't use these." I share the list and ask it to highlight any that
+appear, because every highlight is a place it reached for corporate abstraction
+instead of specificity. Forbidding words pushes the model to find synonyms,
+which produces laundered slop. Flagging them asks for sharper sentences.
 
 ## The four tests
 
@@ -124,12 +127,18 @@ The same posture works for code review. Three of my own past reviews beat
 any prose description of what good code review looks like. The asset
 isn't a guide. The asset is the folder.
 
-For voice specifically, I keep one file at `~/.config/writing-voice.md`
-and an `@`-include in `~/.claude/CLAUDE.md` that pulls it into every
-Claude Code session. Cursor and the SDK clients reach the same file via
-their own global configs. The file isn't loaded as instructions. It loads
-as artifact, the same way a human writer absorbs a style by reading the
-writer, not by being told the writer's rules.<Note id="2" />
+For voice specifically, I keep one file at `~/.config/writing-voice.md` and
+pull it into every Claude Code session with a one-line include:
+
+```text
+# ~/.claude/CLAUDE.md
+@~/.config/writing-voice.md
+```
+
+Cursor and the SDK clients reach the same file through their own global
+configs. It loads as artifact, not instructions, the same way a human writer
+absorbs a style by reading the writer, not by being told the writer's
+rules.<Note id="2" />
 
 The em-dash signal has a half-life. It works in 2024-2026. By 2028 the
 models will be better at mimicking specific human voices from a folder of
