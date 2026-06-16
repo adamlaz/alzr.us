@@ -32,19 +32,24 @@ evening. The difference is that none of the colors are typed by hand.
 
 They sync from the app's live design-system tokens, the same stylesheet the
 product itself ships, with a newer AI-accent palette layered in from the design
-team's Figma. The sync reads the published color variables at build time and
-maps each named token to a Chrome theme key, so when a token gets renamed or
-dropped upstream the build fails loudly instead of quietly shipping the wrong
-color. A small contract validates every build on top of that, so a malformed
-theme can't ship.<Note id="1" /> It's signed with its own key, self-hosted, and
-pushed to the team's managed browsers through the Google Workspace admin
-console.<Note id="2" /> I merge a change; within a poll window every managed
-browser has updated itself. Dark and light variants, calendar-versioned
-releases, a CI pipeline that mirrors the main app's.
+team's Figma. The colors are never typed by hand; the whole path runs at build
+time:
 
-The whole thing is about four hundred lines of TypeScript, no bundler, no
-runtime, no permissions. The artifact it produces is four kilobytes of color.
-The pipeline around those four kilobytes is the entire point.
+```text
+app design tokens  +  Figma accents
+  -> map to Chrome theme keys
+  -> validate against a Zod contract   (a renamed token fails the build, loudly)
+  -> sign with its own key, self-host
+  -> managed browsers poll and auto-update
+```
+
+The Zod contract<Note id="1" /> means a malformed theme can't ship; the signed,
+self-hosted extension reaches the team's managed browsers through the Workspace
+admin console<Note id="2" />, so one merge updates every browser within a poll
+window. Dark and light variants, calendar-versioned releases, a CI pipeline
+that mirrors the main app's. About four hundred lines of TypeScript, no bundler,
+no runtime, no permissions. The artifact is four kilobytes of color; the
+pipeline around it is the entire point.
 
 <PullQuote>
   I could always build the theme. What changed isn't the doing. It's the
@@ -72,10 +77,13 @@ alive. I'll take that trade every time: a maintenance surface I understand over
 a manual chore I'll always skip.
 
 That's the move, and it's bigger than one theme. Everyone has the same list,
-personal or team: the script that renames every junk screenshot into something
-you can actually search, the one page that pulls your scattered data into a
-view instead of six tabs, the commit-message linter for the repo only you
-touch, the migration that pays back in two quarters and never gets prioritized.
+personal or team:
+
+- the script that renames every junk screenshot into something you can search
+- the one page that pulls your scattered data into a view instead of six tabs
+- the commit-message linter for the repo only you touch
+- the migration that pays back in two quarters and never gets prioritized
+
 They don't get built because the effort never clears the bar, not because the
 value isn't real. AI lowers the bar far enough that a pile of them clears it at
 once.
