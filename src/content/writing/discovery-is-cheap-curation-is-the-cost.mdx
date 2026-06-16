@@ -40,14 +40,18 @@ picks the tool.
   whether the handle exists. It's whether the handle is this person.
 </PullQuote>
 
-So I moved the workflow's primary engine to Maigret.<Note id="2" /> Sherlock
-checks roughly four hundred sites and returns URLs. Maigret checks more than
-three thousand, and for each profile it finds, it parses the page for what's
-actually on it: the display name, the bio, a location field, linked accounts,
-follower counts. It also follows IDs across sites. The reach (four hundred to
-three thousand) is the headline number and the one that matters least. The
-metadata is the part that changes the job. I kept Sherlock running as a cheap
-cross-check. A profile both engines found is a small corroboration, never a
+So I moved the workflow's primary engine to Maigret.<Note id="2" />
+
+| | Sherlock | Maigret |
+|---|---|---|
+| Sites checked | ~400 | 3,000+ |
+| Returns | a list of URLs | each profile parsed: display name, bio, location, linked accounts, follower counts |
+| Role now | cheap cross-check | primary engine |
+
+The reach (four hundred to three thousand) is the headline number and the one
+that matters least. The parsed metadata is the part that changes the job, and
+it also lets Maigret follow IDs across sites. I kept Sherlock running as a cheap
+cross-check: a profile both engines find is a small corroboration, never a
 proof.
 
 ## The curation moves to parse time
@@ -61,11 +65,15 @@ last name appear as whole tokens in a parsed name field, with Maigret's own
 fuzzy-search flag knocking a hit down a tier. No model, no scoring, just three
 rules:
 
-- The candidate's first *and* last name show up in a structured name field,
-  and it isn't a fuzzy match: tier it likely.
-- The name only appears in free text like a bio, or only the location lines
-  up, or the name match is fuzzy: tier it possible.
-- A bare username hit with nothing corroborating it: tier it noise.
+```python
+def tier(profile, candidate):              # profile = what Maigret parsed off the page
+    name = profile.name_fields()           # display_name, real_name, screen_name...
+    if has_first_and_last(candidate, name) and not profile.is_similar:
+        return "likely"     # first + last in a structured name field
+    if name_in_bio(candidate, profile) or location_matches(candidate, profile):
+        return "possible"   # free text or location corroboration only
+    return "noise"          # a bare username hit, nothing behind it
+```
 
 Found-by-both-engines is recorded but doesn't promote a hit; the count of
 sites was never the signal. The agent that

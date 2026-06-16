@@ -45,15 +45,21 @@ scaffolding constant, vary only the tailored part. Most of the page is
 byte-identical across every candidate. A small, specific slice is theirs
 alone.
 
-The constant scaffolding is three things. A loose four-beat arc: open and
-"why this company" in the first two minutes, their strongest shipped work for
-the next six, the central probe through the middle, next steps and their
-questions at the end. A six-dimension scorecard: shipped craft, domain depth
-(for this role, media and playback), systems thinking, product judgment,
-communication, and AI fluency that's lived rather than claimed, each scored
-one to four. And a talking-points cheat sheet, collapsed behind a toggle so
-it's out of the way until I need it. Same arc, same six dimensions, same
-sheet, every call.
+The constant scaffolding is three things: a loose four-beat arc, a
+six-dimension scorecard, and a talking-points cheat sheet collapsed behind a
+toggle. The arc is just open and "why this company," then their strongest
+shipped work, then the central probe, then next steps. The scorecard is the
+part that matters, and it's the same six dimensions, scored one to four, every
+call:
+
+| Dimension | A 1 sounds like | A 4 sounds like |
+|---|---|---|
+| Shipped craft | Can't navigate their own code | Walks the hard parts of something real they shipped |
+| Domain depth | Generic answers that fit any platform | Names specific failure modes and how they handled them |
+| Systems thinking | Feature by feature | Reasons about tradeoffs, scale, and what breaks first |
+| Product judgment | Built what the ticket said | Owns what to cut, and why |
+| Communication | Waits to be asked | Thinks out loud, gets to "I don't know" fast |
+| AI fluency, lived | Lists the tools | A real workflow plus where it fails them |
 
 The scorecard being fixed is the point that's easy to miss. It's not there to
 make me a better interviewer. It's there so I can compare twenty-two
@@ -63,28 +69,16 @@ you that. Only the fixed rubric does.
 
 ## The probe bank does the work
 
-The tailored slice is a small table the agent builds from the research. Three
-columns: the question, the scorecard dimension it feeds, and the binary thing
-I'm listening for. Six to eight rows, one flagged make-or-break. Here are
-three of them from a real page, lightly redacted:
+The tailored slice is a small table the agent builds from the research: the
+question, the scorecard dimension it feeds, and the binary thing I'm listening
+for. Six to eight rows, one flagged make-or-break. Three of them from a real
+page, lightly redacted:
 
-```
-[make-or-break] Walk me through the playback bug that cost you the
-  most time, and how you found it.
-  -> domain depth
-  listen for: a specific failure mode and how they isolated it (advance)
-              vs. a generic answer that fits any bug on any platform (concern)
-
-Tell me about a decision you reversed after shipping. What changed your mind?
-  -> product judgment
-  listen for: owns the call and names what the data said (advance)
-              vs. blames the spec or the deadline (concern)
-
-Show me something real you've built with an AI coding tool that you'd defend.
-  -> AI fluency (lived, not claimed)
-  listen for: a workflow plus where the tool fails them (advance)
-              vs. a list of tool names with no opinions behind them (concern)
-```
+| Probe | Dimension | Listen for (advance / concern) |
+|---|---|---|
+| **Make-or-break.** Walk me through the playback bug that cost you the most time, and how you found it. | Domain depth | A specific failure mode and how they isolated it / a generic answer that fits any bug on any platform |
+| Tell me about a decision you reversed after shipping. What changed your mind? | Product judgment | Owns the call and names what the data said / blames the spec or the deadline |
+| Show me something real you've built with an AI coding tool that you'd defend. | AI fluency, lived | A workflow plus where the tool fails them / a list of tool names with no opinions behind them |
 
 That last row is how a 30-minute call tests lived AI fluency instead of the
 keyword: ask for one artifact they'd defend, and listen for whether they can
