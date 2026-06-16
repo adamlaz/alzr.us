@@ -15,6 +15,13 @@ export default defineConfig({
   vite: { plugins: [tailwindcss()] },
   integrations: [mdx()],
   markdown: {
+    shikiConfig: {
+      // Dual-theme: Shiki emits --shiki-light/--shiki-dark CSS vars and no
+      // hardcoded colors (defaultColor: false), so the post stylesheet can
+      // swap token colors on [data-theme] and keep the on-brand block bg.
+      themes: { light: 'github-light', dark: 'github-dark' },
+      defaultColor: false,
+    },
     rehypePlugins: [
       rehypeSlug,
       [

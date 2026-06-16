@@ -178,6 +178,58 @@ const ogImage = `/og/${post.id}.png`;
     border: 1px solid var(--rule);
   }
 
+  /* Shiki dual-theme: tokens carry --shiki-light / --shiki-dark and no hardcoded
+     color (defaultColor: false), so we apply light by default and swap to dark
+     under the theme toggle. The block keeps the on-brand --accent-subtle bg. */
+  .body :global(.astro-code),
+  .body :global(.astro-code span) {
+    color: var(--shiki-light);
+  }
+
+  :global(html[data-theme='dark']) .body :global(.astro-code),
+  :global(html[data-theme='dark']) .body :global(.astro-code span) {
+    color: var(--shiki-dark);
+  }
+
+  /* Markdown tables: hairline rules, mono eyebrow headers, scroll on mobile. */
+  .body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--space-lg) 0;
+    font-size: 0.92rem;
+  }
+
+  .body :global(thead th) {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+    font-weight: 500;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .body :global(tbody td) {
+    padding: 0.6rem 0.8rem;
+    vertical-align: top;
+    color: var(--text-soft);
+    line-height: 1.55;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .body :global(tbody tr:last-child td) {
+    border-bottom: 0;
+  }
+
+  @media (max-width: 40rem) {
+    .body :global(table) {
+      display: block;
+      overflow-x: auto;
+    }
+  }
+
   .body :global(blockquote) {
     border-left: 2px solid var(--accent);
     padding-left: var(--space-sm);
