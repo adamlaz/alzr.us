@@ -1,39 +1,42 @@
 ---
 title: 'Running candidate background research with parallel Claude Code agents'
 date: 2026-05-28
-description: "I built a parallel-agent workflow to make candidate background research faster. It made the research deeper instead -- because running ten investigations at once turns a noisy classifier into a confident one. The speedup was the bonus."
+description: "I built a parallel-agent workflow to make candidate background research faster. Sixty-four candidates later, the speedup is the least of it: running the investigations side by side turned a noisy classifier into a confident one, and then into a way to rank the candidates who are real."
 draft: false
 ogTreatment: candidate-grid
-pullQuote: 'Any single AI-tell is just noise. Run ten investigations in parallel and the same fingerprint shows up on three resumes at once. The cluster is the fingerprint.'
+pullQuote: 'At ten candidates the workflow caught fakes. At sixty-four it started ranking the real ones.'
 tags: ['ai-augmented-engineering', 'hiring', 'claude-code']
 ---
 
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
+import Callout from '../../components/post/Callout.astro';
 
 I built a parallel-agent workflow to make candidate background research
 faster. It made the research deeper instead. The speedup is real: about
-five hours of total work this spring where the serial version would have
-run fifteen to twenty-five. The part I didn't plan for is more useful
-than the speedup.
+five hours for the first ten candidates this spring, against the fifteen
+to twenty-five the serial version would have run. The part I didn't plan
+for is more useful than the speedup, and it only got clearer as the sample
+grew.
 
-The setup. I'm hiring for a senior mobile role. Ten candidates so far,
-across three rounds. Each one wants real public-footprint work before a
-calendar invite goes out: resume cross-reference, GitHub search, App Store
-verification, conference and podcast checks, employer-city sanity tests,
-and a Sherlock OSINT sweep for username discovery across 400+ sites.
-Twenty-five minutes per candidate, done seriously. Done serially, the
-arithmetic doesn't survive contact with a normal week. Done in parallel
-through Claude Code, it does.
+The setup. I'm hiring for a senior mobile role. Sixty-four candidates now,
+across five waves -- the first three rounds in the spring, a handful of
+one-offs, then two larger sweeps as the applications piled up. Each one
+gets real public-footprint work before a calendar invite goes out: resume
+cross-reference, GitHub search, App Store verification, conference and
+podcast checks, employer-city sanity tests, and a Sherlock OSINT sweep for
+username discovery across 400+ sites. Twenty-five minutes per candidate,
+done seriously. Done serially, the arithmetic doesn't survive contact with
+a normal week. Done in parallel through Claude Code, it does.
 
 ## The shape of the workflow
 
 For each candidate I spin up one general-purpose agent with `run_in_background:
 true`.<Note id="1" /> Each agent gets the same brief: candidate identity, resume path,
 the full application content, the curated Sherlock dump, the role-specific
-signals to chase, and the sub-page template to fill out. I launch all ten
-in a single message and let them work.
+signals to chase, and the sub-page template to fill out. I launch the whole
+wave in a single message and let them work.
 
 The brief is the most-asked-for artifact when I describe this. Here it
 is, lightly redacted:
@@ -82,28 +85,33 @@ interview questions, internet personality, public footprint summary]
 
 While the agents run, I curate the raw Sherlock output (50-100 hits per
 username, maybe 5% actionable) and prep interview kits for candidates I
-already know will advance. Twenty minutes later, ten structured research
-pages exist. I read them in order, write a one-page recap with verdicts,
-and we move.
+already know will advance. Twenty minutes later, a wave of structured
+research pages exists. I read them in order, write a one-page recap with
+verdicts, and we move.
 
 Round one took two hours for four candidates. Round two: ninety minutes for
-three. Round three: seventy-five minutes for three. The agents have not
-gotten faster. My brief has gotten tighter.
+three. Round three: seventy-five minutes for three. The June sweeps ran
+bigger: seventeen candidates in an afternoon, then thirty-four in a long
+morning. The agents have not gotten faster. The brief, and the triage in
+front of it, have gotten tighter.
 
-## What four signals look like together
+## What the signals look like together
 
-Running ten agents at once surfaced something I didn't plan for. Call it
-cluster detection. Any single AI-tell on a resume is noise -- plenty of
-explanations besides "AI wrote this." But lay ten investigations side by
-side in one comparison table and the same three or four signals fire on the
-same three resumes. That cluster is the fingerprint.
+Running a wave of agents at once surfaced something I didn't plan for. Call
+it cluster detection. Any single AI-tell on a resume is noise -- plenty of
+explanations besides "AI wrote this." But lay a wave of investigations side
+by side in one comparison table and the same handful of signals fire on the
+same resumes. That cluster is the fingerprint. At ten candidates it was
+suggestive. At sixty-four it is the most reliable thing the workflow does.
 
-Four signals showed up reliably across the pass-grade resumes in the pool:
+Six signals show up reliably across the pass-grade resumes. The first four
+were there from the start. The last two are what the bigger sample
+surfaced, and one of them is the arms race escalating in real time:
 
 1. **Resume file size under 10 KB.** Resumes built in real document editors
    land between 100 and 200 KB. Resumes built from minimal AI templates
    land around 8 to 9 KB. This is the fastest first-pass signal in the
-   pipeline -- essentially a `ls -la`. It is also not deterministic; one
+   pipeline -- essentially an `ls -la`. It is also not deterministic; one
    real candidate's spartan one-pager landed at 5.9 KB and turned out to
    verify cleanly on every other axis. File size is a flag, never a verdict.
 
@@ -114,26 +122,44 @@ Four signals showed up reliably across the pass-grade resumes in the pool:
 3. **GitHub absence at staff-or-senior level.** Real career engineers in
    most stacks have *something* public after a decade. A five-year-old
    dotfiles repo. A CocoaPod. A Stack Overflow answer. A gist. Total absence
-   at ten years' claimed seniority is the loudest signal of the four. (One
-   real exception: engineers who spent a decade inside a company that owns
-   their work product. Verify the employer claim before treating GitHub
-   absence as evidence.)<Note id="2" />
+   at ten years' claimed seniority is a loud signal. (One real exception:
+   engineers who spent a decade inside a company that owns their work
+   product. Verify the employer claim before treating GitHub absence as
+   evidence.)<Note id="2" />
 
 4. **Resume claims that don't survive employer-by-employer verification.**
    A claimed regional office of the employer that doesn't actually exist in
    that city. A claimed enterprise app on the App Store that isn't there
    under the named publisher. A resume bullet about a platform technology
-   that the employer doesn't actually work on. An App Store link that
-   points to an app from an entirely different developer. Each takes about
-   five minutes to verify if you go looking.
+   that the employer doesn't actually work on. Each takes about five minutes
+   to verify if you go looking.
 
-Two on a resume is worth a closer look. Three is the routing decision
+5. **A GitHub that was born for the application.** Signal three is *absence*.
+   The counter-move to absence is *presence*, freshly manufactured. Several
+   candidates now arrive with a public footprint built days or weeks before
+   they applied -- one Android engineer's portfolio repo was nine days old,
+   another's flagship "I use Claude Code" repos were six. A real ten-year
+   engineer's account has a decade of sediment: stale repos, abandoned
+   branches, a gist from 2019. A footprint with no sediment, all of it
+   timestamped to the week of the application, is its own tell. Check
+   creation dates, not just whether the handle exists.
+
+6. **A footprint stitched from more than one person.** The GitHub, LinkedIn,
+   or App Store link belongs to someone other than the claimed history. A
+   resume's GitHub commits are authored under a different name and email
+   than the candidate. An "App Store link" resolves to a different
+   developer's app entirely. This is the inverse of absence: the artifacts
+   exist, they just aren't the candidate's. One click on a commit author
+   catches it, and it's the signal I'd least want to miss, because it's
+   deliberate.
+
+Two signals is worth a closer look. Three is a routing decision -- and at
+this sample size, routing got more granular than pass or fail. More on that
 below.
 
 <PullQuote>
-  Any single AI-tell is just noise. Run ten investigations in parallel and
-  the same fingerprint shows up on three resumes at once. The cluster is
-  the fingerprint.
+  One tell is an accident. The same cluster on three resumes, surfaced by
+  agents that never compared notes, is a method.
 </PullQuote>
 
 ## Cluster detection isn't only useful against AI fakes
@@ -158,6 +184,14 @@ adjacent to the product we were hiring for. He does not market himself
 well. Triage alone would have killed him in round one. The agent surfaced
 the gap between the thin application and the dense reality.
 
+A third real-candidate case only showed up at scale: the right engineer for
+the wrong role. A senior Android engineer, genuinely senior, applying to an
+iOS-first opening. A full-stack web engineer with a real shipping history
+and no mobile surface area at all. Nothing about these is fake. The
+footprint verifies cleanly. They are simply the wrong shape, and at ten
+candidates I didn't see enough of them to name the category. At sixty-four
+it's a routing bucket of its own.
+
 ## When three signals fire on a real candidate
 
 The obvious counterargument. A candidate's resume is compactly formatted
@@ -175,11 +209,22 @@ problem we both care about -- all three signals dissolve and the candidate
 advances. Cluster detection is a routing decision, not a rejection
 decision.
 
+At ten candidates, "route, don't reject" was a binary: aggressive screen,
+or advance. At sixty-four it fanned out into five buckets. The most recent
+sweep of thirty-four sorted into eleven interview-grade, eight screen-grade,
+four real-but-the-wrong-shape, five verify-first, and six pass. Verify-first
+is the interesting middle: a real person with real code whose resume
+embellishes hard enough to need a conversation first -- a team hackathon
+rebranded as a solo award, repos backdated to look older than they are. The
+buckets earn their keep because they route to different next steps, and only
+the bottom one is a no.
+
 Every candidate the workflow flagged hardest also failed the screen on
-independent grounds. The sample is small, so the false-positive count
-doesn't generalize -- but the asymmetry I care about does. The
-false-negative cost (interviewing a candidate whose claims don't survive
-contact) was the cost I was trying to avoid in the first place.
+independent grounds. The sample of hardest-flagged candidates is still
+small, so the false-positive count doesn't generalize -- but the asymmetry I
+care about does. The false-negative cost (interviewing a candidate whose
+claims don't survive contact) was the cost I was trying to avoid in the
+first place.
 
 ## What this workflow doesn't do
 
@@ -208,9 +253,10 @@ Sherlock surfaces. I verify. The split is the whole point.
 
 ## Cost, and the arms race
 
-Five hours of my own time across ten candidates. The agent token cost
-lands well under one senior-engineer-hour. I haven't tallied it more
-precisely than that.
+Five hours for the first ten. Sixty-four candidates in, the per-candidate
+cost keeps falling, because the brief is tighter and a triage step now runs
+first. The agent token cost still lands well under one senior-engineer-hour
+per wave. I haven't tallied it more precisely than that.
 
 It's an arms race. AI-generated resumes exist because candidates are
 running their own parallel-agent workflows, tailoring ten applications to
@@ -218,23 +264,62 @@ ten roles in the time it used to take to write one. The defender side of
 that equation is what this post describes. Same underlying capability,
 different ends.
 
+Signal five is that arms race made visible. A year ago the tell was no
+GitHub. Now it's a GitHub with a birthday three days before the
+application. The move is the same one it has always been: check the
+timestamps, not just the artifact.
+
+<Callout variant="warn" title="One expensive way to get this wrong">
+  One parallel run spawned roughly 688 agents and burned about 15 million
+  tokens, because the candidate list was passed as a function argument,
+  arrived as a string, and got sliced into fragments -- one agent per
+  fragment. The fix was unglamorous: embed the list as a literal, with a
+  guard that refuses to launch more agents than there are candidates. The
+  orchestration layer is the fragile part. The brief never wobbled.
+</Callout>
+
+## At scale, it stops catching and starts ranking
+
+Here's the shift the bigger sample forced. At ten candidates the workflow
+was a fake detector. At sixty-four, most of the fakes get caught in the
+first five minutes of triage, and what's left is the harder, more useful
+problem: ranking the real ones.
+
+Most real senior iOS candidates are solid generalists. They've shipped
+apps, their employers check out, their GitHub has the right sediment. What
+separates them is a rare signal the role actually needs -- for this one,
+media and streaming depth. AVFoundation, HLS, the living-room screen. A
+decade of competent iOS work with zero AVFoundation is common. The few
+candidates with real tvOS or streaming experience -- one who shipped a
+four-stream Twitch app for Apple TV, one with a decade at a streaming
+platform and an Apple TV launch to show for it -- rank well above an
+equally-real generalist. Once the fakes are gone, the workflow's job is to
+surface that rare signal and rank on it.
+
+AI fluency is the same story one level up. It has become a resume keyword
+the way "agile" was: most candidates claim a CLAUDE.md, skills files, a
+daily Claude-and-Cursor habit, with no public artifact behind it. The rare
+one has an actual config file checked into a repo you can read. Treat the
+claim like any other -- verify the artifact, not the vocabulary.<Note id="4" />
+
 ## What stays when the model changes
 
-Triage moves earlier in v2. A five-minute application-triage step using
-just file size + JD-vocab check + App Store link verification catches the
-obvious fakes before any agent runs. The agents then point only at
-candidates who survived triage, not at fabricated ones who would waste
-the depth.
+Triage moved earlier, and it's no longer hypothetical. A five-minute
+application-triage checklist -- file size, JD-vocabulary check, App Store
+link verification, and now a glance at GitHub creation dates -- runs before
+any agent launches. The agents point only at candidates who survive it, not
+at fabricated ones who'd waste the depth.
 
-The deeper compounding return is something else. The brief is the
-artifact, not the agents. The agents are fungible -- Claude Code today,
-whatever Anthropic ships next year, whatever Cursor or OpenAI builds for
-the same job. The brief is what survives a model change, a tool change,
-a team-member change. The brief is the institutional knowledge. The
-agents render it.
+The compounding return is something else. The brief is the artifact; the
+agents are fungible -- Claude Code today, whatever Anthropic ships next
+year, whatever Cursor or OpenAI builds for the same job. What survives a
+model change, a tool change, a team-member change is the brief. The agents
+just render it.
 
-Hiring depth at speed used to cost a week. Now it costs an afternoon.
-The cluster detection was the surprise.
+Hiring depth at speed used to cost a week. Now it costs an afternoon. And
+somewhere past the fortieth candidate, the harder problem took over: not
+which resumes are fake, but which of the real ones can actually do the rare
+part of the job.<Note id="5" />
 
 <Footnotes
   notes={[
@@ -249,6 +334,14 @@ The cluster detection was the surprise.
     {
       id: '3',
       body: 'Sherlock Project: <a href="https://github.com/sherlock-project/sherlock">github.com/sherlock-project/sherlock</a>. OSINT username enumeration across hundreds of public platforms.',
+    },
+    {
+      id: '4',
+      body: 'A companion post, <a href="/writing/writing-voice-guide-for-ai-assistants">A writing-voice guide for your AI assistants</a>, makes the same bet one level up: the reusable instruction is the artifact, the model is just the renderer.',
+    },
+    {
+      id: '5',
+      body: 'Two follow-ups pick up where this leaves off: <a href="/writing/discovery-is-cheap-curation-is-the-cost">Discovery is cheap, curation is the cost</a> on swapping the OSINT engine and what it revealed about the pool, and <a href="/writing/the-interview-after-the-research">The interview after the research</a> on turning the ranked pool into a 30-minute screen that grades itself.',
     },
   ]}
 />

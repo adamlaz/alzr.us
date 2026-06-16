@@ -1,0 +1,181 @@
+---
+title: 'What I learned trying to swap one name in a festival anthem'
+date: 2026-06-11
+description: "Keep an EDM festival anthem exactly as it is and change one word, the name shouted over the drop, to a friend's. Pure AI, no recording. In June 2026, with models that write whole songs and clone voices on demand, this should be a one-evening job. It was not."
+draft: false
+ogTreatment: default
+pullQuote: "Bleeding edge isn't the same as ready. The toolchain can do most of this. It just can't do the one specific thing I wanted."
+tags: ['ai-augmented-engineering', 'ai-audio', 'music-generation']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+import Callout from '../../components/post/Callout.astro';
+
+A friend's name needed to land in the chorus of an EDM festival anthem. You
+know the format: a Dutch big-room track built around an F1 driver's name,
+shouted over the drop. The job was to keep the record exactly as it is and
+change one word, the name, to my friend's. Pure AI. No recording myself, no
+hiring a singer.
+
+It's June 2026. Music models write entire songs from a text prompt. Voice
+cloning is a commodity. Swapping one name in an existing chorus is a strictly
+smaller problem than the things these tools demo every week. So this is a
+one-evening project. I want to walk through why it wasn't, because the gap
+between "the tools can almost do this" and "the tools can do this" is the
+whole story of working at the bleeding edge right now.
+
+## The task is smaller than it sounds, and harder
+
+Take an existing recording. Keep the melody, the instrumental, the mix, the
+vibe. Replace one proper noun in a shouted, vocoded, crowd-chant vocal. That
+last clause is the trap. Most of what shipped in 2026 generates new songs from
+scratch. I didn't want a new song. I wanted this song, minus one name, plus
+another.
+
+For the record, this was a one-off for one friend, not anything I'd put out
+into the world. Editing a commercial master and releasing
+it is a rights problem I get to ignore precisely because I'm not releasing
+anything. The technical problem is the one I cared about.
+
+## The June 2026 landscape, fast
+
+The market splits cleanly on this one task.<Note id="1" />
+
+Most of the headline models are the wrong tool. LeVo and the SongGeneration
+line, ACE-Step, the open-weights generators that got the demos this spring,
+all write a whole track from a prompt and lyrics. Brilliant, irrelevant. They
+make new songs; I have a song.
+
+The commercial editors are closer. Suno's v5.5 added a covers-and-replace flow
+that genuinely does section-level edits, but only on tracks Suno itself
+generated, not on an arbitrary commercial master. Google's Lyria 3 Pro
+generates from a prompt through Vertex. Hold that one; it comes back later.
+
+And then there's the one open-source model built for exactly this. YingMusic
+came out of an academic lab and a games company in March 2026. It's diffusion
+based, around seven hundred million parameters, and it takes a melody clip
+plus modified lyrics plus an optional timbre reference and edits the vocal
+without you hand-aligning a single syllable. It outputs clean 44.1 kHz stereo.
+On paper it is the tool. Six months ago it did not exist.
+
+## The part the demo videos skip
+
+I cloned it onto an M4 Max and started paying the tax nobody films. The model
+ships CUDA-first, so getting it onto Apple's GPU meant teaching its device
+selector about Metal, stripping a CUDA-only quantization dependency that has no
+business on a Mac, and pinning an audio-decode library to the one version that
+matches the ABI of the PyTorch I had. Then the phoneme step crashed because it
+couldn't find the speech library underneath it, until I pointed an environment
+variable at the exact Homebrew path of the dylib.
+
+None of that is hard. All of it is the part the demo videos skip. Forty-five
+minutes of yak-shaving stood between "git clone" and the first sound, and in my
+experience that's the rule at the bleeding edge, not the exception.
+
+## The failure that actually matters
+
+YingMusic ran. It produced clean audio: the melody intact, the timbre
+convincing, the mix sitting right. And it could not say the name. The word
+came out as a mushy approximation, the consonants smeared, the syllables
+merged into a vowel-shaped blur.
+
+So I did what you do, and probed it. Fourteen variants. I swept the guidance
+strength from 3 to 9 and the diffusion steps from 32 to 96. I changed seeds. I
+respelled the name phonetically with the stress marked. I swapped in
+deliberately plain English names from three to five syllables, to rule out the
+target name simply being awkward in the mouth. Every single one came out
+mushy.
+
+<PullQuote>
+  It produced clean audio and could not say the name. The consonants smeared,
+  the syllables merged into a vowel-shaped blur.
+</PullQuote>
+
+My read of the failure, and it's a read, not a proof: YingMusic was trained on
+clean, sustained singing, and a festival chant is shouted, heavily processed,
+half-sung, well outside that. Maybe the model generalizes badly past its
+distribution. Maybe it's the phoneme conditioning, or the decoder choking on a
+vocal style it never saw. I swept the knobs but I didn't isolate the cause, so
+I won't pretend I know which it is. What I can say is the failure was identical
+across all fourteen runs and it had a consistent shape: the melody and timbre
+came out right and the consonants came out wrong. It blurred the one piece of
+detail that was the entire job.
+
+## The pivot, and why it sounded wrong
+
+If the singing model won't say the word, build the word and paste it in. So I
+pivoted to a splice pipeline. Separate the vocal stem with Demucs, find every
+chant in it with librosa's onset detection, and generate the name with Google's
+Chirp 3 HD, the cleanest neutral cloud voice I had. Time-stretch each clip to
+fit its slot, pitch it up a few semitones, run it through a bandpass and a
+soft-clipper for some festival grit, and drop it into the gaps.
+
+It worked, in the sense that you could hear the name clearly. It failed in the
+sense that it sounded like a podcast guest reading the name over a house track.
+The voice wasn't the weak link; Chirp 3 HD is about as good as neutral TTS
+gets. Neutral was the weak link. Read-speech prosody has the wrong texture for
+a shouted crowd vocal, and no amount of EQ, distortion, or pitch-shifting moved
+it from narrator to drop. Clear words, wrong instrument.
+
+## The refusal
+
+For completeness I tried Lyria 3 Pro, generating the whole thing from a
+described prompt. The content filter rejected it: sensitive words. I stripped
+the references to real artists and festivals. Still rejected. I stripped
+everything down to a generic genre description and the bare name. Rejected. I
+removed the name itself, and it generated happily.
+
+<Callout variant="note" title="Where the gate actually sits">
+  Lyria's filter wasn't objecting to a real person. It blocks proper nouns in
+  sung lyrics as a class. A name in a vocal line trips it whether the name is
+  a celebrity or your buddy. The cloud tool over-refuses by category, which is
+  a defensible safety choice and a useless one for the thing I was doing.
+</Callout>
+
+## The honest verdict
+
+Three tiers of the stack, each wrong in its own way. The general-purpose cloud
+model over-refuses on policy. The general-purpose open-source model
+under-articulates out-of-distribution words. The specialized commercial
+product, Suno's cover-and-replace, actually does the job, and the moment you
+land there you're paying ten dollars a month for a feature instead of building
+a pipeline. The lesson wasn't "open source isn't ready" or "cloud is too
+locked down." It was that picking the right *level* of the stack mattered more
+than picking the most powerful tool, and for this task the right level was a
+paid product I'd been too stubborn to start with.
+
+## How close it actually is
+
+Here's why I don't read this as a failure. YingMusic didn't exist six months
+ago. The path to run diffusion audio models on Apple silicon matured this year.
+Teaching the model the shouted-chant texture it's missing is plausibly a
+weekend of compute, with one honest catch: the hard part isn't the training,
+it's sourcing and force-aligning a few hours of clean festival-vocal data, the
+same alignment problem that ate the splice path. And the pipeline I hand-built,
+separate the stem, detect the onsets, synthesize the word, splice and mix, is
+the shape of thing that tends to fold into a single model once someone bothers.
+I'd bet on that inside a year or two. The caveat is that "just assemble the
+pieces" is exactly the false-easy this evening disproved. Assembly is the hard
+part, and I have a podcast-guest-over-a-house-track to prove it.
+
+Music generation hasn't had its GPT-3 moment, the one where the thing that
+took an expert a weekend becomes a text box anyone can use. But you can see all
+the precursors from here. I went in to swap one name and came out with a
+pretty clear map of where the edge is, which is the actual return on an evening
+spent at it. Bleeding edge isn't the same as ready. It's just close enough to
+be worth the cuts.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: 'The model survey here reflects the open-source and commercial music tools available as of June 2026. The one built for this task, YingMusic, is on GitHub at <a href="https://github.com/ASLP-lab/YingMusic-Singer-Plus">ASLP-lab/YingMusic-Singer-Plus</a>. Stem separation was handled by Demucs (<a href="https://github.com/facebookresearch/demucs">facebookresearch/demucs</a>).',
+    },
+    {
+      id: '2',
+      body: 'Google publishes the boundaries the Lyria filter enforces in its <a href="https://policies.google.com/terms/generative-ai/use-policy">Generative AI Prohibited Use Policy</a>. The proper-noun-in-vocals behavior is the policy applied conservatively, not a documented rule of its own, which is exactly why it surprised me mid-task.',
+    },
+  ]}
+/>

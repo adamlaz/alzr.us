@@ -3,49 +3,67 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const projects = [
   {
+    title: 'Engineering leadership, day job',
+    period: 'Oct 2025 -- present',
+    summary:
+      "Director of Engineering at a consumer-tech company. The bet is AI-augmented engineering on a small team that ships product, not tickets. Less middle-management, more taste.",
+  },
+  {
     title: 'Independent advisory',
-    period: '2024 -- present',
+    period: '2017 -- present',
     summary:
-      "I run a small engineering consultancy. DORA / Westrum / DevEx audits for engineering orgs in the 50-200 range. AI-augmented engineering rollouts on small teams. Occasional 1:1 work with newly-promoted directors. By referral.",
+      "Small engineering consultancy. DORA / Westrum / DevEx audits for orgs in the 50-200 range, AI-augmented engineering rollouts on small teams, occasional 1:1 work with newly-promoted directors. Most recent- a multi-month engineering diagnostic for a leadership transition, recently wrapped; a sanitized writeup is in the queue. By referral.",
   },
   {
-    title: 'Vault automation',
-    period: '2024 -- present',
+    title: 'Posts',
+    period: '2026 -- present',
     summary:
-      "A personal Obsidian vault that runs like a data pipeline. iMessage extraction, Amazon-order ingestion, AI-classified email triage, daily reflections. Everything logged to a single Activity Log spine. Scheduled via launchd, 6 AM ET.",
+      "Long-form posts on engineering practice. Seven up so far- a three-part series on AI-augmented hiring (parallel-agent research, OSINT curation, and the interview that grades itself), a writing-voice guide for AI assistants, a two-decades founder-to-operator essay, a field report from the bleeding edge of AI music, and a short one on the below-the-line tasks AI finally makes worth doing. Target cadence from here is one a month. In the pipeline- a DORA / Westrum / DevEx engagement walkthrough and the vault as a personal automation platform.",
   },
   {
-    title: 'Day job',
-    period: '2024 -- present',
+    title: 'Backyard build',
+    period: 'May 2026 -- ongoing',
     summary:
-      "Director of Engineering at a small consumer-tech company. The bet is AI-augmented engineering on a team that ships product, not tickets. Less middle-management, more taste.",
+      "Designing and contracting an integrated backyard build- a custom-framed cypress-decked sauna, an outdoor shower, refreshed landscape. Owner-coordinated across multiple trades. Florida wind code makes hurricane anchorage and the continuous load path the real engineering problem; the rest is project management.",
   },
 ];
 
 const priorWork = [
   {
-    period: '2018 -- 2024',
+    period: '2023 -- 2025',
     title: 'Consumer health platform',
     summary:
-      'Director of Product & Software Dev at a large consumer-health ecommerce platform. Owned the P&L for mobile + web, scaled the engineering org through a CPaaS migration, ran the design system and DevEx workstream.',
+      "Senior PM, then Director of Product & Software Dev at a large consumer-health ecommerce platform. Owned the P&L for mobile + web, ran a CPaaS migration with no downtime on a 400K subscription base, built the team I still call the most rewarding team-building work of my career.",
   },
   {
-    period: '2010 -- 2018',
-    title: 'Multi-venture founder era',
+    period: '2016 -- 2022',
+    title: 'Multi-venture founder',
     summary:
-      "Co-founder and CTO across four small companies -- one stuck, three didn't. Built early-stage iOS, fintech-adjacent web, and the systems plumbing for a couple of vertical SaaS swings.",
+      "Co-founded four small companies in this window with a long-running engineering partner. One stuck- a vertical SaaS that scaled into the hundreds of thousands of monthly users, engineering offshore. The other three didn't. St. Petersburg chapter starts here.",
   },
   {
-    period: '2010 -- 2016',
-    title: 'iOS apps shipped',
+    period: '2011 -- 2016',
+    title: 'Startup operator + co-founder',
     summary:
-      "Native iOS for a backend-as-a-service (open source, ~200 repos in the org), a TensorFlow self-driving game demo that had a moment in 2017, a couple of consumer apps that didn't.",
+      "Early hire at a compliance startup, reporting to the CEO; the business unit got acquired and triggered the next chapter. Concurrent- co-founded a boutique consulting firm, contractor-heavy across several client verticals. Two muscle groups built at once. Started in Waltham, MA at IBM; ended in Hollywood, CA.",
+  },
+  {
+    period: '2007 -- 2011',
+    title: 'Enterprise / student',
+    summary:
+      "University of Tampa, BS in MIS, class of 2011. Concurrent internships through the late aughts -- engineering intern at a major social platform through its public developer-platform launch, plus student-partner and contracting work in the broader Big Tech orbit. Wrote the first public docs for the platform launch. Won a developer contest senior year that turned into the first post-undergrad job. MIT SDM Executive MBA initiative, one semester.",
+  },
+  {
+    period: '2002 -- 2007',
+    title: 'Founder mode',
+    summary:
+      "Started a web-design business at 13, building HTML sites for small businesses around the New England town where I grew up. Incorporated at 15, expanded into broader tech consulting at 17. Concurrent- lifeguard, then waterfront manager, then sailing instructor at the boat club. PADI Dive Master cert in the British Virgin Islands at 15. USCG Master 100-Tons captain's license. The pattern everything later inherits.",
   },
 ];
 ---
 
-<BaseLayout title="Projects -- alzr.us" description="What Adam Lazarus is currently building, and the prior work that got him here.">
-  <h1>Projects</h1>
+<BaseLayout title="Work -- alzr.us" description="What Adam Lazarus is currently building, and the prior work that got him here.">
+  <h1 class="route-title" transition:name="route-projects">Work</h1>
   <p class="kicker">A short list. The ones with real time invested in them.</p>
 
   <ul class="project-list">
@@ -54,7 +72,7 @@ const priorWork = [
         <li>
           <header>
             <h2>{p.title}</h2>
-            <span class="period">{p.period}</span>
+            <span class="period eyebrow">{p.period}</span>
           </header>
           <p>{p.summary}</p>
         </li>
@@ -65,14 +83,14 @@ const priorWork = [
   <section class="prior">
     <h2 class="prior-title">Prior work</h2>
     <p class="prior-kicker">
-      Fifteen years before the current chapter. Anonymized on purpose -- the
+      The arc before the current chapter. Anonymized on purpose -- the
       methods stay, the affiliations don't.
     </p>
     <ol class="timeline">
       {
         priorWork.map((p) => (
           <li>
-            <span class="timeline-period">{p.period}</span>
+            <span class="timeline-period eyebrow">{p.period}</span>
             <div class="timeline-body">
               <h3>{p.title}</h3>
               <p>{p.summary}</p>
@@ -84,7 +102,7 @@ const priorWork = [
   </section>
 
   <p class="more">
-    Public code lives at <a href="https://github.com/adamlaz" rel="external me" data-no-prerender>github.com/adamlaz</a>.
+    Public code lives at <a href="https://github.com/adamlaz" rel="external" data-no-prerender>github.com/adamlaz</a>.
   </p>
 </BaseLayout>
 
@@ -117,17 +135,10 @@ const priorWork = [
   .project-list h2 {
     font-family: var(--font-display);
     font-variation-settings: 'opsz' 32, 'SOFT' 50, 'WONK' 0;
-    font-size: 1.4rem;
+    /* matches the PostCard list-item title so /writing and /projects align */
+    font-size: 1.5rem;
     color: var(--text);
     margin: 0;
-  }
-
-  .period {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
 
   .project-list p {
@@ -179,11 +190,7 @@ const priorWork = [
   }
 
   .timeline-period {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    /* visual recipe comes from the shared .eyebrow utility */
     padding-top: 0.4rem;
   }
 
@@ -201,10 +208,13 @@ const priorWork = [
     line-height: 1.55;
   }
 
-  @media (max-width: 540px) {
+  /* md (40rem): stack the period above its entry, matching the width the nav
+     reflows at so the whole site drops to its small layout together. The 8px
+     gap (was 4px) keeps the stacked period from crowding the heading. */
+  @media (max-width: 40rem) {
     .timeline li {
       grid-template-columns: 1fr;
-      gap: var(--space-3xs);
+      gap: var(--space-2xs);
     }
     .timeline-period {
       padding-top: 0;

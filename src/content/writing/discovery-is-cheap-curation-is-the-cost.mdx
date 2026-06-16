@@ -1,0 +1,140 @@
+---
+title: 'Discovery is cheap, curation is the cost'
+date: 2026-06-12
+description: "I swapped the username scanner in my candidate-research workflow for one that searches seven times as many sites. The reach wasn't the upgrade. The upgrade was that finding an account was never the bottleneck. Telling whose account it is, was."
+draft: false
+ogTreatment: default
+pullQuote: "A username that exists on fifty sites tells you a username exists on fifty sites. Existence is not identity."
+tags: ['ai-augmented-engineering', 'hiring', 'osint']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+
+I swapped the username-search tool in my hiring-research workflow and braced
+for the obvious payoff: the new one searches more sites, so it finds more.
+It does find more. That turned out to be the least interesting thing about
+it. The real lesson was that in candidate OSINT, finding was never the
+bottleneck.
+
+This is a footnote to an earlier post about running candidate background
+research with parallel Claude Code agents.<Note id="1" /> That post described
+the OSINT step running on Sherlock: point it at a username, get back a list
+of the sites where that handle exists. For a distinctive handle that's
+useful. For a common one it's a flood. Fifty to a hundred hits, almost all of
+them a different human who happened to pick the same string. The agent, or I,
+then burned the time throwing ninety-five percent of them away. That discard
+tax scaled with every candidate, and it was the slowest part of the whole
+workflow.
+
+## Existence is not identity
+
+Sherlock answers a question I'd stopped needing: does this handle exist
+somewhere? The question that actually decides a candidate is different. Is this account *this person*? That's not an
+existence question. It's a metadata question, and asking it that way is what
+picks the tool.
+
+<PullQuote>
+  Sherlock answers a question I'd stopped needing. The one that matters isn't
+  whether the handle exists. It's whether the handle is this person.
+</PullQuote>
+
+So I moved the workflow's primary engine to Maigret.<Note id="2" /> Sherlock
+checks roughly four hundred sites and returns URLs. Maigret checks more than
+three thousand, and for each profile it finds, it parses the page for what's
+actually on it: the display name, the bio, a location field, linked accounts,
+follower counts. It also follows IDs across sites. The reach (four hundred to
+three thousand) is the headline number and the one that matters least. The
+metadata is the part that changes the job. I kept Sherlock running as a cheap
+cross-check. A profile both engines found is a small corroboration, never a
+proof.
+
+## The curation moves to parse time
+
+The metadata only helps if something reads it before I do. That something is
+about three hundred lines of Python with no dependencies beyond the standard
+library, sitting between the scan and the agent. It reads every profile
+Maigret extracted and sorts it onto a confidence scale. The match is
+deliberately dumb: a case-folded check for whether the candidate's first and
+last name appear as whole tokens in a parsed name field, with Maigret's own
+fuzzy-search flag knocking a hit down a tier. No model, no scoring, just three
+rules:
+
+- The candidate's first *and* last name show up in a structured name field,
+  and it isn't a fuzzy match: tier it likely.
+- The name only appears in free text like a bio, or only the location lines
+  up, or the name match is fuzzy: tier it possible.
+- A bare username hit with nothing corroborating it: tier it noise.
+
+Found-by-both-engines is recorded but doesn't promote a hit; the count of
+sites was never the signal. The agent that
+writes up the candidate starts from the likely and possible piles. The noise
+pile is still there if I want to audit it, but nobody reads it first. The
+ninety-five-percent discard that used to be a manual pass now happens at parse
+time, before anyone looks.
+
+The brittleness objection answers itself here. Parsing three thousand sites
+means three thousand fragile little scrapers, and plenty of them fail: a site
+changes its markup, throws up a bot wall, rate-limits. That failure mode is
+harmless. A profile Maigret can't parse degrades to an existence-only hit with
+no metadata attached, which is the exact definition of the noise tier. The
+flakiness falls into the bucket built to ignore it.
+
+The tiering layer outlives the scanner. That's the first post's lesson moved
+one tool down: there the durable artifact was the agent brief, here it's the
+three rules above. Swap Maigret for whatever indexes five thousand sites next
+year and they don't change. The tool finds, the artifact curates, the model
+reads the curated list.
+
+The scope discipline from the first post rides along, and a wider net makes it
+matter more, not less. The agent only ever reads a candidate's professional
+surface area: the work, the talks, the public artifacts they chose to ship.
+Anything a username sweep turns up that an employer has no business weighing,
+an EEOC-protected attribute or a personal-life detail, gets dropped before it
+reaches the writeup. A scanner that touches three thousand sites surfaces more
+of exactly the material that should never enter a hiring file, so the filter
+in front of it is load-bearing.
+
+## What it doesn't fix
+
+Searching three thousand sites instead of four hundred finds more garbage in
+absolute terms, not less. The metadata is what keeps that tractable; it isn't
+magic. Common names still collide, and when they do the colliding profiles
+land in the noise tier, which is correct but not satisfying. A candidate named
+something rare gets a clean read. A candidate named something common gets a
+big noise pile and a small shortlist, which is the best any of this can do.
+
+And the failure mode no engine touches: the candidate with almost no public
+footprint. A GitHub gone quiet since 2014, no personal site, a locked-down
+everything-else. Maigret can't extract metadata that was never posted.
+Sherlock can't find an account that doesn't exist. OSINT cannot manufacture
+signal that isn't public, and the honest version of this workflow says so out
+loud instead of treating an empty result as a verdict.
+
+The thing the sharper instrument actually surfaced was uncomfortable. Run it
+across a real backlog and the limiting factor wasn't the tool. It was the
+pool. One recent wave of fourteen candidates produced exactly one profile
+that tiered likely on its own merits: a real name, a real city, and a
+role-relevant tag, all matching, while ninety-some junk hits for the same
+common handle sank to noise without my touching them. Reading the noise pile
+by hand afterward promoted none of them. The rest of the pool was not fake so
+much as thin, off-shape, or stale. A better microscope shows
+you the sample more clearly. It does not give you a better sample.
+
+It still doesn't decide. It tells me, faster and with less noise, which
+accounts are worth a human's attention, and then it gets out of the way. The
+curation tax is what I removed. The judgment is the part I kept.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: '<a href="/writing/parallel-agents-for-hiring-research">Running candidate background research with parallel Claude Code agents</a> is the workflow this revises. The OSINT step there ran on Sherlock; this is the swap and what it taught.',
+    },
+    {
+      id: '2',
+      body: 'Sherlock (<a href="https://github.com/sherlock-project/sherlock">github.com/sherlock-project/sherlock</a>) enumerates a username across a few hundred sites and returns URLs. Maigret (<a href="https://github.com/soxoj/maigret">github.com/soxoj/maigret</a>) covers a few thousand and parses each found profile for metadata plus recursive ID-following, which is the capability the tiering layer depends on. The tiering layer itself is small and dependency-light, the kind of code that sanitizes cleanly for release.',
+    },
+  ]}
+/>

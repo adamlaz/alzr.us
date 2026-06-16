@@ -1,0 +1,171 @@
+---
+title: 'The interview after the research'
+date: 2026-06-14
+description: "The research told me who to interview and ranked them. Then I had to actually run the calls. A 30-minute screen usually wastes both people's time, so I built the same thing one stage later: a per-candidate interview page my agents fill from the research, with every question pre-tagged to the score it feeds."
+draft: false
+ogTreatment: default
+pullQuote: "A 30-minute screen is the most expensive half hour in hiring, and the one people prep for the least."
+tags: ['ai-augmented-engineering', 'hiring', 'claude-code']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+
+A 30-minute phone screen usually goes one of two bad ways. Either you wing
+it off the resume and ask the same five generic questions you ask everyone,
+or you over-prepare a script and spend the call reading it instead of
+listening. Both fail the same way: you hang up, realize you forgot to probe
+the one thing that actually decides it, and write up a verdict that's mostly
+vibes.
+
+I wrote earlier about running candidate background research with parallel
+Claude Code agents.<Note id="1" /> That workflow told me who was real and
+ranked the ones who were. It stops exactly where this problem starts. The
+research picks who I talk to. It does nothing for the 30 minutes once the
+call connects. So I built the same thing one stage later, on the same bet:
+the reusable artifact is what compounds, and the model just renders it.
+
+None of the scorecard half of this is new. Structured interviews have beaten
+gut-feel hiring on validity since the 1990s, and scoring against fixed,
+job-relevant dimensions is the most replicated finding in the
+field.<Note id="2" /> The new part is narrow: an agent now preps and grades
+that structure for me, per candidate, from research it already did.
+
+## The artifact is the interview page
+
+For every candidate who advances, a parallel agent generates an Initial
+Interview page straight from that candidate's background-research page. One
+wave produced twenty-two of them in an afternoon. The page is not notes I
+take during the call. It's the call, planned in advance, structured so the
+writeup is half-done before I dial.
+
+The trick is the same one that made the research workflow scale: hold the
+scaffolding constant, vary only the tailored part. Most of the page is
+byte-identical across every candidate. A small, specific slice is theirs
+alone.
+
+The constant scaffolding is three things. A loose four-beat arc: open and
+"why this company" in the first two minutes, their strongest shipped work for
+the next six, the central probe through the middle, next steps and their
+questions at the end. A six-dimension scorecard: shipped craft, domain depth
+(for this role, media and playback), systems thinking, product judgment,
+communication, and AI fluency that's lived rather than claimed, each scored
+one to four. And a talking-points cheat sheet, collapsed behind a toggle so
+it's out of the way until I need it. Same arc, same six dimensions, same
+sheet, every call.
+
+The scorecard being fixed is the point that's easy to miss. It's not there to
+make me a better interviewer. It's there so I can compare twenty-two
+candidates against one rubric instead of against twenty-two different moods
+on twenty-two different afternoons. Being a sharper interviewer doesn't buy
+you that. Only the fixed rubric does.
+
+## The probe bank does the work
+
+The tailored slice is a small table the agent builds from the research. Three
+columns: the question, the scorecard dimension it feeds, and the binary thing
+I'm listening for. Six to eight rows, one flagged make-or-break. Here are
+three of them from a real page, lightly redacted:
+
+```
+[make-or-break] Walk me through the playback bug that cost you the
+  most time, and how you found it.
+  -> domain depth
+  listen for: a specific failure mode and how they isolated it (advance)
+              vs. a generic answer that fits any bug on any platform (concern)
+
+Tell me about a decision you reversed after shipping. What changed your mind?
+  -> product judgment
+  listen for: owns the call and names what the data said (advance)
+              vs. blames the spec or the deadline (concern)
+
+Show me something real you've built with an AI coding tool that you'd defend.
+  -> AI fluency (lived, not claimed)
+  listen for: a workflow plus where the tool fails them (advance)
+              vs. a list of tool names with no opinions behind them (concern)
+```
+
+That last row is how a 30-minute call tests lived AI fluency instead of the
+keyword: ask for one artifact they'd defend, and listen for whether they can
+say where the tool falls down. The vocabulary is free. The opinion isn't.
+
+The probe bank isn't a questionnaire I march through top to bottom. It's a
+priority list for a conversation that follows the candidate wherever they
+lead. If they go deep on something unprompted, I follow. But I always know
+which questions still need answers before I hang up, and which single one I
+can't leave without. The make-or-break flag is there because most screens
+have exactly one question that decides the outcome, and the common failure is
+not getting to it until the call is already over.
+
+<PullQuote>
+  The probe bank isn't a script to read. It's a priority list for a
+  conversation, with the one question I can't leave without already flagged.
+</PullQuote>
+
+## The page grades itself
+
+Here's the part that pays back the setup. Because every probe is tagged to a
+scorecard dimension before the call, the call can grade itself after it.
+
+The conversation gets transcribed onto the same page (the notetaker handles
+that automatically). An AI pass reads the transcript against the probe bank,
+fills each of the six dimensions with a one-to-four rating plus the evidence
+from what was actually said, drafts a recommendation, and writes the one-line
+entry for my activity log. Then it stops. Nothing changes the candidate's
+status, nothing commits a score, nothing sends. It hands me a graded draft
+and waits.
+
+That stop is the whole design. Mapping what they said to the dimension it
+speaks to, summarizing the evidence, drafting the writeup: that's work an AI
+does well and I do tediously. Deciding whether it's a yes stays a button I
+press. This grading pass is the newest piece of the system and the one I trust
+least on its own, so I read every transcript myself and override the draft
+rating whenever it missed the room. The draft saves me the writing, not the
+judging. What makes it worth trusting at all is the tagging: I can see exactly
+which answer drove which score, because the probe pointed at the dimension
+before I ever asked the question.
+
+## Grading a transcript beats grading a memory
+
+The obvious objection is that an algorithm scoring a job interview is exactly
+the thing you should be nervous about. It is, when it's a black box rating a
+person. This isn't that.
+
+The pass doesn't score the candidate. It scores the transcript against the
+job-relevant probes the page declared before the call, the ones the agent
+drafted and I approved when I prepped, and every rating points back at the
+specific thing that was said. That's the opposite of the failure
+mode it replaces. The thing it replaces is me, three calls later, scoring a
+candidate from memory and a feeling. A rating I can trace to a quoted answer
+and a pre-declared probe is more auditable than gut feel, not less, and the
+audit trail is exactly what you want if a hiring decision is ever questioned.
+The human still decides. The machine just makes the decision show its work.
+
+## What it doesn't do
+
+Same discipline as the first post. This does not decide who to hire. It
+removes the tax that made screens bad, the prep nobody does and the
+after-the-fact scoring nobody trusts, so the 30 minutes of actual
+conversation gets all the attention. A candidate who surprises me in either
+direction overrides anything the page predicted, which is why the
+make-or-break probe exists: so the surprise has somewhere to land.
+
+And it doesn't fix a bad interviewer. A weak conversation with a great prep
+page is still a weak conversation. What the page buys is that I show up to
+every call having done the thinking, asking the questions that matter for this
+specific person, grading all of them on one scale. The research told me who
+was worth 30 minutes. This is what makes the 30 minutes worth taking.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: 'The first part, <a href="/writing/parallel-agents-for-hiring-research">Running candidate background research with parallel Claude Code agents</a>, covers the research workflow this one picks up from. Part one decides who to talk to; this one is how to talk to them.',
+    },
+    {
+      id: '2',
+      body: 'Frank Schmidt and John Hunter, <a href="https://doi.org/10.1037/0033-2909.124.2.262">"The Validity and Utility of Selection Methods in Personnel Psychology"</a> (1998), is the canonical meta-analysis: structured interviews and work-sample tests sit near the top for predictive validity, unstructured interviews well below. The probe-bank-tagged-to-dimensions structure is that finding operationalized so an agent can prep and grade it.',
+    },
+  ]}
+/>

@@ -8,8 +8,8 @@ const posts = (await getCollection('writing', ({ data }) => !data.draft)).sort(
 );
 ---
 
-<BaseLayout title="Writing -- alzr.us" description="Long-form posts by Adam Lazarus.">
-  <h1>Writing</h1>
+<BaseLayout title="Posts -- alzr.us" description="Long-form posts by Adam Lazarus.">
+  <h1 class="route-title" transition:name="route-writing">Posts</h1>
   <p class="kicker">
     Long-form posts. AI-augmented engineering, vault automation, the operator's view.
   </p>
@@ -24,6 +24,7 @@ const posts = (await getCollection('writing', ({ data }) => !data.draft)).sort(
         {posts.map((post) => (
           <PostCard
             href={`/writing/${post.id}`}
+            slug={post.id}
             title={post.data.title}
             date={post.data.date}
             description={post.data.description}

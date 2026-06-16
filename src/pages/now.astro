@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const updated = new Date('2026-05-30');
+const updated = new Date('2026-06-15');
 const formatted = updated.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
@@ -10,7 +10,7 @@ const formatted = updated.toLocaleDateString('en-US', {
 ---
 
 <BaseLayout title="Now -- alzr.us" description="What Adam Lazarus is working on this month.">
-  <h1>Now</h1>
+  <h1 class="route-title" transition:name="route-now">Now</h1>
   <p class="kicker">
     A <a href="https://nownownow.com/about" rel="external">/now page</a>. What I'm actually
     working on this month. Refreshed every few weeks.
@@ -18,24 +18,26 @@ const formatted = updated.toLocaleDateString('en-US', {
 
   <ul class="now-list">
     <li>
-      <strong>Day job-</strong> in the operator chair this month, not the founder one.
-      Spec defense, holding the quality line on a release the team is ready to ship.
-      Tested directly by <a href="/writing/founder-to-operator">the operator-mode post</a> above.
+      <strong>Day job-</strong> in the operator chair, not the founder one. Spec defense,
+      holding the quality line on a product surface the team is ready to ship. The
+      trade-off is the subject of <a href="/writing/founder-to-operator">the operator-mode essay</a>.
     </li>
     <li>
-      <strong>Advisory-</strong> a multi-month DORA / Westrum / DevEx engagement wraps in June.
-      Findings useful enough to publish; the sanitized version goes in the writing queue after.
+      <strong>Advisory-</strong> a multi-month DORA / Westrum / DevEx engagement recently wrapped.
+      Findings useful enough to publish; the sanitized methodology post is still in the queue.
     </li>
     <li>
-      <strong>Writing-</strong> first three posts shipped:
-      <a href="/writing/parallel-agents-for-hiring-research">parallel Claude Code agents for hiring research</a>,
-      <a href="/writing/writing-voice-guide-for-ai-assistants">the writing-voice guide for AI assistants</a>,
-      and <a href="/writing/founder-to-operator">what fifteen years of founder/CTO work taught me about operator-mode</a>.
-      Cadence target: one post a month.
+      <strong>Writing-</strong> seven posts up now. Newest: a three-part series on AI-augmented
+      hiring -- <a href="/writing/parallel-agents-for-hiring-research">the research</a>,
+      <a href="/writing/discovery-is-cheap-curation-is-the-cost">the OSINT curation</a>, and
+      <a href="/writing/the-interview-after-the-research">the interview</a> -- plus a
+      <a href="/writing/ai-music-bleeding-edge-june-2026">field report</a> from the bleeding edge
+      of AI music. Cadence target from here: one a month.
     </li>
     <li>
-      <strong>Vault-</strong> extending the daily 6 AM pipeline with research-narrative folds
-      and a Vercel deploy logger. Personal data infrastructure, paid in mornings.
+      <strong>Vault-</strong> extending the personal data pipeline that runs every morning at 6 AM-
+      a research-narrative rollup, a deploy logger for this site, the usual cruft. Quiet work,
+      paid in mornings.
     </li>
     <li>
       <strong>Reading-</strong> agent-orchestration patterns out of Anthropic and the Claude
@@ -44,7 +46,7 @@ const formatted = updated.toLocaleDateString('en-US', {
   </ul>
 
   <p class="updated">
-    <em>Last updated: <time datetime={updated.toISOString()}>{formatted}</time></em>
+    Last updated: <time datetime={updated.toISOString()}>{formatted}</time>
   </p>
 </BaseLayout>
 
@@ -77,7 +79,7 @@ const formatted = updated.toLocaleDateString('en-US', {
   .updated {
     margin-top: var(--space-xl);
     font-family: var(--font-mono);
-    font-size: 0.82rem;
+    font-size: var(--text-eyebrow);
     color: var(--text-muted);
   }
 </style>

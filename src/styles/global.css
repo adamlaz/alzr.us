@@ -84,7 +84,7 @@
   --color-ink-dark: oklch(0.94 0.005 90);
   --color-ink-soft-light: oklch(0.4 0.012 270);
   --color-ink-soft-dark: oklch(0.74 0.008 90);
-  --color-ink-muted-light: oklch(0.58 0.01 270);
+  --color-ink-muted-light: oklch(0.52 0.01 270); /* ~5:1 on paper -- clears WCAG AA 4.5:1 for the prose + metadata it tints */
   --color-ink-muted-dark: oklch(0.58 0.008 90);
 
   /* ── Cobalt accent (hue 265) ── */
@@ -173,12 +173,34 @@
      Fluid tokens breathe with the viewport (brand register). */
   --measure: 65ch;       /* body copy */
   --measure-wide: 68ch;  /* main column / nav / footer */
-  --page-pad-x: 1.5rem;
+  /* Gutter flexes with the viewport too: 16px on a ~360px phone, settling to
+     24px by ~640px. Was a flat 1.5rem -- the one axis that didn't breathe. */
+  --page-pad-x: clamp(1rem, 0.5rem + 2.5vw, 1.5rem);
   --page-pad-top: clamp(3rem, 2rem + 5vw, 6rem);
   --page-pad-bottom: clamp(4rem, 3.25rem + 3vw, 6rem);
   --section-gap: clamp(2.5rem, 2rem + 2.6vw, 4rem); /* major separations */
   --intro-gap: clamp(2rem, 1.5rem + 2vw, 3rem);     /* title block → content */
   --list-gap: var(--space-md);                       /* top-level list rhythm */
+  --tap: 2.75rem; /* 44px -- comfortable touch-target floor (WCAG 2.5.5) */
+
+  /* ── Breakpoints ──
+     A documented three-step scale, not three ad-hoc numbers. Media queries
+     can't read custom properties, so these are a convention the @media literals
+     mirror; change a breakpoint here and in the rules that cite it together.
+       sm  30rem / 480px  -- ultra-narrow safety
+       md  40rem / 640px  -- nav reflow, timeline stacks
+       lg  48rem / 768px  -- gutter-hung affordances still have room */
+
+  /* ── Z-index scale (semantic, never arbitrary) ── */
+  --z-progress: 20;   /* reading-progress hairline */
+  --z-header: 30;     /* sticky nav -- above the page + progress rule */
+  --z-skip-link: 100; /* skip-link beats everything */
+
+  /* ── Eyebrow / metadata label (mono, tracked, muted) ──
+     One source for the recipe shared by post dates, periods, captions,
+     callout titles, and the build line. Use the .eyebrow utility below. */
+  --text-eyebrow: 0.78rem;
+  --tracking-eyebrow: 0.04em;
 }
 
 [data-theme='dark'] {
@@ -206,6 +228,18 @@ html {
   font-feature-settings: 'ss01', 'cv11';
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Kill the default gray tap-flash on touch; :active states carry feedback. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* md (40rem): the nav is sticky here, so in-page jumps (heading anchors, the
+   #main skip-link) would land behind the bar. Offset the scroll so the target
+   clears it: --tap (link row) + --space-xl covers the wordmark row, paddings,
+   and hairline. Scoped to mobile -- the desktop header isn't sticky. */
+@media (max-width: 40rem) {
+  html {
+    scroll-padding-top: calc(var(--tap) + var(--space-xl));
+  }
 }
 
 body {
@@ -246,6 +280,7 @@ h3 {
 p {
   margin: 0 0 1.1em;
   max-width: 65ch;
+  overflow-wrap: break-word;
 }
 
 a {
@@ -254,11 +289,18 @@ a {
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
   transition: color 120ms ease;
+  /* A bare URL in prose can't break mid-token by default; let it, so a long
+     link never pushes horizontal scroll at 320px (WCAG 1.4.10 reflow). */
+  overflow-wrap: anywhere;
 }
 
-a:hover {
-  color: var(--accent-hover);
-  text-decoration-thickness: 2px;
+/* Gate appearance-changing hover behind a real hover pointer so a tap on
+   touch never latches the hover state until the next tap elsewhere. */
+@media (hover: hover) {
+  a:hover {
+    color: var(--accent-hover);
+    text-decoration-thickness: 2px;
+  }
 }
 
 code, pre, kbd {
@@ -287,14 +329,55 @@ hr {
    Shared page primitives
    ─────────────────────────────────────────────────────────────── */
 
-/* The standfirst under a page <h1>. Tightly grouped with the heading
-   above it; the generous break belongs after the pair, not inside it. */
+/* The list-page <h1>s (Posts / Work / Now) share a route-* view-transition-name
+   with their matching nav label; on navigation the heading recedes into that
+   label (reverse-only morph, wired in BaseLayout). A bare block h1 fills the
+   centered 68ch column, so its captured view-transition box is full-width and
+   the morph reads as starting from screen-center even though the text is
+   flush-left. Hugging the text shrinks the captured box onto the glyphs, so the
+   morph originates where the heading actually is. Not cosmetic -- removing this
+   reintroduces the center-origin morph. Single-word titles only; recheck the
+   text-wrap:balance interaction if a route title ever becomes multi-word. */
+.route-title {
+  width: fit-content;
+}
+
+/* The standfirst under a *list* page <h1> (/writing, /projects, /now).
+   Tightly grouped with the heading above it; the generous break belongs after
+   the pair, not inside it. The post detail page runs a heavier lede via its own
+   scoped .description (opsz 24 / 1.2rem) -- the opening of a long read earns the
+   extra optical size, so that's intentional hierarchy, not a second standfirst. */
 .kicker {
   font-family: var(--font-display);
   font-variation-settings: 'opsz' 18, 'SOFT' 50, 'WONK' 0;
   font-size: 1.1rem;
   color: var(--text-soft);
   margin: 0 0 var(--intro-gap);
+}
+
+/* Eyebrow / metadata label -- shared recipe for dates, periods, captions,
+   callout titles, the build line. Element rules keep only their own
+   layout (margin / display / gap) and any variant color override. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Visible to assistive tech, removed from the visual layout. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -308,6 +391,15 @@ hr {
   display: inline-grid;
   justify-items: start;
   transition: color 200ms ease;
+
+  /* The wordmark is an <a>, so it inherits the global `a { overflow-wrap: anywhere }`
+     (there to break long URLs in prose). That's wrong here: once the kinetic engine
+     splits the live layer into per-glyph spans, the lost inter-letter kerning makes
+     the run a few px wider than the single-run sizer reserves, it overflows, and
+     `anywhere` breaks the brand string mid-word ("alzr.u" / "s"). Reset it -- the
+     wordmark is a fixed 7-char string that must never break; nowrap on the layers
+     lets the harmless few-px overflow spill into the gap instead. */
+  overflow-wrap: normal;
 
   /* Kinetic axes: base = rest state, peak = full bloom under the cursor. The
      shared `.glyph` rule interpolates base -> peak by per-glyph proximity.
@@ -344,11 +436,20 @@ hr {
 .wordmark:not(.wordmark--hero) .wordmark__live {
   position: absolute;
   inset: 0;
+  /* Locked to the sizer's width by inset:0; nowrap guarantees the bloom
+     (opsz 14->28, wght 500->850) can never wrap, overflowing invisibly into
+     the gap instead of reflowing onto a second line. */
+  white-space: nowrap;
 }
 
 .wordmark__sizer {
   visibility: hidden;
-  font-variation-settings: 'opsz' 14, 'SOFT' 30, 'WONK' 0;
+  /* Reserve at the idle axes AND the base weight: the live layer renders at
+     'wght' var(--base-wght) (500 in nav), and omitting wght here reserved the
+     lighter 400 width, so the heavier live text overflowed the box and wrapped
+     ("alzr.u" / "s"). nowrap keeps the reservation a single line. */
+  white-space: nowrap;
+  font-variation-settings: 'opsz' 14, 'SOFT' 30, 'WONK' 0, 'wght' var(--base-wght);
 }
 
 /* Fallback for the un-split case (engine off, e.g. reduced motion / touch):
@@ -364,9 +465,14 @@ hr {
 
 /* Link-scoped: the nav wordmark is an <a> (home), so cobalt-on-hover is a real
    affordance. The hero is a decorative <span> -- it blooms but never colors. */
-a.wordmark:hover,
 a.wordmark:focus-visible {
   color: var(--accent);
+}
+
+@media (hover: hover) {
+  a.wordmark:hover {
+    color: var(--accent);
+  }
 }
 
 /* Hero stands alone with nothing to its right, so it needs no width reservation
@@ -480,6 +586,43 @@ a.wordmark:focus-visible {
 }
 
 /* ───────────────────────────────────────────────────────────────
+   Touch scroll-bloom -- the signature flourish, for fingers.
+   The pointer engine bails on touch (no fine pointer), so the desktop bloom
+   never runs there. This brings it back, tied to reading instead of the cursor:
+   as a title rises into view, it scrubs from its authored *peak* axes down to
+   *rest*, so the letters soften + embolden then settle as you scroll up to them.
+   It animates the same registered --base-* numbers the pointer bloom + wordmark
+   breath ride -- no new properties, no JS, no glyph splitting. Each title's own
+   --peak-* / --base-* pair (above) sets the from/to per selector; the omitted
+   `to` keyframe falls back to the authored rest values.
+   Gated to coarse pointers so it can't collide with the per-glyph --p engine,
+   and behind @supports so unsupported browsers (Firefox) keep today's static
+   titles. The wordmark is excluded by selector (it owns settle + breath).
+   ─────────────────────────────────────────────────────────────── */
+
+@keyframes title-bloom-in {
+  from {
+    --base-opsz: var(--peak-opsz);
+    --base-soft: var(--peak-soft);
+    --base-wonk: var(--peak-wonk);
+    --base-wght: var(--peak-wght);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  @supports (animation-timeline: view()) {
+    .post header h1[data-kinetic],
+    .post-card h2[data-kinetic] {
+      animation: title-bloom-in linear both;
+      animation-timeline: view();
+      /* Bloom resolves over the first third of the element's pass through the
+         viewport, so it's settled well before it reaches the reading zone. */
+      animation-range: entry 10% cover 38%;
+    }
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
    View transitions --cross-document + same-document.
    ─────────────────────────────────────────────────────────────── */
 
@@ -520,13 +663,19 @@ a.wordmark:focus-visible {
 
   .wordmark,
   .wordmark--hero,
-  [data-kinetic] .glyph {
+  [data-kinetic] .glyph,
+  .post header h1[data-kinetic],
+  .post-card h2[data-kinetic] {
     animation: none;
     transition: none;
   }
 
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
+  /* Kill every view-transition animation, not just the root fade -- the
+     shared-element morphs (post-card title, nav title) are named groups and
+     would otherwise still animate under reduced motion. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

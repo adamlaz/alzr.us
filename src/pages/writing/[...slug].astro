@@ -28,27 +28,29 @@ const ogImage = `/og/${post.id}.png`;
 ---
 
 <BaseLayout
-  title={`${post.data.title} -- alzr.us`}
+  title={post.data.title}
   description={post.data.description}
   ogImage={ogImage}
+  ogImageAlt={`${post.data.title} -- alzr.us`}
   ogType="article"
   publishedTime={post.data.date}
 >
+  <div class="reading-progress" aria-hidden="true"></div>
   <article class="post">
     <header>
-      <p class="meta">
+      <p class="meta eyebrow">
         <time datetime={post.data.date.toISOString()}>{formatted}</time>
         <span class="dot" aria-hidden="true">·</span>
         <span class="reading-time">{readMin}</span>
       </p>
-      <h1 data-kinetic>{post.data.title}</h1>
+      <h1 data-kinetic transition:name={`post-title-${post.id}`}>{post.data.title}</h1>
       <p class="description">{post.data.description}</p>
     </header>
     <div class="body">
       <Content />
     </div>
     <footer>
-      <a href="/writing">← All writing</a>
+      <a href="/writing">← All posts</a>
     </footer>
   </article>
 </BaseLayout>
@@ -58,20 +60,54 @@ const ogImage = `/og/${post.id}.png`;
     padding-top: var(--space-sm);
   }
 
+  /* Reading-progress hairline -- scroll-driven, pure CSS, no JS. A cobalt
+     hairline pinned to the top edge, scaled by document scroll via a scroll()
+     timeline. On-brand: the site already uses hairline rules as a motif. */
+  .reading-progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    z-index: var(--z-progress);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .reading-progress {
+      animation: reading-progress-grow linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+
+  @keyframes reading-progress-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* No scroll-timeline support (Firefox) leaves it at scaleX(0) -- invisible,
+     no broken layout. Reduced motion drops it outright: the read is complete
+     without it, and this sidesteps the global animation-duration override. */
+  @media (prefers-reduced-motion: reduce) {
+    .reading-progress {
+      display: none;
+    }
+  }
+
   header {
     margin-bottom: var(--space-lg);
   }
 
   .meta {
+    /* visual recipe comes from the shared .eyebrow utility */
     margin: 0 0 var(--space-3xs);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    gap: var(--space-2xs);
   }
 
   .meta .dot {
@@ -110,15 +146,25 @@ const ogImage = `/og/${post.id}.png`;
     padding: 0 0.2rem;
   }
 
-  .body :global(h2:hover .heading-anchor),
-  .body :global(h3:hover .heading-anchor),
-  .body :global(.heading-anchor:focus) {
+  .body :global(.heading-anchor:focus-visible) {
     opacity: 1;
   }
 
-  @media (max-width: 720px) {
+  @media (hover: hover) {
+    .body :global(h2:hover .heading-anchor),
+    .body :global(h3:hover .heading-anchor) {
+      opacity: 1;
+    }
+  }
+
+  /* Below lg (48rem) the gutter is too tight to hang the # outside the column
+     without it riding the viewport edge -- worse now that the gutter is fluid.
+     Pin it inside, at the heading's trailing edge: no overflow at any width,
+     still revealed on focus, still tappable. */
+  @media (max-width: 48rem) {
     .body :global(.heading-anchor) {
-      left: -1.1rem;
+      left: auto;
+      right: 0;
     }
   }
 
@@ -134,10 +180,10 @@ const ogImage = `/og/${post.id}.png`;
 
   .body :global(blockquote) {
     border-left: 2px solid var(--accent);
-    padding-left: 1rem;
+    padding-left: var(--space-sm);
     color: var(--text-soft);
     font-style: italic;
-    margin: 1.5rem 0;
+    margin: var(--space-md) 0;
   }
 
   .body :global(p) {
@@ -154,9 +200,11 @@ const ogImage = `/og/${post.id}.png`;
       color 140ms ease;
   }
 
-  .body :global(a:hover) {
-    color: var(--accent-hover);
-    border-bottom-color: currentColor;
+  @media (hover: hover) {
+    .body :global(a:hover) {
+      color: var(--accent-hover);
+      border-bottom-color: currentColor;
+    }
   }
 
   footer {
@@ -170,9 +218,34 @@ const ogImage = `/og/${post.id}.png`;
   footer a {
     color: var(--accent);
     text-decoration: none;
+    border-bottom: 1px solid transparent;
+    position: relative;
+    display: inline-block;
+    transition:
+      color 120ms ease,
+      border-color 120ms ease;
   }
 
-  footer a:hover {
+  /* 44px tap strip; underline stays on the baseline (no vertical padding). */
+  footer a::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: var(--tap);
+    transform: translateY(-50%);
+  }
+
+  @media (hover: hover) {
+    footer a:hover {
+      color: var(--accent-hover);
+      border-bottom-color: var(--accent-hover);
+    }
+  }
+
+  footer a:active {
     color: var(--accent-hover);
+    border-bottom-color: var(--accent-hover);
   }
 </style>

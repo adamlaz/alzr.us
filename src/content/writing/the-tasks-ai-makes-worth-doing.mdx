@@ -1,0 +1,98 @@
+---
+title: 'The tasks AI makes worth doing'
+date: 2026-06-15
+description: "For fifteen years I've built a custom Chrome theme at every company I've worked at, and always built it badly, because it was never worth doing well. This time AI made it the best version I've shipped, for the same one evening of work. The theme is trivial. The category of task it unlocks isn't."
+draft: false
+ogTreatment: default
+pullQuote: "There's a whole class of tasks worth doing that are never worth the effort, so they never get done. AI moves that line."
+tags: ['ai-augmented-engineering', 'developer-experience', 'craft']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+
+I've built a custom Chrome theme at almost every company I've worked at or run.
+Fifteen years of it. It's a small ritual with two real jobs: a little internal
+team-branding culture, and a way to tell my three-plus Chrome profiles apart at
+a glance, so I stop pasting a work link into the personal window. Each profile
+gets the company's colors. The window tells me where I am before I read
+anything on the screen.
+
+And for fifteen years I built it badly. Pick a few hex codes by eye, hardcode
+them into a theme manifest, sideload it, forget it. Within a quarter the real
+brand had moved and my theme hadn't. It was a cheap, slightly embarrassing
+pleasure, and it was never worth doing properly, so I never did. Worth doing,
+not worth doing well. That gap is the whole post.
+
+## The same evening, a different result
+
+This time the theme is the best one I've ever made, and it took the same one
+evening. The difference is that none of the colors are typed by hand.
+
+They sync from the app's live design-system tokens, the same stylesheet the
+product itself ships, with a newer AI-accent palette layered in from the design
+team's Figma. The sync reads the published color variables at build time and
+maps each named token to a Chrome theme key, so when a token gets renamed or
+dropped upstream the build fails loudly instead of quietly shipping the wrong
+color. A small contract validates every build on top of that, so a malformed
+theme can't ship.<Note id="1" /> It's signed with its own key, self-hosted, and
+pushed to the team's managed browsers through the Google Workspace admin
+console.<Note id="2" /> I merge a change; within a poll window every managed
+browser has updated itself. Dark and light variants, calendar-versioned
+releases, a CI pipeline that mirrors the main app's.
+
+The whole thing is about four hundred lines of TypeScript, no bundler, no
+runtime, no permissions. The artifact it produces is four kilobytes of color.
+The pipeline around those four kilobytes is the entire point.
+
+<PullQuote>
+  I could always build the theme. What changed isn't the doing. It's the
+  ratio: an evening of work that now maintains itself instead of decaying in a
+  quarter.
+</PullQuote>
+
+## What actually changed
+
+The capability was never the blocker. The token sync, the validation contract,
+the signing key, the managed-deploy pipeline: none of it is new technology, and
+none of it was beyond me on any given Tuesday of the last decade. What stopped
+me was the ratio. The good version cost a week of fiddly
+plumbing to save a quarter of drift, and that math never closed. So I shipped
+the bad version, every time, for fifteen years.
+
+AI closed the math. The fiddly plumbing, the parts I'd never spend a week on,
+is exactly the kind of scaffolding a model writes in an afternoon: wire the
+token extraction, sketch the validation schema, stand up the signing and the
+release CI, fix the parts that break. The evening of taste, picking the colors,
+deciding which token paints which surface, stayed mine. The week of plumbing
+that always killed it collapsed to a couple of hours of review. The honest cost
+is that the pipeline is now a small thing that can break and that I have to keep
+alive. I'll take that trade every time: a maintenance surface I understand over
+a manual chore I'll always skip.
+
+That's the move, and it's bigger than one theme. Everyone has the same list,
+personal or team: the script that renames every junk screenshot into something
+you can actually search, the one page that pulls your scattered data into a
+view instead of six tabs, the commit-message linter for the repo only you
+touch, the migration that pays back in two quarters and never gets prioritized.
+They don't get built because the effort never clears the bar, not because the
+value isn't real. AI lowers the bar far enough that a pile of them clears it at
+once.
+
+So the question I find more useful than "what can AI build for me" is the
+quieter one underneath it: what was always worth doing that I finally get to do?
+The Chrome theme is a silly answer. The list behind it isn't.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: 'The validation contract is a <a href="https://zod.dev/">Zod</a> schema that doubles as the single source of truth: it both gates the build and generates the manifest JSON-schema for editor autocomplete. The output is a standard Chrome <a href="https://developer.chrome.com/docs/extensions/reference/manifest/theme">theme manifest</a>, color keys and tints, no code.',
+    },
+    {
+      id: '2',
+      body: 'Self-hosting a signed extension and pushing it to managed browsers is a documented Google Workspace flow: an enterprise policy points at a self-hosted <code>updates.xml</code>, and managed Chrome instances poll it and auto-update. See Google\'s <a href="https://support.google.com/chrome/a/answer/9296680">Chrome Enterprise extension management</a> docs. No Web Store listing, no review queue, own keys, own domain.',
+    },
+  ]}
+/>

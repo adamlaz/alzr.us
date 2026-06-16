@@ -22,14 +22,25 @@ const idStr = String(id);
   .fn-ref a {
     color: var(--accent);
     text-decoration: none;
-    padding: 0 0.15em;
-    border-radius: 2px;
+    /* Inline superscript refs are exempt from WCAG 2.5.8 (targets in a text
+       sentence). A full 44px strip here would overlap neighboring lines and
+       *hurt* aim, so we widen the padded area instead; line-height: 0 on .fn-ref
+       keeps the bigger padding from disturbing the surrounding line box. */
+    padding: 0.4em 0.5em;
+    border-radius: 3px;
     transition:
       background 140ms ease,
       color 140ms ease;
   }
 
-  .fn-ref a:hover {
-    background: color-mix(in oklch, var(--accent) 12%, transparent);
+  @media (hover: hover) {
+    .fn-ref a:hover {
+      background: color-mix(in oklch, var(--accent) 12%, transparent);
+    }
+  }
+
+  .fn-ref a:active {
+    background: color-mix(in oklch, var(--accent) 18%, transparent);
+    color: var(--accent-hover);
   }
 </style>

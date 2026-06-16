@@ -35,8 +35,8 @@ const { notes } = Astro.props;
 
 <style>
   .footnotes {
-    margin-top: 4rem;
-    padding-top: 2rem;
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-lg);
     border-top: 1px solid var(--rule);
   }
 
@@ -50,13 +50,13 @@ const { notes } = Astro.props;
 
   .footnotes ol {
     margin: 0;
-    padding-left: 1.5rem;
+    padding-left: var(--space-md);
     font-size: 0.92rem;
     color: var(--text-soft);
   }
 
   .footnotes li {
-    margin-bottom: 0.75rem;
+    margin-bottom: var(--space-xs);
     line-height: 1.55;
   }
 
@@ -64,15 +64,40 @@ const { notes } = Astro.props;
     margin-bottom: 0;
   }
 
+  /* Accent (not muted) for AA contrast on paper, matching the other footnote
+     links. The visible box stays 24px tall so it doesn't balloon the notes line
+     box; the ::before strip lifts the full tap target to 44px (WCAG 2.5.5). */
   .fn-back {
-    color: var(--text-muted);
+    display: inline-block;
+    position: relative;
+    min-width: var(--tap);
+    min-height: 24px;
+    line-height: 24px;
+    text-align: center;
+    color: var(--accent);
     text-decoration: none;
-    margin-left: 0.25rem;
+    margin-left: var(--space-3xs);
     transition: color 140ms ease;
   }
 
-  .fn-back:hover {
-    color: var(--accent);
+  .fn-back::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: var(--tap);
+    transform: translateY(-50%);
+  }
+
+  @media (hover: hover) {
+    .fn-back:hover {
+      color: var(--accent-hover);
+    }
+  }
+
+  .fn-back:active {
+    color: var(--accent-hover);
   }
 
   .fn-body :global(a) {
@@ -82,7 +107,9 @@ const { notes } = Astro.props;
       color-mix(in oklch, var(--accent) 35%, transparent);
   }
 
-  .fn-body :global(a:hover) {
-    border-bottom-color: currentColor;
+  @media (hover: hover) {
+    .fn-body :global(a:hover) {
+      border-bottom-color: currentColor;
+    }
   }
 </style>

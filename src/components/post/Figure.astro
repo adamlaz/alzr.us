@@ -2,14 +2,31 @@
 interface Props {
   src?: string;
   alt?: string;
+  decorative?: boolean;
   caption?: string;
+  width?: number;
+  height?: number;
 }
 
-const { src, alt = '', caption } = Astro.props;
+const { src, alt, decorative = false, caption, width, height } = Astro.props;
+
+// Fail the build on a missing alt, the way the content schema fails on missing
+// title/description. A purely decorative image must opt in explicitly.
+if (src && !decorative && (alt === undefined || alt.trim() === '')) {
+  throw new Error(
+    `Figure with src="${src}" needs alt text. Pass alt="..." for an informative image, or decorative for a purely decorative one.`,
+  );
+}
 ---
 
 <figure class="post-figure">
-  {src ? <img src={src} alt={alt} loading="lazy" /> : <slot />}
+  {
+    src ? (
+      <img src={src} alt={decorative ? '' : alt} width={width} height={height} loading="lazy" decoding="async" />
+    ) : (
+      <slot />
+    )
+  }
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
 
@@ -26,7 +43,7 @@ const { src, alt = '', caption } = Astro.props;
   }
 
   figcaption {
-    margin-top: 0.75rem;
+    margin-top: var(--space-xs);
     font-family: var(--font-display);
     font-variation-settings: 'opsz' 16, 'SOFT' 60, 'WONK' 0;
     font-style: italic;

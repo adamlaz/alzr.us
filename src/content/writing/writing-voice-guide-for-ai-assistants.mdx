@@ -4,7 +4,7 @@ date: 2026-05-29
 description: "I stopped giving my AI assistants rules and started giving them reading material. The shift is from instruction to artifact. The em-dash regex is the catchy part. Loading files as books-the-system-reads is the durable one."
 draft: false
 ogTreatment: struck-em-dash
-pullQuote: "Em dashes feel natural to a system that has never typed one but has read a billion of them. Native writers, especially engineers, reach for word- or -- instead. One regex catches the difference."
+pullQuote: "Show the model the corpus. Don't lecture it on the rules."
 tags: ['ai-augmented-engineering', 'writing', 'voice']
 ---
 
@@ -22,8 +22,8 @@ The first one rarely transfers. The second one transfers reliably, because
 prediction is what the model is built to do, and what you put in front of
 it shapes what it predicts.
 
-This post is about the small set of signals I use to keep the artifact
-honest, and the regex I run before anything ships.
+Two things keep the artifact honest: a small set of signals, and one
+regex I run before anything ships.
 
 ## The em-dash signal
 
@@ -37,7 +37,7 @@ Native human writers, especially engineers writing fast in chat windows
 and pull-request descriptions, reach for either a tight dash (`word-`)
 glued to the preceding word, or a double dash (` -- `) with spaces on
 both sides. Watch your thumbs the next time you type something quickly.
-That's the test.
+That's the test.<Note id="1" />
 
 The signal is Bayesian. An em dash in a draft raises the probability the
 text is AI-generated. It doesn't confirm it. Plenty of human writers --
@@ -112,7 +112,7 @@ drift in five minutes.
 
 ## Artifact, not instruction
 
-The deeper move is that I stopped writing style guides for AI assistants
+The move that matters: I stopped writing style guides for AI assistants
 and started curating their reading material.
 
 I keep a folder of my own past writing -- emails, PRs, docs, code-review
@@ -129,7 +129,7 @@ and an `@`-include in `~/.claude/CLAUDE.md` that pulls it into every
 Claude Code session. Cursor and the SDK clients reach the same file via
 their own global configs. The file isn't loaded as instructions. It loads
 as artifact, the same way a human writer absorbs a style by reading the
-writer, not by being told the writer's rules.<Note id="1" />
+writer, not by being told the writer's rules.<Note id="2" />
 
 The em-dash signal has a half-life. It works in 2024-2026. By 2028 the
 models will be better at mimicking specific human voices from a folder of
@@ -142,11 +142,11 @@ individual regex.
   notes={[
     {
       id: '1',
-      body: 'Anthropic\'s <a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview">Prompt engineering</a> docs put "use examples" at the top of every "how to get better outputs" list. The DetectGPT (Stanford 2023) and GPTZero literature converges on the same pattern from the detection side: AI-generated text has consistent fingerprints, but single-signal detection is unreliable. Ensembles work.',
+      body: 'Mark Liberman\'s <a href="https://languagelog.ldc.upenn.edu/">Language Log</a> has decades of empirical observation on English punctuation usage across registers. The em-dash-as-AI-tell observation is a specific application of a more general truth: machines learn punctuation from text; humans learn it from keyboards.',
     },
     {
       id: '2',
-      body: 'Mark Liberman\'s <a href="https://languagelog.ldc.upenn.edu/">Language Log</a> has decades of empirical observation on English punctuation usage across registers. The em-dash-as-AI-tell observation is a specific application of a more general truth: machines learn punctuation from text; humans learn it from keyboards.',
+      body: 'Anthropic\'s <a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview">Prompt engineering</a> docs put "use examples" at the top of every "how to get better outputs" list. The DetectGPT (Stanford 2023) and GPTZero literature converges on the same pattern from the detection side: AI-generated text has consistent fingerprints, but single-signal detection is unreliable. Ensembles work.',
     },
   ]}
 />
