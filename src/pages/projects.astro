@@ -1,161 +1,164 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const projects = [
+const current = [
   {
-    title: 'Engineering leadership, day job',
-    period: 'Oct 2025 -- present',
+    period: '2025 -- present',
+    title: 'Director of Engineering',
     summary:
-      "Director of Engineering at a consumer-tech company. The bet is AI-augmented engineering on a small team that ships product, not tickets. Less middle-management, more taste.",
+      "Director of Engineering at a consumer-tech company, running an AI-augmented team that ships product, not tickets. Recent surface: a mobile redesign, a share-to-convert flow, a design-system rebuild.",
   },
   {
-    title: 'Independent advisory',
     period: '2017 -- present',
+    title: 'Engineering advisory practice',
     summary:
-      "Small engineering consultancy. DORA / Westrum / DevEx audits for orgs in the 50-200 range, AI-augmented engineering rollouts on small teams, occasional 1:1 work with newly-promoted directors. Most recent- a multi-month engineering diagnostic for a leadership transition, recently wrapped; a sanitized writeup is in the queue. By referral.",
-  },
-  {
-    title: 'Posts',
-    period: '2026 -- present',
-    summary:
-      "Long-form posts on engineering practice. Seven up so far- a three-part series on AI-augmented hiring (parallel-agent research, OSINT curation, and the interview that grades itself), a writing-voice guide for AI assistants, a two-decades founder-to-operator essay, a field report from the bleeding edge of AI music, and a short one on the below-the-line tasks AI finally makes worth doing. Target cadence from here is one a month. In the pipeline- a DORA / Westrum / DevEx engagement walkthrough and the vault as a personal automation platform.",
-  },
-  {
-    title: 'Backyard build',
-    period: 'May 2026 -- ongoing',
-    summary:
-      "Designing and contracting an integrated backyard build- a custom-framed cypress-decked sauna, an outdoor shower, refreshed landscape. Owner-coordinated across multiple trades. Florida wind code makes hurricane anchorage and the continuous load path the real engineering problem; the rest is project management.",
+      'Independent, by referral. DORA / Westrum / DevEx audits for orgs in the 50-200 range, AI-augmented engineering rollouts on small teams, and 1:1 work with newly-promoted directors.',
   },
 ];
 
-const priorWork = [
+const arc = [
   {
-    period: '2023 -- 2025',
-    title: 'Consumer health platform',
+    period: '~2018 -- 2024',
+    title: 'Consumer-platform leadership',
     summary:
-      "Senior PM, then Director of Product & Software Dev at a large consumer-health ecommerce platform. Owned the P&L for mobile + web, ran a CPaaS migration with no downtime on a 400K subscription base, built the team I still call the most rewarding team-building work of my career.",
+      "Led product and software at a large consumer platform: a zero-downtime CPaaS migration on a big subscriber base, P&L across mobile and web, and the best team I've built.",
   },
   {
-    period: '2016 -- 2022',
-    title: 'Multi-venture founder',
+    period: '~2010 -- 2018',
+    title: 'The founder decade',
     summary:
-      "Co-founded four small companies in this window with a long-running engineering partner. One stuck- a vertical SaaS that scaled into the hundreds of thousands of monthly users, engineering offshore. The other three didn't. St. Petersburg chapter starts here.",
+      "Co-founded four small companies with a long-running engineering partner. One found traction; three didn't. Alongside it: an early operating role at a venture-backed startup and a boutique consulting practice across several verticals. Started on the East Coast, ended on the West, landed in St. Petersburg.",
   },
   {
-    period: '2011 -- 2016',
-    title: 'Startup operator + co-founder',
+    period: 'late 2000s',
+    title: 'Enterprise and school',
     summary:
-      "Early hire at a compliance startup, reporting to the CEO; the business unit got acquired and triggered the next chapter. Concurrent- co-founded a boutique consulting firm, contractor-heavy across several client verticals. Two muscle groups built at once. Started in Waltham, MA at IBM; ended in Hollywood, CA.",
+      'An information-systems degree in Florida and internships across enterprise software and the broader Big Tech orbit: developer docs and tooling for a platform launch, contract and student-partner work, a contest win that turned into the first full-time job. One semester into a systems-design grad program.',
   },
   {
-    period: '2007 -- 2011',
-    title: 'Enterprise / student',
+    period: 'the 2000s',
+    title: 'Founder mode, the original',
     summary:
-      "University of Tampa, BS in MIS, class of 2011. Concurrent internships through the late aughts -- engineering intern at a major social platform through its public developer-platform launch, plus student-partner and contracting work in the broader Big Tech orbit. Wrote the first public docs for the platform launch. Won a developer contest senior year that turned into the first post-undergrad job. MIT SDM Executive MBA initiative, one semester.",
-  },
-  {
-    period: '2002 -- 2007',
-    title: 'Founder mode',
-    summary:
-      "Started a web-design business at 13, building HTML sites for small businesses around the New England town where I grew up. Incorporated at 15, expanded into broader tech consulting at 17. Concurrent- lifeguard, then waterfront manager, then sailing instructor at the boat club. PADI Dive Master cert in the British Virgin Islands at 15. USCG Master 100-Tons captain's license. The pattern everything later inherits.",
+      'Started a web-design business as a teenager and incorporated it a couple years later, building sites for small businesses around the New England town where I grew up. The pattern everything later inherits.',
   },
 ];
+
+const posts = (await getCollection('writing', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+const latest = posts[0];
 ---
 
-<BaseLayout title="Work -- alzr.us" description="What Adam Lazarus is currently building, and the prior work that got him here.">
+<BaseLayout
+  title="Work -- alzr.us"
+  description="What Adam Lazarus is building now, and the two-decade founder-to-operator arc that got here."
+>
   <h1 class="route-title" transition:name="route-projects">Work</h1>
-  <p class="kicker">A short list. The ones with real time invested in them.</p>
+  <p class="kicker">
+    Two decades building engineering teams and shipping product, founder-side and
+    operator-side. What I'm doing now, and the arc that got here.
+  </p>
 
-  <ul class="project-list">
+  <ul class="work-list">
     {
-      projects.map((p) => (
+      current.map((p) => (
         <li>
-          <header>
-            <h2>{p.title}</h2>
-            <span class="period eyebrow">{p.period}</span>
-          </header>
+          <span class="period eyebrow">{p.period}</span>
+          <h2>{p.title}</h2>
           <p>{p.summary}</p>
         </li>
       ))
     }
   </ul>
 
-  <section class="prior">
-    <h2 class="prior-title">Prior work</h2>
-    <p class="prior-kicker">
-      The arc before the current chapter. Anonymized on purpose -- the
-      methods stay, the affiliations don't.
-    </p>
+  <p class="more">
+    Also: long-form <a href="/writing">posts</a> on engineering practice, about one a
+    month.{
+      latest && (
+        <Fragment>
+          {' '}
+          Latest- <a href={`/writing/${latest.id}`}>{latest.data.title}</a>.
+        </Fragment>
+      )
+    }
+  </p>
+
+  <section class="arc">
+    <h2 class="arc-title">The arc</h2>
+    <p class="arc-kicker">Anonymized on purpose -- the methods stay, the affiliations don't.</p>
     <ol class="timeline">
       {
-        priorWork.map((p) => (
+        arc.map((e) => (
           <li>
-            <span class="timeline-period eyebrow">{p.period}</span>
-            <div class="timeline-body">
-              <h3>{p.title}</h3>
-              <p>{p.summary}</p>
-            </div>
+            <span class="timeline-period eyebrow">{e.period}</span>
+            <h3>{e.title}</h3>
+            <p>{e.summary}</p>
           </li>
         ))
       }
     </ol>
   </section>
 
+  <p class="more coda">
+    Off the keyboard- a USCG Master captain's license, a standing dive habit, and a 3D
+    printer that mostly makes car parts.
+  </p>
   <p class="more">
-    Public code lives at <a href="https://github.com/adamlaz" rel="external" data-no-prerender>github.com/adamlaz</a>.
+    The code for this site is on <a
+      href="https://github.com/adamlaz/alzr.us"
+      rel="external"
+      data-no-prerender>GitHub</a
+    >.
   </p>
 </BaseLayout>
 
 <style>
   /* .kicker is a shared primitive in global.css. */
-  .project-list {
+  .work-list {
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
-  .project-list li {
+  .work-list li {
     padding: var(--list-gap) 0;
     border-bottom: 1px solid var(--rule);
   }
 
-  .project-list li:last-child {
+  .work-list li:last-child {
     border-bottom: 0;
   }
 
-  .project-list header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-2xs);
-    flex-wrap: wrap;
+  /* Metadata on top, matching PostCard so /writing and /work align. */
+  .work-list .period {
+    display: block;
+    margin-bottom: var(--space-3xs);
   }
 
-  .project-list h2 {
+  .work-list h2 {
     font-family: var(--font-display);
     font-variation-settings: 'opsz' 32, 'SOFT' 50, 'WONK' 0;
-    /* matches the PostCard list-item title so /writing and /projects align */
     font-size: 1.5rem;
     color: var(--text);
-    margin: 0;
+    margin: 0 0 var(--space-2xs);
   }
 
-  .project-list p {
+  .work-list p {
     color: var(--text-soft);
     margin: 0;
   }
 
-  /* Prior work -- typographic micro-timeline. A major section break
-     (rule + generous space), then a denser sub-list for deliberate
-     rhythm contrast against the top-level project list above. */
-  .prior {
+  /* The arc -- a left-rail timeline. A major section break (rule + space),
+     then a vertical hairline with a node per era so it reads as an arc, not
+     a table. All inside the paper-and-ink tokens; no new color. */
+  .arc {
     margin-top: var(--section-gap);
     padding-top: var(--space-lg);
     border-top: 1px solid var(--rule);
   }
 
-  .prior-title {
+  .arc-title {
     font-family: var(--font-display);
     font-variation-settings: 'opsz' 32, 'SOFT' 50, 'WONK' 0;
     font-size: 1.4rem;
@@ -163,7 +166,7 @@ const priorWork = [
     margin: 0 0 var(--space-2xs);
   }
 
-  .prior-kicker {
+  .arc-kicker {
     font-family: var(--font-display);
     font-variation-settings: 'opsz' 16, 'SOFT' 60, 'WONK' 0;
     font-style: italic;
@@ -174,13 +177,23 @@ const priorWork = [
   .timeline {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 0 0 var(--space-lg);
+    position: relative;
+  }
+
+  /* the rail */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6rem;
+    bottom: 0.6rem;
+    width: 1px;
+    background: var(--rule);
   }
 
   .timeline li {
-    display: grid;
-    grid-template-columns: 8.5rem 1fr;
-    gap: var(--space-md);
+    position: relative;
     padding: var(--space-sm) 0;
     border-bottom: 1px solid var(--rule);
   }
@@ -189,9 +202,22 @@ const priorWork = [
     border-bottom: 0;
   }
 
+  /* the node -- centered on the 1px rail, with a paper ring masking the line */
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: calc(-1 * var(--space-lg) - 3px);
+    top: 1.2rem;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--bg);
+  }
+
   .timeline-period {
-    /* visual recipe comes from the shared .eyebrow utility */
-    padding-top: 0.4rem;
+    display: block;
+    margin-bottom: var(--space-3xs);
   }
 
   .timeline h3 {
@@ -208,22 +234,17 @@ const priorWork = [
     line-height: 1.55;
   }
 
-  /* md (40rem): stack the period above its entry, matching the width the nav
-     reflows at so the whole site drops to its small layout together. The 8px
-     gap (was 4px) keeps the stacked period from crowding the heading. */
-  @media (max-width: 40rem) {
-    .timeline li {
-      grid-template-columns: 1fr;
-      gap: var(--space-2xs);
-    }
-    .timeline-period {
-      padding-top: 0;
-    }
-  }
-
   .more {
     margin-top: var(--space-xl);
     font-size: 0.95rem;
     color: var(--text-muted);
+  }
+
+  .more.coda {
+    margin-top: var(--section-gap);
+  }
+
+  .more + .more {
+    margin-top: var(--space-sm);
   }
 </style>

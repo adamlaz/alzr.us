@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const updated = new Date('2026-06-15');
@@ -7,41 +8,49 @@ const formatted = updated.toLocaleDateString('en-US', {
   month: 'long',
   day: 'numeric',
 });
+
+const posts = (await getCollection('writing', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+const latest = posts[0];
 ---
 
 <BaseLayout title="Now -- alzr.us" description="What Adam Lazarus is working on this month.">
   <h1 class="route-title" transition:name="route-now">Now</h1>
   <p class="kicker">
-    A <a href="https://nownownow.com/about" rel="external">/now page</a>. What I'm actually
-    working on this month. Refreshed every few weeks.
+    A <a href="https://nownownow.com/about" rel="external">/now page</a>: what's actually
+    on my desk this month. The longer arc is on <a href="/projects">Work</a>.
   </p>
 
   <ul class="now-list">
     <li>
-      <strong>Day job-</strong> in the operator chair, not the founder one. Spec defense,
-      holding the quality line on a product surface the team is ready to ship. The
-      trade-off is the subject of <a href="/writing/founder-to-operator">the operator-mode essay</a>.
+      <strong>Day job-</strong> mid-way through a senior mobile hire, running the
+      parallel-agent research and the per-candidate interview pages from the
+      <a href="/writing/the-interview-after-the-research">hiring posts</a> against a live
+      candidate pool.
     </li>
     <li>
-      <strong>Advisory-</strong> a multi-month DORA / Westrum / DevEx engagement recently wrapped.
-      Findings useful enough to publish; the sanitized methodology post is still in the queue.
+      <strong>Advisory-</strong> the engagement I wrapped this spring is turning into the
+      next post I owe: a sanitized walkthrough of the audit kit. Not written yet.
     </li>
     <li>
-      <strong>Writing-</strong> seven posts up now. Newest: a three-part series on AI-augmented
-      hiring -- <a href="/writing/parallel-agents-for-hiring-research">the research</a>,
-      <a href="/writing/discovery-is-cheap-curation-is-the-cost">the OSINT curation</a>, and
-      <a href="/writing/the-interview-after-the-research">the interview</a> -- plus a
-      <a href="/writing/ai-music-bleeding-edge-june-2026">field report</a> from the bleeding edge
-      of AI music. Cadence target from here: one a month.
+      <strong>Writing-</strong> just pushed a run of new posts; settling back to roughly one a month.{
+        latest && (
+          <Fragment>
+            {' '}
+            Latest- <a href={`/writing/${latest.id}`}>{latest.data.title}</a>.
+          </Fragment>
+        )
+      }
     </li>
     <li>
-      <strong>Vault-</strong> extending the personal data pipeline that runs every morning at 6 AM-
-      a research-narrative rollup, a deploy logger for this site, the usual cruft. Quiet work,
-      paid in mornings.
+      <strong>Personal tooling-</strong> extending the automation that rebuilds my Obsidian
+      vault every morning. Right now: a deploy logger for this site and a
+      research-narrative rollup.
     </li>
     <li>
-      <strong>Reading-</strong> agent-orchestration patterns out of Anthropic and the Claude
-      Code SDK docs, plus the Karpathy autoresearch piece. Lots to steal.
+      <strong>Off the screen-</strong> diving a couple times a month, and the 3D printer is
+      mostly making car parts at the moment.
     </li>
   </ul>
 
