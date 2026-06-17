@@ -7,40 +7,40 @@ const current = [
     period: '2025 -- present',
     title: 'Director of Engineering',
     summary:
-      "Director of Engineering at a consumer-tech company, running an AI-augmented team that ships product, not tickets. Recent surface: a mobile redesign, a share-to-convert flow, a design-system rebuild.",
+      "Director of Engineering at a consumer-tech company, running an AI-augmented team that ships product, not tickets. Recent surface: a web-app launch, a share-to-convert flow, a design-system rebuild.",
   },
   {
     period: '2017 -- present',
     title: 'Engineering advisory practice',
     summary:
-      'Independent, by referral. DORA / Westrum / DevEx audits for orgs in the 50-200 range, AI-augmented engineering rollouts on small teams, and 1:1 work with newly-promoted directors.',
+      'Independent, by referral. DORA / Westrum / DevEx audits for orgs in the 50-200 range, AI-augmented consulting & research, and 1:1 work with newly-promoted directors.',
   },
 ];
 
 const arc = [
   {
     period: '~2018 -- 2024',
-    title: 'Consumer-platform leadership',
+    title: 'Ecommerce-platform leadership',
     summary:
-      "Led product and software at a large consumer platform: a zero-downtime CPaaS migration on a big subscriber base, P&L across mobile and web, and the best team I've built.",
+      "Led product and software at ecommerce dot coms: zero-downtime migrations on big subscriber bases, P&L across web & ops, and the best teams I've built.",
   },
   {
     period: '~2010 -- 2018',
     title: 'The founder decade',
     summary:
-      "Co-founded four small companies with a long-running engineering partner. One found traction; three didn't. Alongside it: an early operating role at a venture-backed startup and a boutique consulting practice across several verticals. Started on the East Coast, ended on the West, landed in St. Petersburg.",
+      "Co-founded four small companies delivering software & services across various industries. One found traction; three didn't. Alongside it: an early operating role at a venture-backed startup and a boutique consulting practice across several verticals.",
   },
   {
     period: 'late 2000s',
     title: 'Enterprise and school',
     summary:
-      'An information-systems degree in Florida and internships across enterprise software and the broader Big Tech orbit: developer docs and tooling for a platform launch, contract and student-partner work, a contest win that turned into the first full-time job. One semester into a systems-design grad program.',
+      'An information-systems degree and internships across enterprise software and the broader Big Tech orbit: developer docs and tooling for a platform launch, contract and student-partner work, a contest win that turned into the first full-time job and a systems-design grad program.',
   },
   {
     period: 'the 2000s',
     title: 'Founder mode, the original',
     summary:
-      'Started a web-design business as a teenager and incorporated it a couple years later, building sites for small businesses around the New England town where I grew up. The pattern everything later inherits.',
+      'Started a web-design business as a teenager and incorporated it building sites for small businesses and musical artists around the New England town where I grew up.',
   },
 ];
 
@@ -73,7 +73,7 @@ const latest = posts[0];
   </ul>
 
   <p class="more">
-    Also: long-form <a href="/writing">posts</a> on engineering practice, about one a
+    Read my <a href="/writing">posts</a> on engineering practice and other random stuff, about one a
     month.{
       latest && (
         <Fragment>
@@ -86,7 +86,6 @@ const latest = posts[0];
 
   <section class="arc">
     <h2 class="arc-title">The arc</h2>
-    <p class="arc-kicker">Anonymized on purpose -- the methods stay, the affiliations don't.</p>
     <ol class="timeline">
       {
         arc.map((e) => (

@@ -34,10 +34,10 @@ last clause is the trap. Most of what shipped in 2026 generates new songs from
 scratch. I didn't want a new song. I wanted this song, minus one name, plus
 another.
 
-For the record, this was a one-off for one friend, not anything I'd put out
-into the world. Editing a commercial master and releasing
-it is a rights problem I get to ignore precisely because I'm not releasing
-anything. The technical problem is the one I cared about.
+For the record, this was a one-off for one friend, not anything I'd put out.
+Editing a commercial master and releasing it is a rights problem I get to
+ignore precisely because I'm not. The technical problem is the one I cared
+about.
 
 ## The June 2026 landscape, fast
 
@@ -59,8 +59,8 @@ hand. On paper it is the tool. Six months ago it did not exist.
 ## The part the demo videos skip
 
 I cloned it onto an M4 Max and started paying the tax nobody films. The model
-ships CUDA-first; getting it onto Apple's GPU was four small patches, none hard,
-all the part the demos skip:
+ships CUDA-first; getting it onto Apple's GPU was four small patches, none of
+them hard:
 
 ```python
 # 1. route the model to Apple's GPU (the branch the repo didn't have)
@@ -95,16 +95,15 @@ convincing, the mix sitting right. And it could not say the name. The word
 came out as a mushy approximation, the consonants smeared, the syllables
 merged into a vowel-shaped blur.
 
-So I did what you do, and probed it. Fourteen variants. I swept the guidance
+So I did what you do and probed it. Fourteen variants. I swept the guidance
 strength from 3 to 9 and the diffusion steps from 32 to 96. I changed seeds. I
 respelled the name phonetically with the stress marked. I swapped in
-deliberately plain English names from three to five syllables, to rule out the
+deliberately plain English names from 3 to 5 syllables, to rule out the
 target name simply being awkward in the mouth. Every single one came out
 mushy.
 
 <PullQuote>
-  It produced clean audio and could not say the name. The consonants smeared,
-  the syllables merged into a vowel-shaped blur.
+  It nailed everything but the one piece of detail that was the entire job.
 </PullQuote>
 
 My read of the failure, and it's a read, not a proof: YingMusic was trained on
@@ -113,9 +112,9 @@ half-sung, well outside that. Maybe the model generalizes badly past its
 distribution. Maybe it's the phoneme conditioning, or the decoder choking on a
 vocal style it never saw. I swept the knobs but I didn't isolate the cause, so
 I won't pretend I know which it is. What I can say is the failure was identical
-across all fourteen runs and it had a consistent shape: the melody and timbre
-came out right and the consonants came out wrong. It blurred the one piece of
-detail that was the entire job.
+across all fourteen runs: the melody and timbre came out right and the
+consonants came out wrong. It blurred the one piece of detail that was the
+entire job.
 
 ## The pivot, and why it sounded wrong
 
@@ -170,9 +169,9 @@ ago. The path to run diffusion audio models on Apple silicon matured this year.
 Teaching the model the shouted-chant texture it's missing is plausibly a
 weekend of compute, with one honest catch: the hard part isn't the training,
 it's sourcing and force-aligning a few hours of clean festival-vocal data, the
-same alignment problem that ate the splice path. And the pipeline I hand-built,
-separate the stem, detect the onsets, synthesize the word, splice and mix, is
-the shape of thing that tends to fold into a single model once someone bothers.
+same alignment problem that ate the splice path. And the pipeline I hand-built
+-- separate the stem, detect the onsets, synthesize the word, splice and mix --
+is the kind of thing that tends to fold into a single model once someone bothers.
 I'd bet on that inside a year or two. The caveat is that "just assemble the
 pieces" is exactly the false-easy this evening disproved. Assembly is the hard
 part, and I have a podcast-guest-over-a-house-track to prove it.

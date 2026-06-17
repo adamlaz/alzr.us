@@ -14,10 +14,10 @@ import Note from '../../components/post/Note.astro';
 
 I've built a custom Chrome theme at almost every company I've worked at or run.
 Fifteen years of it. It's a small ritual with two real jobs: a little internal
-team-branding culture, and a way to tell my three-plus Chrome profiles apart at
-a glance, so I stop pasting a work link into the personal window. Each profile
-gets the company's colors. The window tells me where I am before I read
-anything on the screen.
+team branding, and a way to tell my three-plus Chrome profiles apart at a glance
+so I stop pasting a work link into a personal window. Each profile gets the
+company's colors. The window tells me where I am before I read anything on the
+screen.
 
 And for fifteen years I built it badly. Pick a few hex codes by eye, hardcode
 them into a theme manifest, sideload it, forget it. Within a quarter the real
@@ -32,8 +32,7 @@ evening. The difference is that none of the colors are typed by hand.
 
 They sync from the app's live design-system tokens, the same stylesheet the
 product itself ships, with a newer AI-accent palette layered in from the design
-team's Figma. The colors are never typed by hand; the whole path runs at build
-time:
+team's Figma. The whole path runs at build time:
 
 ```text
 app design tokens  +  Figma accents
@@ -66,13 +65,13 @@ me was the ratio. The good version cost a week of fiddly
 plumbing to save a quarter of drift, and that math never closed. So I shipped
 the bad version, every time, for fifteen years.
 
-AI closed the math. The fiddly plumbing, the parts I'd never spend a week on,
-is exactly the kind of scaffolding a model writes in an afternoon: wire the
+AI closed the math. The fiddly plumbing I'd never spend a week on is exactly the
+kind of scaffolding a model writes in an afternoon: wire the
 token extraction, sketch the validation schema, stand up the signing and the
 release CI, fix the parts that break. The evening of taste, picking the colors,
 deciding which token paints which surface, stayed mine. The week of plumbing
 that always killed it collapsed to a couple of hours of review. The honest cost
-is that the pipeline is now a small thing that can break and that I have to keep
+is that the pipeline is now a small thing that can break, one I have to keep
 alive. I'll take that trade every time: a maintenance surface I understand over
 a manual chore I'll always skip.
 
