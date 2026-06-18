@@ -1,0 +1,117 @@
+---
+interface Props {
+  lightSvg: string;
+  darkSvg: string;
+  maxWidth?: number;
+  caption?: string;
+}
+
+const { lightSvg, darkSvg, maxWidth = 440, caption } = Astro.props;
+---
+
+<figure class="post-diagram" style={`--diagram-max-width: ${maxWidth}px`}>
+  <div class="diagram light" set:html={lightSvg} aria-hidden="true"></div>
+  <div class="diagram dark" set:html={darkSvg} aria-hidden="true"></div>
+
+  {/* Default slot = required .sr-only text alternative for screen readers. */}
+  <p class="sr-only"><slot /></p>
+
+  {/* Optional verdict chip row (unused by the current diagrams; kept for parity). */}
+  {
+    Astro.slots.has('verdict') && (
+      <p class="verdict">
+        <slot name="verdict" />
+      </p>
+    )
+  }
+
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .post-diagram {
+    margin: var(--space-xl) 0;
+    padding: var(--space-md) var(--space-lg) var(--space-lg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: color-mix(in oklch, var(--accent) 2.5%, var(--surface));
+  }
+
+  .diagram {
+    display: flex;
+    justify-content: center;
+  }
+  /* mermaid stamps an inline max-width; let the SVG breathe to the column */
+  .diagram :global(svg) {
+    width: 100%;
+    max-width: var(--diagram-max-width, 440px);
+    height: auto;
+  }
+  /* The node labels are fixed-width foreignObjects measured at render time.
+     The site's global ss01/cv11 features render Inter a hair wider on-page, so
+     the text overflows and clips. Match the measured metrics and stop clipping. */
+  .diagram :global(foreignObject),
+  .diagram :global(.nodeLabel),
+  .diagram :global(.edgeLabel),
+  .diagram :global(.labelBkg) {
+    overflow: visible;
+    font-feature-settings: normal;
+    letter-spacing: 0;
+  }
+
+  .dark {
+    display: none;
+  }
+  :global([data-theme='dark']) .light {
+    display: none;
+  }
+  :global([data-theme='dark']) .dark {
+    display: flex;
+  }
+
+  .verdict {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-sm);
+    margin: var(--space-md) 0 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--rule);
+  }
+  /* Chip classes live here but style slotted spans, so scope them through the
+     wrapper with :global() — Astro won't otherwise reach slotted content. */
+  .verdict :global(.chip) {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    line-height: 1.3;
+  }
+  .verdict :global(.chip.ok) {
+    color: var(--color-status-green);
+  }
+  .verdict :global(.chip.bad) {
+    color: var(--color-status-red);
+  }
+
+  figcaption {
+    margin-top: var(--space-sm);
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 16, 'SOFT' 60, 'WONK' 0;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--text-soft);
+    text-wrap: balance;
+    text-align: center;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
