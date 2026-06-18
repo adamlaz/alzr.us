@@ -12,6 +12,7 @@ import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import Callout from '../../components/post/Callout.astro';
+import AgentsFanoutDiagram from '../../components/post/AgentsFanoutDiagram.astro';
 
 I built a parallel-agent workflow to make candidate background research
 faster. It made the research deeper instead. The speedup is real: about
@@ -37,6 +38,8 @@ true`.<Note id="1" /> Each agent gets the same brief: candidate identity, resume
 the full application content, the curated Sherlock dump, the role-specific
 signals to chase, and the sub-page template to fill out. I launch the whole
 wave in a single message and let them work.
+
+<AgentsFanoutDiagram />
 
 The brief is the most-asked-for artifact when I describe this. Here it
 is, lightly redacted:

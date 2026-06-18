@@ -1,0 +1,16 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/agents-fanout-light.svg?raw';
+import darkSvg from '../../assets/diagrams/agents-fanout-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={560}
+  caption="One message fans out to an agent per candidate, each running in the background. The pages fan back in to a single recap."
+>
+  For each of sixty-four candidates, one Claude Code agent launches from a
+  single message, each running in the background. Every agent writes a
+  structured research page. The pages converge into one recap with verdicts.
+</Diagram>
