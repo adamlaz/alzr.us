@@ -11,6 +11,7 @@ tags: ['ai-augmented-engineering', 'hiring', 'osint']
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
+import DiscoveryTieringDiagram from '../../components/post/DiscoveryTieringDiagram.astro';
 
 I swapped the username-search tool in my hiring-research workflow and braced
 for the obvious payoff: the new one searches more sites, so it finds more.
@@ -74,6 +75,8 @@ def tier(profile, candidate):              # profile = what Maigret parsed off t
         return "possible"   # free text or location corroboration only
     return "noise"          # a bare username hit, nothing behind it
 ```
+
+<DiscoveryTieringDiagram />
 
 Found-by-both-engines is recorded but doesn't promote a hit; the count of
 sites was never the signal. The agent that

@@ -1,0 +1,18 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/discovery-tiering-light.svg?raw';
+import darkSvg from '../../assets/diagrams/discovery-tiering-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={520}
+  caption="Maigret finds, three dumb rules tier, the agent reads only the top two piles. The 95% noise is kept but never read first."
+>
+  A username goes to Maigret, which checks over three thousand sites and parses
+  each profile; Sherlock checks about four hundred as a cheap cross-check. A
+  three-rule tiering step sorts hits into likely, possible, and noise — about
+  ninety-five percent. Likely and possible go to the agent that writes the
+  candidate up, then to human judgment. Noise is kept for audit only.
+</Diagram>
