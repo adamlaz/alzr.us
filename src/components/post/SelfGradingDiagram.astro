@@ -1,0 +1,17 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/self-grading-light.svg?raw';
+import darkSvg from '../../assets/diagrams/self-grading-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={460}
+  caption="Every probe is tagged to a dimension before the call, so the page grades itself afterward. The human still decides."
+>
+  A probe bank, where each probe is pre-tagged to a scorecard dimension, feeds
+  the interview. The interview produces a transcript. An AI pass reads the
+  transcript against the probes and fills six dimensions, each scored one to
+  four with evidence, then drafts a recommendation. The human decides.
+</Diagram>
