@@ -11,6 +11,7 @@ tags: ['ai-augmented-engineering', 'developer-experience', 'craft']
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
+import ChromeThemePipelineDiagram from '../../components/post/ChromeThemePipelineDiagram.astro';
 
 I've built a custom Chrome theme at almost every company I've worked at or run.
 Fifteen years of it. It's a small ritual with two real jobs: a little internal
@@ -49,6 +50,8 @@ window. Dark and light variants, calendar-versioned releases, a CI pipeline
 that mirrors the main app's. About four hundred lines of TypeScript, no bundler,
 no runtime, no permissions. The artifact is four kilobytes of color; the
 pipeline around it is the entire point.
+
+<ChromeThemePipelineDiagram />
 
 <PullQuote>
   I could always build the theme. What changed isn't the doing. It's the

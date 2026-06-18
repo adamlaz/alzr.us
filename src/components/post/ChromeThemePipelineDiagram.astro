@@ -1,0 +1,17 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/chrome-theme-pipeline-light.svg?raw';
+import darkSvg from '../../assets/diagrams/chrome-theme-pipeline-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={600}
+  caption="Two token sources fan in; a Zod contract gates the build; signed and self-hosted, it reaches every managed browser on the next poll."
+>
+  Two sources, the app's design tokens and the Figma accents, both feed the step
+  that maps them to Chrome theme keys. A Zod contract validates the result; a
+  renamed token fails the build loudly. Valid themes are signed with the
+  project's own key and self-hosted, and managed browsers poll and auto-update.
+</Diagram>
