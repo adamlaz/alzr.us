@@ -12,6 +12,8 @@ import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import Callout from '../../components/post/Callout.astro';
+import Audio from '../../components/post/Audio.astro';
+import SpliceDiagram from '../../components/post/SpliceDiagram.astro';
 
 A friend's name needed to land in the chorus of an EDM festival anthem. You
 know the format: a Dutch big-room track built around an F1 driver's name,
@@ -34,10 +36,16 @@ last clause is the trap. Most of what shipped in 2026 generates new songs from
 scratch. I didn't want a new song. I wanted this song, minus one name, plus
 another.
 
-For the record, this was a one-off for one friend, not anything I'd put out.
-Editing a commercial master and releasing it is a rights problem I get to
-ignore precisely because I'm not. The technical problem is the one I cared
-about.
+For the record, this was a one-off for one friend, not a track I'd release.
+The clips below are short excerpts, here so you can hear the failures instead
+of taking my word for them. The one name you can clearly make out, in the
+spliced take, is a stand-in, not my friend's. Cutting a full release over a
+commercial master is a rights problem I get to skip, because the release was
+never the point. The technical problem is the one I cared about.
+
+<Audio
+  src="/audio/ai-music-june-2026/source-anthem.mp3"
+  caption="The source. The original name, shouted over the drop, is the one word I needed to replace."/>
 
 ## The June 2026 landscape, fast
 
@@ -95,12 +103,20 @@ convincing, the mix sitting right. And it could not say the name. The word
 came out as a mushy approximation, the consonants smeared, the syllables
 merged into a vowel-shaped blur.
 
+<Audio
+  src="/audio/ai-music-june-2026/yingmusic-baseline.mp3"
+  caption="YingMusic, default settings. Melody and timbre intact. The name dissolves into a vowel."/>
+
 So I did what you do and probed it. Fourteen variants. I swept the guidance
 strength from 3 to 9 and the diffusion steps from 32 to 96. I changed seeds. I
 respelled the name phonetically with the stress marked. I swapped in
 deliberately plain English names from 3 to 5 syllables, to rule out the
 target name simply being awkward in the mouth. Every single one came out
 mushy.
+
+<Audio
+  src="/audio/ai-music-june-2026/yingmusic-cfg9.mp3"
+  caption="Guidance pushed to 9, one of fourteen variants. Same smear, every time."/>
 
 <PullQuote>
   It nailed everything but the one piece of detail that was the entire job.
@@ -125,12 +141,18 @@ Chirp 3 HD, the cleanest neutral cloud voice I had. Time-stretch each clip to
 fit its slot, pitch it up a few semitones, run it through a bandpass and a
 soft-clipper for some festival grit, and drop it into the gaps.
 
+<SpliceDiagram />
+
 It worked, in the sense that you could hear the name clearly. It failed in the
 sense that it sounded like a podcast guest reading the name over a house track.
 The voice wasn't the weak link; Chirp 3 HD is about as good as neutral TTS
 gets. Neutral was the weak link. Read-speech prosody has the wrong texture for
 a shouted crowd vocal, and no amount of EQ, distortion, or pitch-shifting moved
 it from narrator to drop. Clear words, wrong instrument.
+
+<Audio
+  src="/audio/ai-music-june-2026/tts-splice.mp3"
+  caption="The splice pipeline. The name finally comes through clean, and the voice reads it like a line of dialogue, not a chant."/>
 
 ## The refusal
 

@@ -1,0 +1,938 @@
+---
+interface Props {
+  src: string;
+  caption?: string;
+}
+
+const { src, caption } = Astro.props;
+
+if (!src || src.trim() === '') {
+  throw new Error('Audio needs a src. Pass src="/audio/.../clip.mp3".');
+}
+
+const label = caption ? caption : 'Audio clip';
+---
+
+<figure class="post-audio" data-audio data-src={src}>
+  {/* Enhanced UI — hidden until JS confirms it can decode + draw. */}
+  <div class="player" data-player hidden>
+    <div class="stage">
+      <canvas class="scope" data-scope role="img" aria-label={`Spectrogram of ${label}`}></canvas>
+      <div class="loading" data-loading>
+        <span class="eyebrow">reading the waveform</span>
+      </div>
+      <div class="freq-axis" data-axis aria-hidden="true">
+        <span>16k</span><span>4k</span><span>1k</span><span>250</span><span>60</span>
+      </div>
+    </div>
+    <div class="transport">
+      <button class="play" type="button" data-play aria-label="Play" aria-pressed="false">
+        <svg class="i-play" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"
+          ><path d="M8 5.5v13l11-6.5z" fill="currentColor"></path></svg
+        >
+        <svg class="i-pause" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"
+          ><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z" fill="currentColor"></path></svg
+        >
+      </button>
+      <span class="time" data-time>0:00</span>
+      <input
+        class="seek"
+        type="range"
+        min="0"
+        max="1000"
+        value="0"
+        step="1"
+        data-seek
+        aria-label="Seek"
+      />
+      <span class="time dur" data-dur>0:00</span>
+    </div>
+  </div>
+
+  {/* No-JS / fallback floor: a real, working native player. */}
+  <audio class="native" data-native controls preload="none" src={src} aria-label={label}></audio>
+
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .post-audio {
+    margin: var(--space-xl) 0;
+  }
+
+  /* ── Native fallback ── */
+  .native {
+    display: block;
+    width: 100%;
+  }
+  /* When the enhanced player is live, the native element is only a programmatic
+     playback engine — keep it in the DOM but out of sight. */
+  .post-audio[data-enhanced] .native {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ── Player shell ── */
+  .player {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .stage {
+    position: relative;
+    aspect-ratio: 5 / 2;
+    background: var(--bg);
+  }
+
+  @media (min-width: 40rem) {
+    .stage {
+      aspect-ratio: 16 / 5;
+    }
+  }
+
+  .scope {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  /* Frequency axis ticks, hung in the left gutter of the stage. */
+  .freq-axis {
+    position: absolute;
+    inset: 0 auto 0 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4rem 0.5rem;
+    pointer-events: none;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: color-mix(in oklch, var(--text-soft) 70%, transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .post-audio[data-enhanced] .freq-axis {
+    opacity: 1;
+  }
+
+  .loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    transition: opacity 0.5s ease;
+  }
+  .loading[hidden] {
+    display: none;
+  }
+  .loading .eyebrow {
+    position: relative;
+    color: var(--text-muted);
+  }
+  /* a slow shimmer sweep over the loading label */
+  .loading .eyebrow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in oklch, var(--accent) 55%, transparent) 50%,
+      transparent 100%
+    );
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: 120% 0;
+    }
+    to {
+      background-position: -120% 0;
+    }
+  }
+
+  /* ── Transport ── */
+  .transport {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-2xs) var(--space-xs);
+    border-top: 1px solid var(--rule);
+  }
+
+  .play {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    border: none;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    cursor: pointer;
+    transition:
+      background 0.18s ease,
+      transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+  }
+  .play:hover {
+    background: var(--accent-hover);
+  }
+  .play:active {
+    transform: scale(0.92);
+  }
+  .play svg {
+    grid-area: 1 / 1;
+  }
+  .play .i-pause {
+    display: none;
+  }
+  .play[aria-pressed='true'] .i-play {
+    display: none;
+  }
+  .play[aria-pressed='true'] .i-pause {
+    display: block;
+  }
+
+  .time {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-soft);
+    min-width: 2.6ch;
+  }
+  .time.dur {
+    color: var(--text-muted);
+    text-align: right;
+  }
+
+  /* ── Seek slider: a hairline track with cobalt fill ── */
+  .seek {
+    flex: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    height: var(--tap);
+    background: transparent;
+    cursor: pointer;
+    --fill: 0%;
+  }
+  .seek::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--accent) var(--fill),
+      var(--rule) var(--fill)
+    );
+  }
+  .seek::-moz-range-track {
+    height: 3px;
+    border-radius: 999px;
+    background: var(--rule);
+  }
+  .seek::-moz-range-progress {
+    height: 3px;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+  .seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    margin-top: -4px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--surface);
+    box-shadow: 0 0 0 1px var(--rule);
+    transition: transform 0.15s ease;
+  }
+  .seek::-moz-range-thumb {
+    width: 11px;
+    height: 11px;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 1px var(--rule);
+  }
+  .seek:hover::-webkit-slider-thumb {
+    transform: scale(1.25);
+  }
+
+  /* Focus rings on the real controls */
+  .play:focus-visible,
+  .seek:focus-visible,
+  .scope:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  figcaption {
+    margin-top: var(--space-xs);
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 16, 'SOFT' 60, 'WONK' 0;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--text-soft);
+    text-wrap: balance;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .play,
+    .seek::-webkit-slider-thumb {
+      transition: none;
+    }
+    .loading .eyebrow::after {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  // ───────────────────────────────────────────────────────────────
+  // Spectrogram + live-spectrum audio player.
+  //
+  // Ships only on pages that render <Audio> (this post), because Astro
+  // bundles a component's script per-page. Progressive enhancement:
+  // the native <audio controls> works with no JS; this upgrades it.
+  //
+  // Pipeline: fetch the file once -> Blob (feeds the <audio> element for
+  // playback) + decodeAudioData (feeds an offline log-frequency
+  // spectrogram, computed with a hand-rolled radix-2 FFT). A live
+  // AnalyserNode taps the element during playback to draw the "now"
+  // spectrum strip, sharing the spectrogram's frequency axis.
+  // ───────────────────────────────────────────────────────────────
+
+  const FFT_SIZE = 2048;
+  const HALF = FFT_SIZE / 2;
+  const ROWS = 220; // vertical resolution of the spectrogram (freq bins shown)
+  const F_MIN = 60;
+  const F_MAX = 16000;
+  const DB_FLOOR = -78;
+  const DB_CEIL = -26;
+  const LIVE_W = 46; // px reserved on the right for the live spectrum strip
+  const LIVE_GAP = 11;
+  const LIVE_BANDS = 32; // coarse EQ bands so the strip reads distinct from the fine spectrogram
+
+  const prefersReduced =
+    typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // One shared AudioContext across every player on the page.
+  let sharedCtx: AudioContext | null = null;
+  const getCtx = () => {
+    if (!sharedCtx) {
+      const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      sharedCtx = new AC();
+    }
+    return sharedCtx;
+  };
+
+  // Registry so playing one clip pauses the others.
+  let players: SpectrogramPlayer[] = [];
+
+  // ── Hann window, precomputed once ──
+  const HANN = new Float32Array(FFT_SIZE);
+  for (let i = 0; i < FFT_SIZE; i++) {
+    HANN[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (FFT_SIZE - 1)));
+  }
+
+  // ── In-place iterative radix-2 FFT ──
+  function fft(re: Float32Array, im: Float32Array) {
+    const n = re.length;
+    for (let i = 1, j = 0; i < n; i++) {
+      let bit = n >> 1;
+      for (; j & bit; bit >>= 1) j ^= bit;
+      j ^= bit;
+      if (i < j) {
+        const tr = re[i];
+        re[i] = re[j];
+        re[j] = tr;
+        const ti = im[i];
+        im[i] = im[j];
+        im[j] = ti;
+      }
+    }
+    for (let len = 2; len <= n; len <<= 1) {
+      const ang = (-2 * Math.PI) / len;
+      const wr = Math.cos(ang);
+      const wi = Math.sin(ang);
+      const half = len >> 1;
+      for (let i = 0; i < n; i += len) {
+        let cr = 1;
+        let ci = 0;
+        for (let k = 0; k < half; k++) {
+          const a = i + k;
+          const b = a + half;
+          const tr = re[b] * cr - im[b] * ci;
+          const ti = re[b] * ci + im[b] * cr;
+          re[b] = re[a] - tr;
+          im[b] = im[a] - ti;
+          re[a] += tr;
+          im[a] += ti;
+          const ncr = cr * wr - ci * wi;
+          ci = cr * wi + ci * wr;
+          cr = ncr;
+        }
+      }
+    }
+  }
+
+  // Map each output row (0 = top = high freq) to a source FFT-bin range,
+  // log-spaced between F_MIN and F_MAX. Returns [loBin, hiBin) per row.
+  function rowBinRanges(sampleRate: number): Int32Array {
+    const binHz = sampleRate / FFT_SIZE;
+    const edges = new Int32Array(ROWS + 1);
+    for (let r = 0; r <= ROWS; r++) {
+      // r=0 -> high freq (top of canvas). Invert so edges go low->high.
+      const t = 1 - r / ROWS;
+      const freq = F_MIN * (F_MAX / F_MIN) ** t;
+      edges[r] = Math.min(HALF - 1, Math.max(1, Math.round(freq / binHz)));
+    }
+    return edges; // length ROWS+1, descending freq as r grows
+  }
+
+  const fmt = (s: number) => {
+    if (!isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+  };
+
+  type RGB = [number, number, number];
+
+  // Resolve a CSS custom property to an sRGB triple by painting 1px.
+  const probe = document.createElement('canvas');
+  probe.width = probe.height = 1;
+  const probeCtx = probe.getContext('2d', { willReadFrequently: true })!;
+  function resolveColor(varName: string): RGB {
+    const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    probeCtx.clearRect(0, 0, 1, 1);
+    probeCtx.fillStyle = '#000';
+    probeCtx.fillStyle = val || '#000';
+    probeCtx.fillRect(0, 0, 1, 1);
+    const d = probeCtx.getImageData(0, 0, 1, 1).data;
+    return [d[0], d[1], d[2]];
+  }
+
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  const mix = (a: RGB, b: RGB, t: number): RGB => [
+    lerp(a[0], b[0], t),
+    lerp(a[1], b[1], t),
+    lerp(a[2], b[2], t),
+  ];
+
+  // 256-entry colormap: paper -> cobalt -> a touch toward ink for the hottest.
+  function buildLUT(): Uint8ClampedArray {
+    const bg = resolveColor('--bg');
+    const accent = resolveColor('--accent');
+    const ink = resolveColor('--text');
+    const lut = new Uint8ClampedArray(256 * 3);
+    for (let i = 0; i < 256; i++) {
+      // gamma > 1 keeps faint energy near paper so the loud strokes read as
+      // confident cobalt instead of an even blue haze.
+      const t = (i / 255) ** 1.35;
+      let c = mix(bg, accent, Math.min(1, t * 1.25));
+      if (t > 0.5) c = mix(c, ink, ((t - 0.5) / 0.5) * 0.5);
+      lut[i * 3] = c[0];
+      lut[i * 3 + 1] = c[1];
+      lut[i * 3 + 2] = c[2];
+    }
+    return lut;
+  }
+
+  class SpectrogramPlayer {
+    fig: HTMLElement;
+    audio: HTMLAudioElement;
+    playerEl: HTMLElement;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    btn: HTMLButtonElement;
+    seek: HTMLInputElement;
+    timeEl: HTMLElement;
+    durEl: HTMLElement;
+    loadingEl: HTMLElement;
+    src: string;
+
+    cols = 0;
+    grid: Uint8Array | null = null; // cols*ROWS magnitudes 0..255
+    edges: Int32Array | null = null;
+    specCanvas: HTMLCanvasElement | null = null; // offscreen cols x ROWS
+    lut: Uint8ClampedArray;
+
+    analyser: AnalyserNode | null = null;
+    liveData: Uint8Array<ArrayBuffer> | null = null;
+    sourceNode: MediaElementAudioSourceNode | null = null;
+
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    cssW = 0;
+    cssH = 0;
+    raf = 0;
+    started = false;
+    duration = 0;
+    dragging = false;
+
+    constructor(fig: HTMLElement) {
+      this.fig = fig;
+      this.src = fig.dataset.src!;
+      this.audio = fig.querySelector('[data-native]')!;
+      this.playerEl = fig.querySelector('[data-player]')!;
+      this.canvas = fig.querySelector('[data-scope]')!;
+      this.ctx = this.canvas.getContext('2d')!;
+      this.btn = fig.querySelector('[data-play]')!;
+      this.seek = fig.querySelector('[data-seek]')!;
+      this.timeEl = fig.querySelector('[data-time]')!;
+      this.durEl = fig.querySelector('[data-dur]')!;
+      this.loadingEl = fig.querySelector('[data-loading]')!;
+      this.lut = buildLUT();
+    }
+
+    async init() {
+      // Reveal the enhanced shell; keep loading overlay until the grid is ready.
+      this.playerEl.hidden = false;
+      this.fig.setAttribute('data-enhanced', '');
+      this.audio.removeAttribute('controls');
+
+      this.resize();
+      new ResizeObserver(() => this.resize()).observe(this.canvas);
+
+      this.wireControls();
+      this.wireTheme();
+
+      // Don't fetch/decode until the player is near the viewport.
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            io.disconnect();
+            this.load().catch((err) => this.bail(err));
+          }
+        },
+        { rootMargin: '400px 0px' },
+      );
+      io.observe(this.fig);
+    }
+
+    bail(err: unknown) {
+      // Decode/analysis failed — fall back to the native player.
+      console.warn('[Audio] enhancement failed, using native controls', err);
+      this.fig.removeAttribute('data-enhanced');
+      this.playerEl.hidden = true;
+      this.audio.setAttribute('controls', '');
+    }
+
+    async load() {
+      const res = await fetch(this.src);
+      if (!res.ok) throw new Error(`fetch ${res.status}`);
+      const buf = await res.arrayBuffer();
+
+      // Blob URL drives playback from the same bytes (one network round-trip).
+      const blob = new Blob([buf.slice(0)], { type: res.headers.get('content-type') || 'audio/mpeg' });
+      this.audio.src = URL.createObjectURL(blob);
+
+      const audioBuf = await getCtx().decodeAudioData(buf);
+      await this.analyze(audioBuf);
+
+      this.duration = audioBuf.duration;
+      this.durEl.textContent = fmt(this.duration);
+
+      this.loadingEl.setAttribute('hidden', '');
+      this.render();
+    }
+
+    // Offline windowed FFT -> log-frequency magnitude grid. Chunked across
+    // animation frames so a 20s clip never blocks the main thread.
+    async analyze(audioBuf: AudioBuffer) {
+      const sr = audioBuf.sampleRate;
+      const ch = audioBuf.numberOfChannels;
+      const n = audioBuf.length;
+
+      // Mono mix.
+      const mono = new Float32Array(n);
+      for (let c = 0; c < ch; c++) {
+        const data = audioBuf.getChannelData(c);
+        for (let i = 0; i < n; i++) mono[i] += data[i] / ch;
+      }
+
+      const cols = Math.max(200, Math.min(1100, Math.round(audioBuf.duration * 34)));
+      const hop = Math.max(1, Math.floor((n - FFT_SIZE) / (cols - 1)));
+      const edges = rowBinRanges(sr);
+      const grid = new Uint8Array(cols * ROWS);
+
+      const re = new Float32Array(FFT_SIZE);
+      const im = new Float32Array(FFT_SIZE);
+      const range = DB_CEIL - DB_FLOOR;
+
+      let cAt = 0;
+      const step = () =>
+        new Promise<void>((resolve) => {
+          const deadline = performance.now() + 12; // ~12ms slices
+          while (cAt < cols && performance.now() < deadline) {
+            const start = cAt * hop;
+            for (let i = 0; i < FFT_SIZE; i++) {
+              const s = start + i;
+              re[i] = s < n ? mono[s] * HANN[i] : 0;
+              im[i] = 0;
+            }
+            fft(re, im);
+            // For each display row, take the peak magnitude over its bin range.
+            for (let r = 0; r < ROWS; r++) {
+              const hi = edges[r]; // higher freq edge
+              const lo = edges[r + 1]; // lower freq edge (lo <= hi)
+              let peak = 0;
+              for (let b = lo; b <= hi; b++) {
+                const mag = re[b] * re[b] + im[b] * im[b];
+                if (mag > peak) peak = mag;
+              }
+              const amp = Math.sqrt(peak) / HALF;
+              const db = 20 * Math.log10(amp + 1e-9);
+              const norm = Math.max(0, Math.min(1, (db - DB_FLOOR) / range));
+              grid[cAt * ROWS + r] = (norm * 255) | 0;
+            }
+            cAt++;
+          }
+          resolve();
+        });
+
+      while (cAt < cols) {
+        await step();
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+
+      this.cols = cols;
+      this.grid = grid;
+      this.edges = edges;
+      this.paintSpectrogram();
+    }
+
+    // Render the magnitude grid into an offscreen cols x ROWS canvas via the LUT.
+    paintSpectrogram() {
+      if (!this.grid) return;
+      const off = this.specCanvas || document.createElement('canvas');
+      off.width = this.cols;
+      off.height = ROWS;
+      const octx = off.getContext('2d')!;
+      const img = octx.createImageData(this.cols, ROWS);
+      const px = img.data;
+      const lut = this.lut;
+      for (let x = 0; x < this.cols; x++) {
+        for (let r = 0; r < ROWS; r++) {
+          const v = this.grid[x * ROWS + r];
+          const di = (r * this.cols + x) * 4;
+          px[di] = lut[v * 3];
+          px[di + 1] = lut[v * 3 + 1];
+          px[di + 2] = lut[v * 3 + 2];
+          px[di + 3] = 255;
+        }
+      }
+      octx.putImageData(img, 0, 0);
+      this.specCanvas = off;
+    }
+
+    resize() {
+      const rect = this.canvas.getBoundingClientRect();
+      if (!rect.width) return;
+      this.cssW = rect.width;
+      this.cssH = rect.height;
+      this.canvas.width = Math.round(rect.width * this.dpr);
+      this.canvas.height = Math.round(rect.height * this.dpr);
+      this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      this.render();
+    }
+
+    get specW() {
+      return Math.max(10, this.cssW - LIVE_W - LIVE_GAP);
+    }
+
+    render() {
+      const ctx = this.ctx;
+      const W = this.cssW;
+      const H = this.cssH;
+      if (!W || !H) return;
+      const bg = getComputedStyle(this.fig).getPropertyValue('--bg').trim() || '#fff';
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      const sw = this.specW;
+
+      if (this.specCanvas) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(this.specCanvas, 0, 0, this.cols, ROWS, 0, 0, sw, H);
+      }
+
+      const prog = this.duration ? this.audio.currentTime / this.duration : 0;
+      const playX = prog * sw;
+
+      // Dim the not-yet-played region so progress reads on the spectrogram.
+      // At rest (nothing played) show the full image — the smear is the point.
+      if (this.specCanvas && prog > 0.0005) {
+        ctx.save();
+        ctx.fillStyle = bg;
+        ctx.globalAlpha = 0.24;
+        ctx.fillRect(playX, 0, sw - playX, H);
+        ctx.restore();
+      }
+
+      // Playhead — a bright cobalt line with a soft bloom either side.
+      if (this.specCanvas) {
+        const accent = getComputedStyle(this.fig).getPropertyValue('--accent').trim();
+        const px = Math.min(sw - 1, Math.max(0, playX));
+        const grad = ctx.createLinearGradient(px - 7, 0, px + 7, 0);
+        grad.addColorStop(0, 'transparent');
+        grad.addColorStop(0.5, accent);
+        grad.addColorStop(1, 'transparent');
+        ctx.save();
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = grad;
+        ctx.fillRect(px - 7, 0, 14, H);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = accent;
+        ctx.fillRect(px - 0.75, 0, 1.5, H);
+        ctx.restore();
+      }
+
+      // Live spectrum strip (shares the freq axis with the spectrogram).
+      this.renderLive(sw, LIVE_GAP, LIVE_W, H, playX);
+    }
+
+    // The right strip: the instantaneous spectrum as a coarse EQ meter, banded
+    // so it reads as a distinct "now" instrument rather than more spectrogram.
+    // It shares the spectrogram's log-frequency axis (high freq at top). While
+    // playing (motion allowed) it reads the live analyser; otherwise it mirrors
+    // the spectrogram column under the playhead, so it's never empty.
+    renderLive(sepX: number, gap: number, w: number, H: number, playX: number) {
+      const ctx = this.ctx;
+      const x0 = sepX + gap;
+      const accent = getComputedStyle(this.fig).getPropertyValue('--accent').trim();
+      ctx.clearRect(sepX, 0, gap + w, H);
+
+      // Hairline separator between the spectrogram and the live meter.
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = getComputedStyle(this.fig).getPropertyValue('--rule').trim();
+      ctx.fillRect(sepX + gap / 2 - 0.5, 0, 1, H);
+      ctx.restore();
+
+      const live = this.analyser && this.liveData && !this.audio.paused && !prefersReduced;
+      let rowMag: ((r: number) => number) | null = null;
+
+      if (live && this.edges) {
+        this.analyser!.getByteFrequencyData(this.liveData!);
+        const data = this.liveData!;
+        const edges = this.edges;
+        rowMag = (r: number) => {
+          const hi = edges[r];
+          const lo = edges[r + 1];
+          let peak = 0;
+          for (let b = lo; b <= hi; b++) if (data[b] > peak) peak = data[b];
+          return peak / 255;
+        };
+      } else if (this.grid && this.cols) {
+        const col = Math.max(0, Math.min(this.cols - 1, Math.round((playX / this.specW) * (this.cols - 1))));
+        const grid = this.grid;
+        rowMag = (r: number) => grid[col * ROWS + r] / 255;
+      }
+
+      if (!rowMag) return;
+
+      // Collapse the ROWS into LIVE_BANDS coarse bands (peak per band).
+      const bandH = H / LIVE_BANDS;
+      const rowsPerBand = ROWS / LIVE_BANDS;
+      for (let band = 0; band < LIVE_BANDS; band++) {
+        let m = 0;
+        const r0 = Math.floor(band * rowsPerBand);
+        const r1 = Math.floor((band + 1) * rowsPerBand);
+        for (let r = r0; r < r1; r++) m = Math.max(m, rowMag(r));
+        const y = band * bandH;
+        // track
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = accent;
+        ctx.fillRect(x0, y + 1, w, bandH - 2);
+        // level (anchored at the right edge, growing left)
+        if (m > 0.03) {
+          const len = m * w;
+          ctx.globalAlpha = 0.4 + m * 0.6;
+          ctx.fillRect(x0 + (w - len), y + 1, len, bandH - 2);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    ensureGraph() {
+      if (this.analyser) return;
+      const ctx = getCtx();
+      this.sourceNode = ctx.createMediaElementSource(this.audio);
+      this.analyser = ctx.createAnalyser();
+      this.analyser.fftSize = FFT_SIZE;
+      this.analyser.smoothingTimeConstant = 0.72;
+      this.liveData = new Uint8Array(this.analyser.frequencyBinCount);
+      this.sourceNode.connect(this.analyser);
+      this.analyser.connect(ctx.destination);
+    }
+
+    loop = () => {
+      this.syncTime();
+      this.render();
+      if (!this.audio.paused) this.raf = requestAnimationFrame(this.loop);
+    };
+
+    syncTime() {
+      this.timeEl.textContent = fmt(this.audio.currentTime);
+      if (!this.dragging) {
+        const v = this.duration ? (this.audio.currentTime / this.duration) * 1000 : 0;
+        this.seek.value = String(v);
+        this.seek.style.setProperty('--fill', `${v / 10}%`);
+      }
+    }
+
+    async play() {
+      for (const p of players) if (p !== this) p.pause();
+      this.ensureGraph();
+      const ctx = getCtx();
+      if (ctx.state === 'suspended') await ctx.resume();
+      await this.audio.play();
+    }
+
+    pause() {
+      this.audio.pause();
+    }
+
+    seekToClientX(clientX: number) {
+      const rect = this.canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      if (x > this.specW) return; // clicks in the live strip don't seek
+      const t = Math.max(0, Math.min(1, x / this.specW)) * this.duration;
+      if (isFinite(t)) {
+        this.audio.currentTime = t;
+        this.syncTime();
+        this.render();
+      }
+    }
+
+    wireControls() {
+      this.btn.addEventListener('click', () => {
+        if (this.audio.paused) this.play();
+        else this.pause();
+      });
+
+      this.audio.addEventListener('play', () => {
+        this.btn.setAttribute('aria-pressed', 'true');
+        this.btn.setAttribute('aria-label', 'Pause');
+        cancelAnimationFrame(this.raf);
+        this.loop();
+      });
+      this.audio.addEventListener('pause', () => {
+        this.btn.setAttribute('aria-pressed', 'false');
+        this.btn.setAttribute('aria-label', 'Play');
+        cancelAnimationFrame(this.raf);
+        this.render();
+      });
+      this.audio.addEventListener('ended', () => {
+        cancelAnimationFrame(this.raf);
+        this.audio.currentTime = 0;
+        this.syncTime();
+        this.render();
+      });
+      this.audio.addEventListener('timeupdate', () => {
+        if (this.audio.paused) this.syncTime();
+      });
+
+      // Seek slider (keyboard + screen-reader friendly).
+      this.seek.addEventListener('input', () => {
+        this.dragging = true;
+        const frac = Number(this.seek.value) / 1000;
+        this.seek.style.setProperty('--fill', `${frac * 100}%`);
+        if (this.duration) {
+          this.audio.currentTime = frac * this.duration;
+          this.timeEl.textContent = fmt(this.audio.currentTime);
+          this.render();
+        }
+      });
+      this.seek.addEventListener('change', () => {
+        this.dragging = false;
+      });
+      // Report position as time to assistive tech.
+      this.seek.setAttribute('aria-valuetext', '0:00');
+      const setVT = () => this.seek.setAttribute('aria-valuetext', fmt(this.audio.currentTime));
+      this.audio.addEventListener('timeupdate', setVT);
+
+      // Pointer scrub on the spectrogram itself.
+      this.canvas.addEventListener('pointerdown', (e) => {
+        if ((e.offsetX ?? 0) > this.specW) return;
+        this.canvas.setPointerCapture(e.pointerId);
+        this.dragging = true;
+        this.seekToClientX(e.clientX);
+      });
+      this.canvas.addEventListener('pointermove', (e) => {
+        if (this.dragging) this.seekToClientX(e.clientX);
+      });
+      const endDrag = (e: PointerEvent) => {
+        if (this.dragging) {
+          this.dragging = false;
+          try {
+            this.canvas.releasePointerCapture(e.pointerId);
+          } catch {}
+          this.syncTime();
+        }
+      };
+      this.canvas.addEventListener('pointerup', endDrag);
+      this.canvas.addEventListener('pointercancel', endDrag);
+
+      // Pause off-screen players to save the main thread.
+      new IntersectionObserver(
+        (entries) => {
+          for (const en of entries) if (!en.isIntersecting && !this.audio.paused) this.pause();
+        },
+        { threshold: 0 },
+      ).observe(this.fig);
+    }
+
+    wireTheme() {
+      // Rebuild the colormap + repaint when the site theme flips.
+      const obs = new MutationObserver(() => {
+        this.lut = buildLUT();
+        this.paintSpectrogram();
+        this.render();
+      });
+      obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+  }
+
+  function boot() {
+    // Drop players whose DOM was swapped out by a view transition.
+    players = players.filter((p) => p.fig.isConnected);
+    const figs = document.querySelectorAll<HTMLElement>('[data-audio]:not([data-booted])');
+    for (const fig of figs) {
+      fig.setAttribute('data-booted', '');
+      try {
+        const p = new SpectrogramPlayer(fig);
+        players.push(p);
+        p.init();
+      } catch (err) {
+        console.warn('[Audio] init error', err);
+      }
+    }
+  }
+
+  boot();
+  // Re-boot after Astro view-transition swaps.
+  document.addEventListener('astro:after-swap', boot);
+</script>

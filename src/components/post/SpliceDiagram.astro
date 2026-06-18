@@ -1,0 +1,119 @@
+---
+// The splice pipeline from "The pivot", as a Mermaid flowchart. The diagram is
+// pre-rendered to SVG at author time (one per theme) and inlined here, so no
+// mermaid.js runtime ships to readers. To regenerate after editing the graph,
+// see src/assets/diagrams/splice-pipeline.gen.mjs and re-run mermaid-cli.
+import lightSvg from '../../assets/diagrams/splice-pipeline-light.svg?raw';
+import darkSvg from '../../assets/diagrams/splice-pipeline-dark.svg?raw';
+---
+
+<figure class="post-diagram">
+  <div class="diagram light" set:html={lightSvg} aria-hidden="true"></div>
+  <div class="diagram dark" set:html={darkSvg} aria-hidden="true"></div>
+
+  {/* Text alternative for screen readers + the failure the diagram can't say. */}
+  <p class="sr-only">
+    The master splits at Demucs into an instrumental stem and a vocal stem. The
+    vocal stem goes through librosa onset detection to find the chant slots.
+    Separately, the replacement name is synthesized by Chirp 3 HD, then
+    time-stretched, pitched, bandpassed and clipped into name clips. The slots
+    and the clips meet at the splice, which is remixed with the instrumental
+    stem into the festival edit.
+  </p>
+
+  <p class="verdict">
+    <span class="chip ok">✓ the name is clear</span>
+    <span class="chip bad">✗ prosody reads as narration, not chant</span>
+  </p>
+
+  <figcaption>
+    The splice pipeline I hand-built. Every stage did its job. The merge at the
+    bottom is where it fell down: clear words, wrong instrument.
+  </figcaption>
+</figure>
+
+<style>
+  .post-diagram {
+    margin: var(--space-xl) 0;
+    padding: var(--space-md) var(--space-lg) var(--space-lg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: color-mix(in oklch, var(--accent) 2.5%, var(--surface));
+  }
+
+  .diagram {
+    display: flex;
+    justify-content: center;
+  }
+  /* mermaid stamps an inline max-width; let the SVG breathe to the column */
+  .diagram :global(svg) {
+    width: 100%;
+    max-width: 440px;
+    height: auto;
+  }
+  /* The node labels are fixed-width foreignObjects measured at render time.
+     The site's global ss01/cv11 features render Inter a hair wider on-page, so
+     the text overflows and clips. Match the measured metrics and stop clipping. */
+  .diagram :global(foreignObject),
+  .diagram :global(.nodeLabel),
+  .diagram :global(.edgeLabel),
+  .diagram :global(.labelBkg) {
+    overflow: visible;
+    font-feature-settings: normal;
+    letter-spacing: 0;
+  }
+
+  .dark {
+    display: none;
+  }
+  :global([data-theme='dark']) .light {
+    display: none;
+  }
+  :global([data-theme='dark']) .dark {
+    display: flex;
+  }
+
+  .verdict {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-sm);
+    margin: var(--space-md) 0 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--rule);
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    line-height: 1.3;
+  }
+  .chip.ok {
+    color: var(--color-status-green);
+  }
+  .chip.bad {
+    color: var(--color-status-red);
+  }
+
+  figcaption {
+    margin-top: var(--space-sm);
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 16, 'SOFT' 60, 'WONK' 0;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--text-soft);
+    text-wrap: balance;
+    text-align: center;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
