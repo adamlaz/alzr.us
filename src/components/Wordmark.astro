@@ -3,22 +3,26 @@ interface Props {
   hero?: boolean;
   href?: string;
   text?: string;
+  // When set, the live layer becomes a morph target: wordmark-morph.ts expands
+  // `text` into this string on first landing of a session (home hero only).
+  morph?: string;
 }
 
-const { hero = false, href, text = 'alzr.us' } = Astro.props;
+const { hero = false, href, text = 'alzr.us', morph } = Astro.props;
 const className = ['wordmark', hero ? 'wordmark--hero' : ''].filter(Boolean).join(' ');
+const morphState = morph ? 'init' : undefined;
 ---
 
 {
   href ? (
     <a href={href} class={className} aria-label="alzr.us home">
       <span class="wordmark__sizer" aria-hidden="true">{text}</span>
-      <span class="wordmark__live" data-kinetic>{text}</span>
+      <span class="wordmark__live" data-kinetic data-wordmark-morph={morph} data-morph-state={morphState}>{text}</span>
     </a>
   ) : (
     <span class={className}>
       <span class="wordmark__sizer" aria-hidden="true">{text}</span>
-      <span class="wordmark__live" data-kinetic>{text}</span>
+      <span class="wordmark__live" data-kinetic data-wordmark-morph={morph} data-morph-state={morphState}>{text}</span>
     </span>
   )
 }

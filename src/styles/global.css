@@ -505,6 +505,44 @@ a.wordmark:focus-visible {
   }
 }
 
+/* ── Morph hero (home): alzr.us -> adam lazarus ──────────────────────────────
+   Keep the name on one display line like the domain was: the FLIP morph plays
+   on one line, so wrapping at rest would jump 1 line -> 2 at the hand-off. The
+   one-line name breaks the 68ch measure by ~40px at the largest viewports, but
+   .site-main isn't clipped, so it spills into the empty outer margin (never past
+   the viewport edge -> no horizontal scroll). */
+.wordmark--hero .wordmark__live[data-morph-state] {
+  white-space: nowrap;
+}
+
+/* wordmark-morph.ts owns the entrance while it runs, so suppress the CSS
+   settle/breath until it hands back a resting name (data-morph-state='done').
+   This selector also outranks the settle rules above (more attributes), so
+   settle never fires on the morph hero -- the morph replaces it. */
+.wordmark--hero .wordmark__live[data-morph-state]:not([data-morph-state='done']) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wordmark--hero .wordmark__live[data-morph-state='done'] {
+    /* No re-entrance -- the morph already settled the name; just resume breath. */
+    animation: wordmark-breath 5600ms ease-in-out 600ms infinite alternate;
+  }
+}
+
+/* Morph glyphs: inline-block so the engine can transform + size them per letter
+   (transforms don't apply to inline boxes). Rendered at the hero's resting axes
+   so they're visually identical to the kinetic glyphs handed off at the end. */
+.wordmark__live .wm-mg {
+  display: inline-block;
+  font-variation-settings:
+    'opsz' var(--base-opsz),
+    'SOFT' var(--base-soft),
+    'WONK' var(--base-wonk),
+    'wght' var(--base-wght);
+  will-change: transform, opacity;
+}
+
 /* Settle + breath animate the registered `--base-*` numbers (not
    `font-variation-settings`, which can't be interpolated), so glyphs blend the
    live base with their proximity delta seamlessly. */
@@ -663,7 +701,9 @@ a.wordmark:focus-visible {
 
   .wordmark,
   .wordmark--hero,
+  .wordmark__live[data-morph-state='done'],
   [data-kinetic] .glyph,
+  .wordmark__live .wm-mg,
   .post header h1[data-kinetic],
   .post-card h2[data-kinetic] {
     animation: none;

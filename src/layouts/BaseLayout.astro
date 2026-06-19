@@ -158,6 +158,7 @@ const ogImageAltText = ogImageAlt ?? title;
 
     <script>
       import { init as initKineticType } from '../scripts/kinetic-type';
+      import { init as initWordmarkMorph } from '../scripts/wordmark-morph';
 
       // Re-apply theme + reattach toggle after view transitions.
       // Name the action's destination, so the control announces its state.
@@ -253,12 +254,16 @@ const ogImageAltText = ogImageAlt ?? title;
       wireToggle();
       wireStickyHeader();
       wireNavMorph();
+      // Runs before kinetic: the home hero's morph claims its live layer
+      // (removing data-kinetic) so kinetic skips it until the morph hands it back.
+      initWordmarkMorph();
       initKineticType();
       document.addEventListener('astro:after-swap', () => {
         applyTheme();
         wireToggle();
         wireStickyHeader();
         lastY = window.scrollY;
+        initWordmarkMorph();
         initKineticType();
       });
     </script>
