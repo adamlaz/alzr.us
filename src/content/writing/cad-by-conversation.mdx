@@ -1,0 +1,327 @@
+---
+title: 'CAD by conversation'
+date: 2026-07-08
+description: "A pool-light collar, a rod-holder gift, a tri-color pun sign, nine sizes of hole plug, and a drawer of custom Gridfinity bins -- a month of household parts that came out of one-line asks in OpenSCAD, with the failure that taught each one written down."
+draft: true
+ogTreatment: default
+pullQuote: "The model can't hold the printed part, and I can't write geometry fast enough to matter. Between us there's a workflow."
+tags: ['ai-augmented-engineering', 'craft', '3d-printing']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+import Figure from '../../components/post/Figure.astro';
+import RenderLoopDiagram from '../../components/post/RenderLoopDiagram.astro';
+
+The white ASA collar that snaps around my pool's floating light began as a
+pencil sketch and exactly two measurements: 110 millimeters across the light
+body, 25 millimeters up the brim. Its whole job is width -- it makes the
+light too wide to get pulled into the skimmer throat, a part nobody sells. I
+never opened a CAD application. I described what I wanted in one-line asks,
+Claude wrote OpenSCAD, a render showed us both what the words had actually
+said, and on June 21st the first print snapped onto the light and held.
+
+That was week one. Three weeks later the same loop had produced a drawer of
+custom Gridfinity bins, a batch plate of nine hole plugs, a rod-holder insert
+for a fishing buddy, and a tri-color joke sign, and it had picked up a
+discipline I didn't expect to need.
+
+## The geometry is text
+
+OpenSCAD is CAD as source code: a part is a program, and the program compiles
+to a solid.<Note id="1" /> No sketching, no mouse, no feature tree -- a
+`cylinder()` here, a `difference()` there, variables for every dimension that
+might change.
+
+For an AI pair, that property is the entire ballgame. A language model has no
+eyes on a B-rep surface and no cursor to drag a fillet with. What it has is
+fluency in structured text: emitting it, revising it, holding its rules in
+its head. Code-CAD converts "model this" into a text-transformation problem.
+And the side effects are the point: the part is parametric by default,
+diffable in git, and re-generatable for as long as the library holds still.
+One dimension on the collar is still a guess -- the skimmer throat is modeled
+at 225 millimeters because I haven't fished the real number out of the deck
+yet -- and when I do, the fix is editing one variable and reprinting, not
+remodeling.
+
+The geometry was always text, of course; OpenSCAD predates the AI that now
+writes it by fifteen years. What changed is who writes it. The unit of
+iteration used to be my evening with a manual, and now it's a sentence. The
+heavy lifting rides on BOSL2, the community geometry library that gives
+OpenSCAD real fillets, edge rounding, and attachment semantics.<Note id="2" />
+Claude reaches for library constructs I wouldn't have found in a week of
+docs, and it also invents plausible-looking arguments that don't exist.
+Which is why the whole workflow hangs on a loop.
+
+For caps, plugs, rings, shims, brackets, and bins, code-CAD driven by
+conversation is now the fastest tool I own -- a sentence I would not have
+believed in May.
+
+## The loop
+
+The workflow is a conversation with a compiler in the middle:
+
+<RenderLoopDiagram />
+
+The collar went through five shapes in one evening, every step a single ask.
+A solid two-half clamp bolted together. Then a top-and-bottom clamshell that
+snapped instead of bolting. Then the solid cup opened into a spoked frame.
+Then fillets and brim windows. Then the frame's posts re-rooted so each arm
+anchors into the hub wall. None of those asks was longer than a sentence, and
+none of them was a spec. Claude edits the source, renders it headless
+(`openscad -o check.png`), and reads the picture back itself; I look at the
+same image with different questions. The artifact under all of it stays
+plain text -- these lines are verbatim from the model file:
+
+```scad
+/* [Light measurements] */
+// Light outer diameter (mm)
+light_d = 110;  // [40:1:200]
+// Brim height - the vertical wall that gets captured (mm)
+brim_h  = 25;   // [8:1:60]
+
+/* [Skimmer / width] */
+// Collar outer diameter - MUST exceed the skimmer throat (mm)
+collar_od = 225; // [120:1:260]
+
+part = "bottom"; // [assembled, bottom, lid, both_flat]
+```
+
+One `openscad -o cup.stl -D 'part="bottom"' collar.scad` later, the cup is
+sitting in the slicer.
+
+<Figure
+  src="/images/writing/cad-by-conversation/collar-assembled.png"
+  alt="OpenSCAD render of the assembled skimmer light collar: a wide spoked outer ring surrounding a cylindrical windowed hub with small gabled windows, capped by a gray lid ring hooked over the snap posts."
+  width={1290}
+  height={860}
+  caption="The picture we both look at: the assembled collar, straight off openscad. Windowed hub, spokes out to the too-wide ring, lid hooked by the posts."
+/>
+
+Two constraints I had to state like requirements, because no render would
+ever surface them: both parts print flat with no supports, and the little
+gabled windows in the brim are self-supporting at 45 degrees.
+
+<PullQuote>
+  A sentence in, a render out. The picture is where the ask meets the object,
+  and it settles the argument faster than either of us can talk.
+</PullQuote>
+
+## Compiles clean, fails as an object
+
+Render-and-eyeball exists because the model reliably produces geometry that
+compiles and still fails as an object. Its recurring failure class is
+composition: parts that meet but don't join. The drawer-organizer bins made
+it a trilogy, three versions in two days, every one of them passing the
+renders and failing in the slicer.
+
+Version 2.1: the interior corner fillets notched the rolled rim by a
+millimeter at each corner, because the rim bead only covered the midline of
+the wall. Version 3 was the deep one: visible steps where the finger dips met
+the rim. Root cause, the rim was composited from separate segments meeting at
+tangent seams -- the same "pieces pretending to be a surface" failure, now
+load-bearing. The fix that stuck was categorical: rebuild the rim as one
+closed 3D path swept in a single BOSL2 `path_sweep`, dips included, so no
+junction exists to fail. The rule went into the project notes as *make seams
+impossible instead of patching them*. Version 3.1 was the epilogue: the new
+rounder body left a crescent of foot poking proud at each bottom corner,
+fixed by lofting the corner radius from 3.75 up to 6 over the first 11
+millimeters of height. Bounding-box checks to a hundredth of a millimeter
+proved each rebuild matched the intended envelope -- code equivalence, not
+print precision.
+
+<Figure
+  src="/images/writing/cad-by-conversation/bin-v3-hero.png"
+  alt="OpenSCAD render of a long rectangular drawer bin with a rounded rolled rim and a scooped finger dip at each end."
+  width={1100}
+  height={700}
+  caption="Bin v3: the rolled rim and both finger dips are one continuous swept path. No junctions left to fail."
+/>
+
+Three catches, zero caught by a render -- not because renders are useless
+(they killed four collar shapes in one evening) but because composition
+failures hide in exactly the places a pretty picture glosses over. The
+slicer's layer preview prices every mistake in grams and hours, shows the
+step the render forgave, and doesn't care how nice the code reads. Model
+proposes, render persuades, slicer decides.
+
+## A month of parts
+
+| Part | The input | Material | Where it stands |
+| --- | --- | --- | --- |
+| Skimmer light collar | hand sketch + 2 measurements | ASA | printed June 21, fits the light; final width waits on one measurement |
+| Rod-holder insert | 3 reference photos | flexible filament; stiff ruled out | printed the next day |
+| "BEWARE of DOUG" sign | 1 reference photo of the classic enamel sign | tri-color PLA | print files ready, inlay + raised variants |
+| Hole plugs, 9 sizes | calipers on chair + door-frame holes | PLA | nine STLs on one batch plate |
+| Silverware drawer kit | tape measure: 337 x 450 x 75 mm | PLA | grid printed and fitted; bins sliced, gated on one fork |
+
+**The rod-holder insert** -- a gift for a fishing buddy -- dropped the sketch
+entirely: modeled from three reference photos and four parametric inputs, an
+Assassin-style tapered cushion that wedges into an oversized boat rod holder.
+Its keyhole slot has to flex open to clip over a rigged rod, which drove the
+material call (stiff filament cracks at the slot's neck unless you give up
+the snap). And it carries my favorite trick of the batch: the model ships a
+`part="cutaway"` half-section whose only job is letting both of us see the
+internal bore and slot in a render -- an inspection fixture, living in the
+same file as the part.
+
+**The sign.** A friend named Doug was always going to receive a "BEWARE of
+DOUG" sign in the style of the classic black-and-red enamel original, and
+multi-color is where slicer craft starts to matter. The
+lettering lives in a one-millimeter front skin -- about five layers -- so the
+material swaps stay cheap, purge waste dumps into the big black body as
+infill, and the sign prints face down with the text pre-mirrored so the flush
+"inlay" face comes off the plate looking screen-printed.
+
+<Figure
+  src="/images/writing/cad-by-conversation/doug-inlay-front.png"
+  alt="Render of a rectangular sign styled like a classic enamel warning sign: gray outer frame, white pinstripe border, black field, and red capital letters reading BEWARE of DOUG with an underline."
+  width={1100}
+  height={800}
+  caption="The inlay variant, rendered. Every color in this image lives in the first millimeter of the print."
+/>
+
+{/*
+  PHOTO PLACEHOLDER (once the sign is printed) -- shoot: the physical sign,
+  straight on, same framing as the render above so the pair reads
+  render-vs-reality. Bonus: hung wherever Doug ends up hanging it.
+  Drop file at: public/images/writing/cad-by-conversation/photo-doug-printed.jpg
+  Then replace this comment with:
+  <Figure
+    src="/images/writing/cad-by-conversation/photo-doug-printed.jpg"
+    alt="The printed BEWARE of DOUG sign: black field, white border, red lettering, photographed straight on."
+    caption="Render above, print below. The AMS spent five layers on everything you can see."
+  />
+*/}
+
+It also surfaced the best gotcha of the month: OpenSCAD's fast preview
+mis-colors intersected geometry, so the field flashed red until we forced the
+full CGAL render. The fast picture lies a little.
+
+**The hole plugs** replaced a 290-piece assortment of stick-on hole covers
+whose drawer never once contained the size I needed. The replacement is a
+parametric generator in the well-worn customizer style: barbed push-plug,
+domed head, optional retention ribs, and a batch layout that grids out
+however many you ask for. Nine sizes between 8.5 and 15 millimeters, laid
+out on one plate, matched to the actual holes in the Adirondack chairs and a
+sliding-door frame instead of to a kit manufacturer's guess.
+
+{/*
+  PHOTO PLACEHOLDER -- shoot: the batch plate of nine plugs fresh off the
+  printer, or one plug seated in an Adirondack-chair arm (tighter is better).
+  Drop file at: public/images/writing/cad-by-conversation/photo-hole-plugs.jpg
+  Then replace this comment with:
+  <Figure
+    src="/images/writing/cad-by-conversation/photo-hole-plugs.jpg"
+    alt="Nine white 3D-printed hole plugs of graduated sizes arranged on a print plate."
+    caption="Nine sizes, one plate, zero drawer of almost-right stickers."
+  />
+*/}
+
+**The drawer kit** ran the loop at furniture scale. The Gridfinity project
+already ships a parametric baseplate generator, so the grid itself needed
+zero modeling -- tape-measure numbers in, plates out, split two-by-two for a
+256-millimeter bed. An eight-by-ten grid of 42-millimeter units covers 336
+by 420; the generator fuses the leftover 29 millimeters onto the rear plates
+as fit-to-drawer padding, and the assembled set lands within a millimeter of
+the drawer on both axes.<Note id="3" /> The custom work started only when
+the bins wanted rolled rims and finger dips the stock generator doesn't do,
+which is what produced the trilogy above. The full kit budgets over a
+kilogram of filament, so the slicer's grams-and-hours pricing stopped being
+abstract; the grid went first and doubled as the calibration test, and the
+bins sit sliced awaiting one over-length fork that decides which column
+layout prints.
+
+{/*
+  PHOTO PLACEHOLDER -- shoot: the printed baseplates fitted in the empty
+  silverware drawer, top-down, drawer fully open in natural light (bins in
+  place even better, if they're printed by publish day).
+  Drop file at: public/images/writing/cad-by-conversation/photo-grid-in-drawer.jpg
+  Then replace this comment with:
+  <Figure
+    src="/images/writing/cad-by-conversation/photo-grid-in-drawer.jpg"
+    alt="A kitchen drawer with 3D-printed Gridfinity baseplates fitted edge to edge inside it."
+    caption="The grid print is the calibration test: eight by ten units, one millimeter of slack each way."
+  />
+*/}
+
+Rules the month wrote into the project notes: search the model libraries
+before modeling anything (the printer's own desiccant containers were a
+download, not a design); no calipers means no measuring, and an unmeasured
+part waits; material follows exposure, ASA where the Florida sun and pool
+water get a vote, flexible where a neck has to bend, plain PLA indoors.
+Everything prints on a Bambu Lab X2D, whose heated chamber is the spec doing
+quiet work here -- it's what makes ASA a routine print instead of a gamble.
+And the honest bottleneck is no longer modeling. Two of the five builds sit
+gated on a number only I can go get, which makes the critical path of the
+whole workflow me, holding a tape measure.
+
+## The inputs keep getting thinner
+
+Look at the input column again: a sketch, then photos, then a single
+reference image, then bare numbers off a tape measure. The loop holds as the
+input thins: three photos or two tape-measure numbers still come back as a
+shape, and judging the shape is the same job at every thickness.
+
+The month started in FreeCAD: I hand-modeled replacement card-table inserts
+and a solar-light plate one feature at a time with a mouse. Real parts, fine
+work -- and nothing about part one made part two faster. The conversation
+loop compounds instead: the collar taught render checking, the bins taught
+seam discipline, the sign taught color economy, and every lesson is sitting
+in the next part's context window.
+
+The collar ships with this post: the
+[OpenSCAD source](/models/cad-by-conversation/skimmer-light-collar.scad),
+plus the print-ready
+[cup](/models/cad-by-conversation/skimmer-light-collar-cup.stl) and
+[lid](/models/cad-by-conversation/skimmer-light-collar-lid.stl) STLs. Flat,
+support-free, ASA recommended if it lives outside.
+
+{/*
+  3D PREVIEW PLACEHOLDER -- Adam: embed the interactive STL/scad viewer here
+  when the component exists. The files above are already served from
+  public/models/cad-by-conversation/. Note the STLs are 8-11 MB; consider a
+  decimated preview mesh for the viewer and keep the full files as the
+  download links.
+*/}
+
+{/*
+  PHOTO PLACEHOLDER -- shoot: the collar snapped on the floating light,
+  ideally in the pool. This is the money shot; afternoon light, low angle.
+  Drop file at: public/images/writing/cad-by-conversation/photo-collar-on-light.jpg
+  Then replace this comment with:
+  <Figure
+    src="/images/writing/cad-by-conversation/photo-collar-on-light.jpg"
+    alt="A white 3D-printed spoked collar snapped around a round floating pool light, in the water."
+    caption="The first print, on the light it was sketched for."
+  />
+*/}
+
+The collar's first print has been snapping on and off the pool light since
+June while one last number decides its final width. The sketch and every
+taste call were mine; the geometry was negotiated. I still can't sculpt a
+solid with a mouse. It turns out the scarce skill was never the modeling --
+it was knowing what right looks like when it renders, and being willing to
+say "again" until it does.<Note id="4" />
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: '<a href="https://openscad.org">OpenSCAD</a>, the programmers\' solid 3D CAD modeller. Constructive solid geometry, plain-text source, deterministic output. Same trick, other kernels: <a href="https://build123d.readthedocs.io">build123d</a> and <a href="https://github.com/CadQuery/cadquery">CadQuery</a> drive B-rep engines from Python, and the argument here travels to them.',
+    },
+    {
+      id: '2',
+      body: '<a href="https://github.com/BelfrySCAD/BOSL2">BOSL2</a>, the Belfry OpenSCAD Library v2: fillets, rounding, attachments, sweeps, and most of what stock OpenSCAD makes you earn by hand. If you try this workflow, hand the model BOSL2 from the first prompt; the difference in output quality is not subtle. For the record, this ran through Claude Code on the Opus-class model current in June 2026 -- the loop, not the model version, is the part that transfers.',
+    },
+    {
+      id: '3',
+      body: '<a href="https://gridfinity.xyz">Gridfinity</a> is Zack Freedman\'s open modular storage standard; the <a href="https://github.com/kennetek/gridfinity-rebuilt-openscad">gridfinity-rebuilt-openscad</a> generator makes baseplates and stock bins a parameters problem. Designing custom bins on the 42-millimeter standard instead of as a one-off tray means every future re-organization is just lifting bins.',
+    },
+    {
+      id: '4',
+      body: 'A companion post, <a href="/writing/the-tasks-ai-makes-worth-doing">The tasks AI makes worth doing</a>, argues that AI moves the line on which tasks clear the effort bar. This post is the physical-world case: the custom parts that were never worth a CAD license and an evening of tutorials are suddenly worth a conversation.',
+    },
+  ]}
+/>

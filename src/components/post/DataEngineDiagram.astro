@@ -1,0 +1,19 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/data-engine-light.svg?raw';
+import darkSvg from '../../assets/diagrams/data-engine-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={680}
+  caption="Dump to decision: raw pulls become classified CSVs, the CSVs become charts, and the interview questions cite the charts."
+>
+  Platform APIs (Jira, repositories, the wiki, cloud accounts, the user
+  directory) feed collectors running seven scan rounds. Raw JSON dumps are
+  classified and reconciled into twenty-seven CSVs and unified person
+  identities. A generator chain turns the CSVs into 114 chart specifications,
+  which become a 33-page minisite with a source line on every chart. The
+  classified data also feeds data-cited interview questions.
+</Diagram>

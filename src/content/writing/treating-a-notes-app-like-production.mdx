@@ -1,0 +1,234 @@
+---
+title: 'Treating a notes app like production'
+date: 2026-07-01
+description: "Forty Python scripts on seven schedules run my mornings -- email triage, inventory, a private daily podcast, an end-of-day commit -- all of them reading and writing the same Obsidian vault I edit by hand. Keeping that honest took production discipline: an event-log spine, hash-fenced write contracts, budget caps with hard stops, and an alerting rule I learned the embarrassing way."
+draft: true
+ogTreatment: default
+pullQuote: 'Silent failure in a system of one pages nobody. It just quietly stops writing your life down.'
+tags: ['ai-augmented-engineering', 'automation', 'observability']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+import Callout from '../../components/post/Callout.astro';
+import VaultPipelineDiagram from '../../components/post/VaultPipelineDiagram.astro';
+
+On May 9th a routine `brew upgrade` replaced the Python binary my home
+automation runs on, and macOS revoked the permission that lets it read
+my iMessage database. Full Disk Access keys to a binary's code signature, not
+the path it lives at, and a package-manager Python gets a new identity with
+every rebuild, so a patch release is a brand-new stranger as far as the OS is
+concerned.<Note id="1" /> The 6 a.m. pipeline started dying at
+`imessage_extract.py:810` with `sqlite3.OperationalError: unable to open
+database file`, and it died the same way every morning for ten days.
+
+What ended the streak wasn't monitoring, because there wasn't any. I stumbled
+onto the failure, re-granted the permission, backfilled the missing history
+out of the source database, and sat with the number. Ten days. I had built the
+pipeline to be quiet when it worked and never built it to be loud when it
+failed, and a personal system has no on-call rotation to catch the difference.
+That incident, and the ones that followed, convinced me to run a folder of
+markdown notes with the same discipline I'd expect from a production service:
+an event spine, write contracts, budgets, alerts, and a postmortem habit.
+
+## The system worth protecting
+
+The folder is an Obsidian vault: people pages, project notes, a daily note, an
+inventory of everything I own. It is also the read/write surface for about
+forty Python scripts on seven launchd schedules. A compressed tour of the day:
+
+| Time (ET) | Job | What it writes |
+| --- | --- | --- |
+| 6:00 | daily sync | iMessage stats into people pages, Amazon orders into inventory, AI email triage across two Gmail accounts (label + draft, never send), today's note |
+| 7:30 | podcast | a 3-5 minute private audio brief built from my own data, published to an RSS feed with one subscriber |
+| 8:00 weekdays | standup | a draft standup assembled from yesterday's PRs, calendar, and messages |
+| hourly, 7:00-22:00 | signals + drafts | work signals into a ledger; reply drafts for texts I haven't answered -- drafts only, nothing sends itself |
+| 23:00 | reflection + commit | 3-5 first-person bullets into the daily note, then `git add -A && git commit && git push` |
+
+Markdown is the database. Every one of those writers lands in files I also
+edit by hand, in an app that syncs to my phone. That last sentence is the
+entire engineering problem. It is also not negotiable: plain files I can edit
+anywhere, syncing everywhere, are the reason the system is worth having, so
+the discipline bends around that constraint.
+
+<VaultPipelineDiagram />
+
+## An event log as the spine
+
+Early on, each script wrote wherever it pleased and every dashboard widget
+grew its own parser. The fix was boring and structural: every script that
+records an event writes through one module, which prepends one line to one
+file, `Activity Log.md`, under a `## Log` heading, with file locking and an
+atomic replace. Purchases, pool chemistry, emails triaged, podcast episodes,
+git pushes: one reverse-chronological stream. Everything that displays
+activity -- the dashboard's pulse widget, the daily note's log block, the
+per-project queries -- is a filter over that stream.
+
+The event schema is an emoji taxonomy, eighteen keys, and it is load-bearing:
+📦 delivery, 📧 email, 📚 research, 🚨 error. Four different surfaces parse
+those markers. The dict in `vault_logger.py` is canonical, and a comment above
+it lists every downstream consumer, because the sync is manual and forgetting
+one is how dashboards rot.
+
+Scale forced the next rule. The live log is 613 KB even though a monthly job
+archives anything from prior years, and my phone has to render queries over
+it. The stream is append-only in the database sense -- entries never mutate
+once written -- but the file runs newest-first, and the prepend is the point:
+every query stops at the first stale date instead of walking the whole file.
+Event logs, schema registries, early termination -- the same kit I'd reach
+for at work, just pointed at a notes app.
+
+## Contracts where the machine meets my editing
+
+Fourteen distinct writers maintain blocks inside pages I also edit by hand: an
+email-activity block on a person's page, a status block on a project page,
+reflection bullets in the daily note. The failure mode: I add a sentence to a
+friend's page inside the machine's section, the next morning's run
+regenerates the block, and my sentence is gone.
+
+So I fence every AI-written block in HTML comments, and the opening marker
+carries a truncated SHA-1 of the body the machine last wrote:
+
+```markdown
+<!-- email-auto:hash=a3b7f2e1c5d4 -->
+[machine-maintained content]
+<!-- /email-auto -->
+```
+
+On the next run the writer re-hashes what's actually there. A mismatch means I
+edited inside the fence, and the writer skips its update rather than clobber
+mine. My edit wins by default; the machine needs an explicit `--force` to take
+a block back. It reads like optimistic concurrency control because it is --
+the vault's version of a write-write conflict is an AI overwriting a sentence
+I wrote about a friend, which is a worse bug than any lost row.
+
+## Budgets with a hard stop
+
+Six of the scheduled jobs call a language model. Every one of them starts by
+calling `assert_within_budget()`, which reads an append-only spend ledger and
+raises if today's total is over the cap. Not a warning: the job refuses to
+run. Two vendors get two caps and two ledgers -- Gemini handles the daily text
+and audio under $12 a day, Claude runs the podcast's research agents under $5
+a day -- because a shared cap across two billing models hides which side is
+spending.<Note id="2" />
+
+For scale: email triage runs about $1.50 a day, the morning podcast about
+$0.40 an episode before its research pass (that pass is what the Claude
+ledger meters), the standup two cents a run. A normal day lands nowhere near
+either cap, and that's deliberate: month-boundary jobs and backfill reruns
+spike, and the cap exists to stop a runaway loop, not to bill to plan. The
+dashboard renders both ledgers as a gauge that turns yellow at 70 percent,
+and the gauge earns its pixels -- a stuck retry loop shows up in spend hours
+before it shows up anywhere else.
+
+{/*
+  SCREENSHOT PLACEHOLDER (optional) -- capture: the Dashboard's AI-spend
+  gauge + Vault Health widget ONLY. REDACT BEFORE SHIPPING: crop out the
+  Activity Pulse, people names, email subjects, and any log lines -- the
+  gauge numbers and health counts are the only safe content. Light mode,
+  tight crop.
+  Drop file at: public/images/writing/treating-a-notes-app-like-production/gauge.png
+  Then replace this comment with:
+  <Figure
+    src="/images/writing/treating-a-notes-app-like-production/gauge.png"
+    alt="A dashboard widget showing an AI spend gauge below its daily cap and a vault health summary with zero open errors."
+    caption="The cheapest dashboard I own: two budget ledgers and an error count, rendered inside the notes app they protect."
+  />
+*/}
+
+## Fifteen toasts, all missed
+
+In June the end-of-day git push broke, and the failure handler did what
+failure handlers do: it fired a macOS notification. Fifteen toasts, each one
+on screen for a few seconds, every one of them missed. The vault kept
+accumulating unpushed commits on a laptop whose whole backup story was that
+push -- and the laptop is the datacenter whether I like it or not, because
+the message database and the local apps live nowhere else. The push isn't a
+convenience. It's the replication strategy.
+
+The postmortem rule is now written into the repo's agent contract: toast-only
+notification is banned. A scheduled job that fails writes a 🚨 row into the
+same Activity Log everything else writes to, tagged and deduplicated to once
+per script per day, and the dashboard keeps a standing count of error rows.
+Toasts still fire, but as a courtesy, never as the record. The SRE literature
+has said this for a decade -- a page nobody acts on is not monitoring -- and
+it turns out to apply at N=1.<Note id="3" />
+
+<PullQuote>
+  A notification I can dismiss is not an alert. An alert is a row in the log I
+  was already going to read.
+</PullQuote>
+
+## Three postmortems
+
+Every incident ends up as a dated entry in the vault's runbook, filed next to
+the scripts it indicts, and an entry isn't closed until it produces a rule --
+ideally one the automation enforces on its own, like the toast ban. Three
+entries, because they're where the architecture came from.
+
+**The silent ten days (May).** The `brew upgrade` story above. The fix was not
+"check the pipeline more often." The venv now runs on a pyenv-managed
+interpreter that Homebrew cannot replace out from under it, and the lesson
+generalized: any dependency that can change without my involvement -- an OS
+permission model, a package manager, a vendor token policy -- is part of the
+system, and the system should assume it will.
+
+**The triple failure (June 1).** Three unrelated breakages in one morning. A
+Gmail OAuth refresh token expired because a Google Cloud project left in
+testing mode caps token lifetime at seven days, a policy I learned from a
+stack trace. A dashboard filter flagged 400 inventory items as needing
+attention because it tested `status != "healthy"` and the default status was a
+different word. And Obsidian on iOS froze under six JavaScript query blocks
+re-scanning a 15,000-line log on every keystroke. One morning, three lessons:
+vendor policies are requirements you didn't write, every filter encodes a
+schema assumption that will eventually be false, and mobile is the performance
+budget that counts. Nine query widgets became native database views, the log
+learned to archive itself, and ten plugins came out that week.
+
+**The drift (April).** The inventory category list existed in three places: a
+schema file, a Python map, a template picker. They drifted, and 97 item pages
+were mis-categorized before anything visible broke.
+
+<Callout variant="warn" title="If a fact lives in two files, it is already wrong in one">
+  The repair took an afternoon. The fix that mattered was a drift guard: a
+  check in the repo's test script that fails loudly the moment the three
+  copies of the taxonomy disagree. The same test suite now guards the emoji
+  schema.
+</Callout>
+
+## A production system with one user
+
+None of this carries an SLA. A skipped podcast episode inconveniences an
+audience of exactly one. Call it over-engineering -- on the days everything
+works, I'm tempted to agree.<Note id="4" />
+
+But the alternative to discipline here isn't a lighter system. It's a system I
+have to supervise -- one where every quiet morning might mean "nothing
+happened" or might mean "nothing was recorded," and I can't tell which without
+going and looking. The entire return on automating your own life is trust.
+The vault's contributor doc holds one sentence I think about more than any
+dashboard: the unit of work is that the vault stays consistent and the
+automation keeps working. The discipline exists so the next failure gets one
+morning, not ten.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: 'macOS privacy protections (TCC) attach grants like Full Disk Access to the requesting executable, which is why replacing an interpreter binary silently orphans the grant. Apple documents the user-facing model in <a href="https://support.apple.com/guide/mac-help/control-access-to-files-and-folders-on-mac-mchld5a35146/mac">Control access to files and folders on Mac</a>; the launchd side of the scheduling story is best covered by the unofficial reference at <a href="https://www.launchd.info">launchd.info</a>.',
+    },
+    {
+      id: '2',
+      body: 'The per-caller budget assertion is ~30 lines of Python over an append-only JSONL ledger. The pattern owes a debt to every cloud billing-alarm horror story: the cap has to sit in front of the call, not in a report you read after.',
+    },
+    {
+      id: '3',
+      body: 'The canonical statement is the monitoring chapter of Google\'s <a href="https://sre.google/sre-book/monitoring-distributed-systems/">Site Reliability Engineering</a>: pages must be actionable, and alerts that train you to ignore them are worse than no alerts. The 15-toast incident is that chapter re-enacted on one laptop.',
+    },
+    {
+      id: '4',
+      body: 'A companion post, <a href="/writing/the-tasks-ai-makes-worth-doing">The tasks AI makes worth doing</a>, covers why this class of personal infrastructure suddenly clears the effort bar at all. This one is the other half: keeping trust in it once it exists.',
+    },
+  ]}
+/>
