@@ -1,0 +1,18 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/interview-loop-light.svg?raw';
+import darkSvg from '../../assets/diagrams/interview-loop-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={680}
+  caption="The overnight loop between interview days: the slow, accurate model runs while nobody is waiting on it."
+>
+  A day of interviews is captured locally with names scrubbed. Overnight, a
+  slower and more accurate model re-transcribes the audio, and the synthesis
+  fan runs: per-person notes, a hypothesis scorecard update, a contradictions
+  file. The interview guides are re-aimed at the thinnest evidence, and the
+  loop returns to the next morning's interviews.
+</Diagram>

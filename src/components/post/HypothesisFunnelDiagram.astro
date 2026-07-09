@@ -1,0 +1,20 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/hypothesis-funnel-light.svg?raw';
+import darkSvg from '../../assets/diagrams/hypothesis-funnel-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={680}
+  caption="Cheap and asynchronous runs first; the onsite exists to kill hypotheses, not to collect more of them."
+>
+  Six automated system-scan passes and five survey instruments (57 people)
+  feed nine named hypotheses, each written with confirming and killing
+  evidence. Day one narrows the nine to the five with the strongest signal;
+  the other four keep their pre-work evidence and lose their interview slots.
+  Days two and three run targeted interviews against the five, producing
+  scored evidence chains that become the friction register, the 30/60/90
+  plan, and the leave-alone list.
+</Diagram>
