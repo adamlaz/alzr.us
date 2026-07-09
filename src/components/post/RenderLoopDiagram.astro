@@ -1,0 +1,17 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/render-loop-light.svg?raw';
+import darkSvg from '../../assets/diagrams/render-loop-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={620}
+  caption="The loop that built the collar: five shapes in an evening, each one a sentence, judged at the render and priced at the slicer."
+>
+  A one-line ask goes to Claude, which edits the OpenSCAD source. OpenSCAD
+  renders the part to a PNG. I eyeball the render and sometimes slice it. If
+  it is not right yet, the loop returns to another one-line ask; when it holds
+  up, the part prints in ASA.
+</Diagram>
