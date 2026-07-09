@@ -12,10 +12,13 @@ import Wordmark from '../components/Wordmark.astro';
     <span class="welcome" data-visit-state="loading"></span>
     <Wordmark hero text="alzr.us" morph="adam lazarus" />
     <p class="lede">
-      Adam Lazarus. St. Petersburg, FL. Director of Engineering at a
-      consumer-tech company; advisor at the business /
-      engineering / AI seam. Two decades of building teams and shipping 
-      products and bleeding-edge tech, founder-side and operator-side. Scuba when I can, skiing when the snow's right.
+      Director of Engineering at a consumer-tech company;<br />
+      Advisor at the business / engineering / AI seam.<br />
+      Two decades of building teams and shipping products with bleeding-edge tech; founder-side and operator-side.
+    </p>
+    <p class="lede lede-play">
+      🏖 Located in St. Petersburg, FL.<br />
+      🤿 Scuba when I can, 🎿 skiing when the snow's right.
     </p>
   </section>
 </BaseLayout>
@@ -83,6 +86,10 @@ import Wordmark from '../components/Wordmark.astro';
     margin-top: var(--space-lg);
     text-wrap: pretty;
     max-width: var(--measure);
+  }
+
+  .lede-play {
+    margin-top: var(--space-sm);
   }
 
 </style>
