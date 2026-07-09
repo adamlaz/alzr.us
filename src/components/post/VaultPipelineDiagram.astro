@@ -1,0 +1,19 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/vault-pipeline-light.svg?raw';
+import darkSvg from '../../assets/diagrams/vault-pipeline-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={640}
+  caption="Everything writes through one spine, and a job that fails writes a row to the same log the surfaces read."
+>
+  Signal sources (iMessage, Gmail, Amazon, calendar, sensors, git) feed seven
+  launchd schedules running about forty scripts. The scripts write hash-fenced
+  blocks into people and project pages and append events to Activity Log.md,
+  the append-only spine. A job that fails writes a deduplicated error row into
+  that same log; the toast is a courtesy. The dashboard, daily note, podcast,
+  and standup all read from the spine and the fenced blocks.
+</Diagram>
