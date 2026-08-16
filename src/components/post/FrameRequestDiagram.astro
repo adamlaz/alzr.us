@@ -1,0 +1,19 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/frame-request-light.svg?raw';
+import darkSvg from '../../assets/diagrams/frame-request-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={640}
+  caption="The route: a signed link, one front door, and a container that only ever reads."
+>
+  A signed link carrying a timestamp and width arrives at the edge worker,
+  which verifies the signature and checks its cache. A moment it has seen
+  before returns a JPEG instantly. A first look goes to the frame service,
+  a container running pinned ffmpeg with a read-only credential, which
+  range-reads a few megabytes from private object storage and returns the
+  JPEG in about two seconds.
+</Diagram>

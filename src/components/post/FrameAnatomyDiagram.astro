@@ -1,0 +1,18 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/frame-anatomy-light.svg?raw';
+import darkSvg from '../../assets/diagrams/frame-anatomy-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={600}
+  caption="Three reads against a 4.8 GB master: the index at the tail, a few megabytes around the target keyframe, one JPEG out."
+>
+  A single master file is laid out as a small header, gigabytes of video data
+  made of keyframes and diffs, and an index which in our files sits at the
+  tail. ffmpeg, seeking to two hours thirteen minutes, makes three moves:
+  first it reads the index, second it range-reads a few megabytes of video
+  data around the target keyframe, and third it emits one 30-kilobyte JPEG.
+</Diagram>

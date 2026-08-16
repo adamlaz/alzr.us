@@ -1,0 +1,17 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/auto-rejection-light.svg?raw';
+import darkSvg from '../../assets/diagrams/auto-rejection-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={500}
+  caption="The at=auto rejection pipeline: sample opening 15s, reject blue/black frames, fallback to mid-tape once, then 412 → placeholder."
+>
+  The service samples the opening 15 seconds at 2 frames per second, runs signalstats
+  to detect blue screens (ULOW Cb) and near-black frames (YHIGH luma), rejects dead
+  frames, and picks a representative thumbnail from the survivors. If both windows
+  exhaust, it returns 412 PRECONDITION_FAILED and the caller shows a placeholder.
+</Diagram>
