@@ -9,7 +9,7 @@ const formatted = updated.toLocaleDateString('en-US', {
   day: 'numeric',
 });
 
-const posts = (await getCollection('writing', ({ data }) => !data.draft)).sort(
+const posts = (await getCollection('writing', ({ data }) => import.meta.env.DEV || !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
 const latest = posts[0];

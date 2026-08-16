@@ -27,3 +27,9 @@ pnpm-debug.log*
 .vercel/
 
 .vercel
+
+# local agent tooling
+.opencode/
+
+# raw frame fixtures (committed composites only; raw inputs stay local)
+public/images/writing/one-frame-from-a-four-gigabyte-video/*.jpg
