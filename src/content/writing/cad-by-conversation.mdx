@@ -1,8 +1,8 @@
 ---
 title: 'CAD by conversation'
 date: 2026-07-08
-description: "A pool-light collar, a rod-holder gift, a tri-color pun sign, nine sizes of hole plug, and a drawer of custom Gridfinity bins -- a month of household parts that came out of one-line asks in OpenSCAD, with the failure that taught each one written down."
-draft: true
+description: "A pool-light collar, a rod-holder gift, a tri-color pun sign, nine sizes of hole plug, and a drawer of custom Gridfinity bins -- a month of household parts that came out of conversations with Claude writing OpenSCAD, with the failure that taught each one written down."
+draft: false
 ogTreatment: default
 pullQuote: "The model can't hold the printed part, and I can't write geometry fast enough to matter. Between us there's a workflow."
 tags: ['ai-augmented-engineering', 'craft', '3d-printing']
@@ -18,7 +18,7 @@ The white ASA collar that snaps around my pool's floating light began as a
 pencil sketch and exactly two measurements: 110 millimeters across the light
 body, 25 millimeters up the brim. Its whole job is width -- it makes the
 light too wide to get pulled into the skimmer throat, a part nobody sells. I
-never opened a CAD application. I described what I wanted in one-line asks,
+never opened a CAD application. I described what I wanted,
 Claude wrote OpenSCAD, a render showed us both what the words had actually
 said, and on June 21st the first print snapped onto the light and held.
 
@@ -55,7 +55,7 @@ docs, and it also invents plausible-looking arguments that don't exist.
 Which is why the whole workflow hangs on a loop.
 
 For caps, plugs, rings, shims, brackets, and bins, code-CAD driven by
-conversation is now the fastest tool I own -- a sentence I would not have
+conversation is now the fastest tool I own -- a claim I would not have
 believed in May.
 
 ## The loop
@@ -68,8 +68,7 @@ The collar went through five shapes in one evening, every step a single ask.
 A solid two-half clamp bolted together. Then a top-and-bottom clamshell that
 snapped instead of bolting. Then the solid cup opened into a spoked frame.
 Then fillets and brim windows. Then the frame's posts re-rooted so each arm
-anchors into the hub wall. None of those asks was longer than a sentence, and
-none of them was a spec. Claude edits the source, renders it headless
+anchors into the hub wall. None of them was a spec. Claude edits the source, renders it headless
 (`openscad -o check.png`), and reads the picture back itself; I look at the
 same image with different questions. The artifact under all of it stays
 plain text -- these lines are verbatim from the model file:
@@ -182,19 +181,6 @@ infill, and the sign prints face down with the text pre-mirrored so the flush
   caption="The inlay variant, rendered. Every color in this image lives in the first millimeter of the print."
 />
 
-{/*
-  PHOTO PLACEHOLDER (once the sign is printed) -- shoot: the physical sign,
-  straight on, same framing as the render above so the pair reads
-  render-vs-reality. Bonus: hung wherever Doug ends up hanging it.
-  Drop file at: public/images/writing/cad-by-conversation/photo-doug-printed.jpg
-  Then replace this comment with:
-  <Figure
-    src="/images/writing/cad-by-conversation/photo-doug-printed.jpg"
-    alt="The printed BEWARE of DOUG sign: black field, white border, red lettering, photographed straight on."
-    caption="Render above, print below. The AMS spent five layers on everything you can see."
-  />
-*/}
-
 It also surfaced the best gotcha of the month: OpenSCAD's fast preview
 mis-colors intersected geometry, so the field flashed red until we forced the
 full CGAL render. The fast picture lies a little.
@@ -207,24 +193,12 @@ however many you ask for. Nine sizes between 8.5 and 15 millimeters, laid
 out on one plate, matched to the actual holes in the Adirondack chairs and a
 sliding-door frame instead of to a kit manufacturer's guess.
 
-{/*
-  PHOTO PLACEHOLDER -- shoot: the batch plate of nine plugs fresh off the
-  printer, or one plug seated in an Adirondack-chair arm (tighter is better).
-  Drop file at: public/images/writing/cad-by-conversation/photo-hole-plugs.jpg
-  Then replace this comment with:
-  <Figure
-    src="/images/writing/cad-by-conversation/photo-hole-plugs.jpg"
-    alt="Nine white 3D-printed hole plugs of graduated sizes arranged on a print plate."
-    caption="Nine sizes, one plate, zero drawer of almost-right stickers."
-  />
-*/}
-
 **The drawer kit** ran the loop at furniture scale. The Gridfinity project
 already ships a parametric baseplate generator, so the grid itself needed
 zero modeling -- tape-measure numbers in, plates out, split two-by-two for a
 256-millimeter bed. An eight-by-ten grid of 42-millimeter units covers 336
-by 420; the generator fuses the leftover 29 millimeters onto the rear plates
-as fit-to-drawer padding, and the assembled set lands within a millimeter of
+by 420; the generator fuses the leftover ~30 millimeters (29 after clearance) onto
+the rear plates as fit-to-drawer padding, and the assembled set lands within a millimeter of
 the drawer on both axes.<Note id="3" /> The custom work started only when
 the bins wanted rolled rims and finger dips the stock generator doesn't do,
 which is what produced the trilogy above. The full kit budgets over a
@@ -232,19 +206,6 @@ kilogram of filament, so the slicer's grams-and-hours pricing stopped being
 abstract; the grid went first and doubled as the calibration test, and the
 bins sit sliced awaiting one over-length fork that decides which column
 layout prints.
-
-{/*
-  PHOTO PLACEHOLDER -- shoot: the printed baseplates fitted in the empty
-  silverware drawer, top-down, drawer fully open in natural light (bins in
-  place even better, if they're printed by publish day).
-  Drop file at: public/images/writing/cad-by-conversation/photo-grid-in-drawer.jpg
-  Then replace this comment with:
-  <Figure
-    src="/images/writing/cad-by-conversation/photo-grid-in-drawer.jpg"
-    alt="A kitchen drawer with 3D-printed Gridfinity baseplates fitted edge to edge inside it."
-    caption="The grid print is the calibration test: eight by ten units, one millimeter of slack each way."
-  />
-*/}
 
 Rules the month wrote into the project notes: search the model libraries
 before modeling anything (the printer's own desiccant containers were a
@@ -266,10 +227,10 @@ shape, and judging the shape is the same job at every thickness.
 
 The month started in FreeCAD: I hand-modeled replacement card-table inserts
 and a solar-light plate one feature at a time with a mouse. Real parts, fine
-work -- and nothing about part one made part two faster. The conversation
-loop compounds instead: the collar taught render checking, the bins taught
-seam discipline, the sign taught color economy, and every lesson is sitting
-in the next part's context window.
+work -- but the skill that compounded was mine alone, locked in my hands.
+The conversation loop compounds in a file: the collar taught render
+checking, the bins taught seam discipline, the sign taught color economy,
+and each rule went into the project notes the next session reads first.
 
 The collar ships with this post: the
 [OpenSCAD source](/models/cad-by-conversation/skimmer-light-collar.scad),
@@ -277,26 +238,6 @@ plus the print-ready
 [cup](/models/cad-by-conversation/skimmer-light-collar-cup.stl) and
 [lid](/models/cad-by-conversation/skimmer-light-collar-lid.stl) STLs. Flat,
 support-free, ASA recommended if it lives outside.
-
-{/*
-  3D PREVIEW PLACEHOLDER -- Adam: embed the interactive STL/scad viewer here
-  when the component exists. The files above are already served from
-  public/models/cad-by-conversation/. Note the STLs are 8-11 MB; consider a
-  decimated preview mesh for the viewer and keep the full files as the
-  download links.
-*/}
-
-{/*
-  PHOTO PLACEHOLDER -- shoot: the collar snapped on the floating light,
-  ideally in the pool. This is the money shot; afternoon light, low angle.
-  Drop file at: public/images/writing/cad-by-conversation/photo-collar-on-light.jpg
-  Then replace this comment with:
-  <Figure
-    src="/images/writing/cad-by-conversation/photo-collar-on-light.jpg"
-    alt="A white 3D-printed spoked collar snapped around a round floating pool light, in the water."
-    caption="The first print, on the light it was sketched for."
-  />
-*/}
 
 The collar's first print has been snapping on and off the pool light since
 June while one last number decides its final width. The sketch and every
