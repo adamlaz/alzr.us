@@ -1,0 +1,178 @@
+---
+title: 'Giving the brief away'
+date: 2026-07-29
+description: 'I said the brief was the artifact and the agents were fungible. So I packaged the brief as a repo, handed it to a teammate, and found out what breaks when someone else runs your workflow.'
+draft: false
+ogTreatment: default
+pullQuote: 'A teammate found the hole in one day: instructions are not a boundary. Removing the capability is.'
+tags: ['ai-augmented-engineering', 'hiring', 'claude-code']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Callout from '../../components/post/Callout.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+
+In May I wrote that the brief was the artifact and the agents just render
+it.<Note id="1" /> That was a claim, not a result. This summer the claim got
+its test: the candidate-research workflow behind that post left my machine,
+became a repo a teammate could clone and run, and I got to watch which half
+of my confident sentence was true. He was productive with it the next day.
+He also found a hole I had built, proved my fix for it wrong, and was right
+about the reason.
+
+## What packaging actually meant
+
+The workflow had two halves, and neither one traveled. The runbook, the
+conventions, the catalog of tells lived in my personal notes vault; the
+scripts lived next to it, wired to my paths, my Python environment, my
+pre-approved permissions. Extracting it produced four things:
+
+1. A slash-command skill that orchestrates the whole run: look up the
+   candidate, pull the resume, sweep the public record, dispatch the
+   researcher, check citations, publish.
+2. A research subagent that carries the methodology in its own system
+   prompt, so quality doesn't depend on how well a calling session
+   paraphrases the brief.
+3. Scripts on the standard library only. No virtualenv, no pip, nothing to
+   install; a stock python3 runs them.
+4. Two hooks: database writes locked by ancestry to the one table they're
+   allowed to touch, and candidate PII physically blocked from entering git.
+
+The code was the fast part. Rewriting a runbook for a reader with zero
+context is the slow part, because that's where your assumptions surface,
+one at a time, each disguised as a sentence you almost didn't write down.
+Every "obviously" in my notes became either an instruction or, later, a bug.
+The repo itself stays private -- it drives a live candidate database -- but
+nothing in it is specific to me anymore: no personal paths, no personal
+permissions, a blank env template.
+
+## Five ways it broke before anyone else touched it
+
+Every one of these failures happened while the only user was still me. None
+of them is really about hiring.
+
+1. **An untrusted workspace silently voids the project permission file.**
+   Clone the repo, skip the trust dialog, and every shell call the agent
+   makes is denied. Interactively you'd get a prompt; in a headless run you
+   get nothing but the bill. The agent flails, the budget drains, nothing
+   gets produced, and no error says why. Silent and expensive is the worst
+   combination, so setup now names the dialog and a preflight check refuses
+   to spend money until the workspace can actually work.
+2. **Trusting exit codes.** The first unattended run took 1.6 minutes, cost
+   about a dollar, exited zero, created nothing, and logged itself as a
+   success. The driver now decides success by querying for the page it was
+   supposed to create. Ask the system whether the artifact exists; never ask
+   the process whether it thinks it succeeded.
+3. **Permission syntax I assumed instead of tested, twice.** A write rule
+   spelled as a relative path matched the relative form I tested and not the
+   absolute path the agent actually used, and the deny loop that followed
+   looked exactly like failure number one. The third time I touched a
+   permission rule, I wrote a throwaway probe first. A probe costs a minute
+   and protects a run that costs real money.
+4. **Dispatching by name when I already had the unique id.** Two candidates
+   with the same name stalled a run that the row id would have sailed
+   through. The id now flows from lookup to publish and the name is display
+   only.
+5. **No unattended-mode rule.** The agent hit genuine ambiguity, reasoned
+   about it correctly, and asked me what to do -- in a nightly run with
+   nobody awake to answer. Correct judgment, wrong ending. The brief now
+   says it plainly: non-interactive runs never ask. Take the documented
+   default or emit one BLOCKED line and stop.
+
+Then the sixth, the one that wasn't mechanical. The first real nightly run
+swept the entire candidate database and spent its whole budget researching
+applications far outside scope. The actual ask was one funnel stage. Worse: my own runbook had already ruled that scope out, in writing,
+precisely so research wouldn't fire on untriaged arrivals. I re-introduced
+the exact thing a past decision existed to prevent. Scope bugs cost more
+than crashes and take longer to notice, because nothing fails.
+
+<PullQuote>
+  Nothing errored. The job ran, exited clean, and researched the wrong people.
+</PullQuote>
+
+## The model question, one afternoon's worth
+
+Packaging forced a question I'd been dodging: does this workflow need the
+big model? One afternoon gave me a field answer, head-to-head on live
+candidates instead of vibes. Fable took 10.2 minutes; Sonnet took 6.2
+minutes at roughly a third of the cost, and Sonnet's output was not worse.
+It caught exactly the class of contradiction the workflow exists to catch,
+cross-checking an employment claim against public records, and it correctly
+discarded a coincidental username match as a different person. Sonnet is
+now the tracked default.
+
+The honest caveat rides along in the repo: that was one run each, on
+different candidates. "No loss observed" is not "proven equivalent." It's
+the difference between a field note and a benchmark, and pretending
+otherwise is how a config default hardens into a false belief.
+
+## Then someone else ran it
+
+A teammate started using the kit the day after it shipped, and within a day
+he'd opened the repo's first pull request -- for a hole I had built. The
+research subagent had shell access, and the project settings pre-approved
+the publish script. Those two facts, together, let the subagent publish
+without the citation check that downgrades unsourced claims. It did exactly that three times in one of his batch runs.
+
+Nobody decided the subagent should have shell access. It had it because I
+never took it away, and the default is everything. I had already met the
+publishing behavior and thought I'd fixed it with a line in the brief:
+don't publish yourself. It reduced the behavior without stopping it. His
+framing is the one that stuck: shell access plus a pre-approved script is a
+structural bypass that prompt wording can't reliably close. The agent never
+needed the shell -- read-only file tools like Read, Glob, and Grep cover
+everything it does locally -- so the fix was removal, not rewording, and
+the publish step now belongs to the orchestrator, downstream of the
+citation check.<Note id="2" />
+
+<Callout variant="note" title="Capability plus pre-approval">
+  A capability you have granted plus a permission you have pre-approved
+  equals a path you did not intend. Audit the pair, not each half.
+</Callout>
+
+The second thing he did impressed me more. He removed the shell access,
+tested in the same session, and watched the agent use the shell anyway --
+so he flagged his own fix as unverified, with a theory: tool grants
+resolve at session start, so an in-session test of a permission change
+proves nothing. He was right. A fresh session the next day confirmed the
+capability was gone, and his in-session test had been a false negative.
+An honest "I could not confirm this" is worth more than a green checkmark,
+and a repo one day old already had a better review culture than some
+production services I've inherited.
+
+## The scorecard on the May claim
+
+The methodology, the conventions, the tier discipline, the tells: all of it
+transferred intact and produced comparable work in someone else's hands, on
+a cheaper model, the day after handoff. That half of the claim held.
+
+What didn't transfer was everything I had never been forced to write down.
+Machine-specific paths. A trust dialog I'd clicked through once and
+forgotten existed. Which funnel stage actually deserved the spend. A
+capability grant that only looked safe because I never combined it with the
+permission sitting next to it. None of that was in the brief, because none
+of it had ever needed to be: I was the environment, and the environment
+never has to explain itself until it's gone.
+
+A workflow that works and a workflow that travels are separated by the set
+of things you don't know you know -- and every one of mine was invisible
+until someone else needed it. The brief was never the whole artifact. It
+was the half I could see.<Note id="3" />
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: 'The claim being tested comes from the end of <a href="/writing/parallel-agents-for-hiring-research">Parallel agents for hiring research</a>: what survives a model change, a tool change, a team-member change is the brief.',
+    },
+    {
+      id: '2',
+      body: 'The principle has a name and a birthday: least privilege, from Saltzer and Schroeder\'s 1975 <a href="https://web.mit.edu/Saltzer/www/publications/protection/">"The Protection of Information in Computer Systems"</a>. Fifty years later, agent tooling is re-learning it one pre-approved script at a time.',
+    },
+    {
+      id: '3',
+      body: 'Companion posts: <a href="/writing/discovery-is-cheap-curation-is-the-cost">Discovery is cheap, curation is the cost</a> covers the workflow this kit packages, and <a href="/writing/treating-a-notes-app-like-production">Treating a notes app like production</a> makes the same argument about counted gates and silent failure from the personal-infrastructure side.',
+    },
+  ]}
+/>
