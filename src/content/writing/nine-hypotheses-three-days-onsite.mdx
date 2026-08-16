@@ -1,8 +1,8 @@
 ---
 title: 'Nine hypotheses, three days onsite'
 date: 2026-06-24
-description: "Last spring I ran a sixty-hour diagnostic of an engineering org I'd never met: 3,191 repositories, 141 Jira projects, five survey instruments, twenty-two interviews, and an AI layer in every phase, because the engagement doubled as an experiment in how much of this work the machines can absorb. The frameworks are public. The useful part was writing nine falsifiable guesses before arriving, and spending the onsite trying to break them."
-draft: true
+description: "Earlier this year I ran a sixty-hour diagnostic of an engineering org I'd never met: three thousand repositories, a hundred-plus Jira projects, five survey instruments, twenty-two interviews, and an AI layer in every phase, because the engagement doubled as an experiment in how much of this work the machines can absorb. The frameworks are public. The useful part was writing nine falsifiable guesses before arriving, and spending the onsite trying to break them."
+draft: false
 ogTreatment: default
 pullQuote: "Leadership was sure the culture was broken. The culture measured fine; the arithmetic didn't."
 tags: ['engineering-management', 'leadership', 'developer-experience', 'ai-augmented-engineering']
@@ -26,8 +26,8 @@ confirmed its way straight into irrelevance), and the belief that died
 hardest wasn't on my list at all: the client's conviction about their own
 culture.
 
-The engagement was an independent diagnostic my advisory practice ran last
-spring for an established software company, and the client's question was
+The engagement was an independent diagnostic my advisory practice ran
+earlier this year for an established software company, and the client's question was
 blunt: why does an org this experienced have this much trouble shipping, and
 is the technical foundation underneath sound enough to build on once the
 friction is named? The instruments were DORA, Westrum, and DevEx plus a
@@ -36,23 +36,20 @@ also had a second agenda, a deliberate experiment: how much of a
 traditional org diagnostic can AI carry when you push it into every phase --
 kickoff, reconnaissance, interviews, synthesis, the readout -- instead of
 bolting it onto one? The two agendas are one design. The machines eat the
-volume early; the expensive human days go only to trying to break the
+volume early; the expensive human days go only to pressure-testing the
 guesses. The fee was structured so I could afford to find out. I have not
 had that much fun working in years.
 
-## The engagement opened with a podcast
+## The shape of the engagement
 
-Not a kickoff deck. Before pre-work started, I wrote a first-person brief of
-the whole plan and fed it to NotebookLM, which generated a ten-minute audio
-overview, plus slides and a short video.<Note id="1" /> The audio version
-existed for a specific moment: the CEO had a long drive ahead of him that
-weekend, and the brief rode along. By the time the CEO, his two senior
-technology leaders, and I were in a room, everyone had taken in the same
-plan through whichever medium fit their week. Producing it took an evening,
-nearly all of it spent writing the source document -- which is where the
-time belongs.
+The kickoff brief went out as a document, a ten-minute audio overview, and
+slides -- NotebookLM, one evening, nearly all of it spent writing the source
+document, which is where the time belongs.<Note id="1" /> The CEO had a long
+drive ahead that weekend, and the brief rode along; by the time the CEO,
+senior technology leadership, and I were in a room, everyone had taken in
+the same plan through whichever medium fit their week.
 
-The shape of the engagement itself:
+The shape of it:
 
 | Phase | Effort | What happens |
 | --- | --- | --- |
@@ -63,9 +60,10 @@ The shape of the engagement itself:
 The framing to the client mattered: an operational briefing between people
 who are about to work together, not an audit and not a sales deck. The CEO
 commissioned it; engineering leadership knew the scope before I arrived. And
-since the client is anonymous here: every number in this post is exact, and
-everything that could identify them is deliberately blurred. That trade is
-the price of writing about private work at all.
+since the client is anonymous here: the scores and ratios are exact, the raw
+inventory counts are rounded, and anything that could identify them is
+deliberately blurred. That trade is the price of writing about private work
+at all.
 
 The order of the phases is the argument: everything cheap and asynchronous
 runs before anything expensive and human. Interview hours were the scarce
@@ -75,10 +73,11 @@ pulled.
 ## The data engine
 
 An org's own systems will answer questions no interview can, without the
-performance anxiety. The raw surface: 141 Jira projects and 3,191
-repositories for an engineering group of about sixty -- ratios that are
-findings all by themselves -- plus a 14,000-page wiki, 18 cloud accounts, 55
-incident reviews, and 28 tools in active use.
+performance anxiety. The raw surface: about 140 Jira projects and over three
+thousand repositories for an engineering group of about sixty -- ratios that
+are findings all by themselves -- plus a wiki north of ten thousand pages, a
+dozen-plus cloud accounts, dozens of incident reviews, and nearly thirty
+tools in active use.
 
 <DataEngineDiagram />
 
@@ -93,8 +92,8 @@ remained: CI pipeline history, branch-protection audits, thirty sprint
 retros. About six hours of my attention, because agents did the reading.
 
 The part I'd defend hardest is what happened between collection and use.
-Raw dumps became twenty-seven classified CSVs; 499 accounts across five
-systems were reconciled into unified human identities, which is a genuinely
+Raw dumps became twenty-seven classified CSVs; roughly 500 accounts across
+five systems were reconciled into unified human identities, which is a genuinely
 hard entity-resolution problem and the foundation for every question about
 who is load-bearing. From the CSVs, a generator chain wrote 114 chart
 specifications with one shared house style, and every chart carries a
@@ -104,8 +103,8 @@ The surveys ran the same weeks: a DORA quick check against the public
 benchmarks<Note id="2" />, the six-item Westrum culture
 instrument<Note id="3" />, a 23-item DevEx survey across feedback loops,
 cognitive load, and flow state<Note id="4" />, the Pragmatic Engineer
-Test<Note id="5" />, and an AI-tooling adoption pulse. Fifty-seven people got
-them; response ran about 70 percent. None of the instruments is proprietary,
+Test<Note id="5" />, and an AI-tooling adoption pulse. Nearly sixty people
+got them; response ran about 70 percent. None of the instruments is proprietary,
 on purpose: the client should be able to re-run every measurement after I
 leave and compare.
 
@@ -123,7 +122,7 @@ names ugly enough to argue with:
 | Portfolio Sprawl | more committed work than demonstrated throughput | confirmed; the headline |
 | Sales-Led Chaos | the roadmap re-routes around individual deals | confirmed |
 | Fake Platforming | a "platform" that is one product's internals with an API bolted on | confirmed, and operationally moot |
-| Unclear Ownership | formal and operational authority live in different people | confirmed; a reorg mid-engagement had already begun fixing it |
+| Unclear Ownership | formal and operational authority live in different people | confirmed; a reorg had already begun fixing it |
 | Dependency Drag | work stalls in queues between teams | confirmed |
 | Legacy Gravity | the oldest system taxes every new feature | confirmed |
 | Missing Cadence | no reliable operating rhythm between planning moments | confirmed |
@@ -152,24 +151,26 @@ and what are we explicitly not chasing?
 
 | Signal | Reading |
 | --- | --- |
-| Epic completion, trailing 12 months | 27.7% (133 of 481) |
+| Epic completion, trailing 12 months | 27.7% of roughly 480 epics |
 | Open engineering issues marked "High" priority | 89.4% |
-| Work-item cycle time, open to done | P50 59 days, P75 210 days |
+| Work-item lead time, open to done | P50 59 days, P75 210 days |
 | PR turnaround in active repos | 27-31 hours average |
-| Repositories untouched in 90 days | 75% of 3,191 |
-| Repositories with branch protection | 0 of 3,191 |
-| Services with health checks | 10% (7 of 68) |
+| Repositories untouched in 90 days | 75% |
+| Repositories with branch protection | 0 -- fleet-wide |
+| Services with health checks | 10% of about 70 |
 | Executive incident reviews with empty preventive-action tables | 3 of 5 |
 | Westrum culture mean | 3.82 / 5 -- generative |
 | DevEx, context-switching item | 2.27 / 5, worst on the survey |
 
 Two pairs of rows carry the engagement. The first pair, 27.7 percent
 completion against 89.4 percent marked High, says the portfolio is committed
-to roughly three times what the org demonstrably finishes. The cycle-time
-pair says where the time goes: pull requests in active repos turned around in
-about a day, while the median work item took two months, so the delay lives
-in the queues around engineering, not inside it. That row is Dependency
-Drag, measured.
+to roughly three times what the org demonstrably finishes. The rate is a
+blunt instrument -- epics opened late in the window can't have finished
+yet -- but blunt doesn't produce a 3x gap. The lead-time pair says where the
+time goes: pull requests in active repos turned around in about a day, while
+the median work item took two months open-to-done, so the delay lives in the
+queues around engineering, not inside it. That row is Dependency Drag
+showing up in numbers.
 
 <PullQuote>
   When 89.4 percent of a backlog is marked High, priority is no longer
@@ -189,19 +190,19 @@ and does.
 The DevEx detail that earns its keep: context switching scored 2.27, the
 worst item on the survey, which makes it the 90-day canary. If cutting the
 portfolio works, that number recovers first. If it doesn't recover, the cut
-didn't happen, whatever the roadmap slide says. The re-run is the client's to
-fire -- the survey package is theirs -- and it comes due later this summer.
+didn't happen, whatever the roadmap slide says. The re-run is the client's
+to fire; the survey package is theirs.
 
-Put together, that's the answer to both halves of the question the client
-paid for. Why does shipping hurt: a portfolio committed to three times
+That answers both halves of what the client paid for. Why does shipping
+hurt: a portfolio committed to three times
 demonstrated throughput, with the delay living in the queues between teams,
 not inside engineering. Is the foundation sound: yes, with named exceptions.
 Review is universal, PRs move in a day, the culture is generative, and one
 corner of the org already ships the modern way, so the capability exists in
 house. The exceptions are real -- a legacy system that taxes every feature,
 zero branch protection, health checks on one service in ten -- but they are
-hygiene and age, not rot. That verdict is what let the 30/60/90 be a
-portfolio fix instead of a rebuild.
+hygiene and age, not rot. That verdict is why the 30/60/90 fixes the
+portfolio and leaves the architecture alone.
 
 ## The interview loop
 
@@ -221,11 +222,11 @@ glossary is cheap; wrong names in an evidence chain are not.
 
 Interview prep is where the data engine paid out. Every prepared question
 cited a specific data point and the hypothesis it tested. Not "tell me about
-your infrastructure" but: 83 percent of your compute is on previous-generation
-instances and a fifth of your serverless functions are on end-of-life
-runtimes -- is that a known tradeoff or a surprise? Not "how's delivery
-going" but: this board's velocity dropped from 127 completed issues a sprint
-to 56 across one quarter -- what happened? Questions like that are hard to
+your infrastructure" but: four-fifths of your compute is on
+previous-generation instances and a fifth of your serverless functions are
+on end-of-life runtimes -- is that a known tradeoff or a surprise? Not
+"how's delivery going" but: this board's completed-issue velocity halved
+across one quarter -- what happened? Questions like that are hard to
 deflect, and more usefully, they're respectful: they tell the person you did
 the reading before spending their hour.
 
@@ -260,7 +261,7 @@ And then the artifact I'd never shipped before: a private, password-gated
 minisite -- 33 pages, 114 interactive charts, all of it generated from those
 twenty-seven CSVs, every chart carrying its source-and-date line. The first
 working version existed three days into pre-work, built from the earliest
-rounds' data and regenerated as later rounds landed: compiled, not drawn.
+rounds' data and regenerated as later rounds landed.
 It's a due-diligence-grade appendix the executive team can wander at
 whatever depth they want, and it changes the readout's half-life: a PDF
 ages; a site regenerates from the next data pull.
@@ -269,9 +270,8 @@ The section of the plan that got argued about most was none of those. It was
 the Leave Alone list: the things that looked broken, held up under
 measurement, and shouldn't be touched -- starting with the culture. An
 advisor hunting follow-on work does not hand the client a page of things to
-leave exactly as they are. Finding problems is easy.
-Writing down what to preserve is what keeps a diagnostic from becoming a
-re-org generator.
+leave exactly as they are. That page is what keeps a diagnostic from
+becoming a re-org generator.
 
 ## The economics
 
@@ -282,13 +282,14 @@ fee bought what the traditional version prices in the six figures and
 measures in quarters, not because I work faster than a team of ten, but
 because the volume work stopped requiring humans at all. That's one mid-size
 org, with the seller grading his own output, so what I'd defend is the
-mechanism, not the price point. AI scanned the repos, indexed the wiki, read
-all 55 incident reviews, reconciled the identities, drafted the first pass
+mechanism. AI scanned the repos, indexed the wiki, read
+every incident review on file, reconciled the identities, drafted the first
+pass
 of the register; I did the rooms, the judgment calls, and the narrative.
 
 The client's own history sharpened the point. This was an executive team
-that had recently rejected a 687-page AI-generated report that crossed their
-desks -- and they were right to. AI's failure mode in consulting is volume
+that had rejected a several-hundred-page AI-generated report that crossed
+their desks -- and they were right to. AI's failure mode in consulting is volume
 cosplaying as rigor. So the delivery constraint here was the opposite: the
 operating brief reads in ten minutes, every claim traces to a chart or a
 transcript, and the standing instruction was "if anything feels AI-padded,
@@ -303,15 +304,14 @@ transferred -- the engine, not a snapshot.
 
 ## The part AI couldn't do
 
-The other result is a cleaner list of what didn't automate.
-
-Reading the room is the obvious one. Twenty-two interviews produce maybe six
-moments that matter -- a pause before an answer about ownership, a
-VP who relaxes when the recorder's covered, two people describing the same
-meeting as different meetings. The transcript records none of that at the
-level where it counts. Neither does the synthesis. The night after day one,
-the most important note I wrote was a private read on what the CEO actually
-wanted -- and its design consequence was that the recommendations had to
+Reading the room is the obvious thing that didn't automate. Twenty-two
+interviews produce maybe six moments that matter -- a pause before an answer
+about ownership, a VP who relaxes when the recorder's off, two people
+describing the same meeting as different meetings. The transcript records
+none of that at the level where it counts. Neither does the synthesis. The
+night after day one, the most important note I wrote was a private read on
+what the sponsor actually needed from the
+engagement -- and its design consequence was that the recommendations had to
 create transparency without adding reporting, because more reporting was the
 fix the org had already tried. No scan produces that sentence.
 
