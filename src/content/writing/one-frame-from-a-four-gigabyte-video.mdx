@@ -2,7 +2,7 @@
 title: 'One frame from a four-gigabyte video'
 date: 2026-07-10
 description: "How a tiny ffmpeg service behind an edge worker turned 'a thumbnail at any timestamp of any video' from a years-old wish into a two-second URL, and what a suddenly-free capability does to a product conversation."
-draft: true
+draft: false
 ogTreatment: default
 pullQuote: "Auto-selection isn't about finding the best frame. It's about filtering out garbage."
 tags: ['infrastructure', 'media', 'craft']
@@ -25,20 +25,20 @@ I run engineering at a consumer product that helps families preserve their memor
 Half the product ideas on our wall need the same primitive: a picture from a specific instant inside one of those videos. A clip needs a cover image. A "moments" email wants the frame where the birthday cake shows up. A scrubber wants a preview under your thumb as you drag. And for years, every route to that primitive failed the same audit:
 
 1. Pre-render everything. Thumbnails for every second of every video means billions of images, almost none of which anyone would ever look at.
-2. Cut frames on demand, the naive way. Download a 4 GB file to produce a 30 KB image—a hundred-thousand-to-one ratio of bytes read to bytes served, and tens of seconds per thumbnail.
-3. Buy it. Cloudflare sells frame extraction off the shelf, but it caps input at 100 MB and ten minutes<Note id="1" />—our median video blows past both. A hosted media-transformation service we piloted earlier this year could handle the files, but it never beat the two seconds you just saw, and it priced the job in the thousands of dollars a month.
+2. Cut frames on demand, the naive way. Download a 4 GB file to produce a 30 KB image -- a hundred-thousand-to-one ratio of bytes read to bytes served, and tens of seconds per thumbnail.
+3. Buy it. Cloudflare sells frame extraction off the shelf, but it caps input at 100 MB and ten minutes<Note id="1" /> -- our median video blows past both. A hosted media-transformation service we piloted earlier this year could handle the files, but it never beat the two seconds you just saw, and it priced the job in the thousands of dollars a month.
 
 So the feature sat in the someday pile, looking like a big-company problem that wanted a big-company system.
 
 ## Three facts about files
 
-Video files carry a map. An MP4—what our masters are—contains an index, the moov atom, recording where every moment of the video lives in the file, byte by node.<Note id="2" /> Read the index and you know which slice of a 4 GB file holds minute 133.
+Video files carry a map. An MP4 -- what our masters are -- contains an index, the moov atom, recording where every moment of the video lives in the file, down to the byte.<Note id="2" /> Read the index and you know which slice of a 4 GB file holds minute 133.
 
-Video is keyframes plus diffs. Every so often—a second or a few, depending on the encode—the file stores a complete picture; the frames between only describe what changed. To render any instant, you jump to the nearest keyframe before it and decode forward a fraction of a second.
+Video is keyframes plus diffs. Every so often -- a second or a few, depending on the encode -- the file stores a complete picture; the frames between only describe what changed. To render any instant, you jump to the nearest keyframe before it and decode forward a fraction of a second.
 
 Storage speaks byte ranges. HTTP has let clients request an arbitrary slice of a file since the nineties.<Note id="3" /> Nothing obliges you to read the four gigabytes you don't need.
 
-ffmpeg composes all three when you pass the seek before the input—`-ss` ahead of `-i`—which tells it to consult the index and jump, rather than read the file front to back. Pointed at a signed storage URL, it fetches the index, does the math, range-reads the few megabytes around the target keyframe, and emits one JPEG.
+ffmpeg composes all three when you pass the seek before the input -- `-ss` ahead of `-i` -- which tells it to consult the index and jump, rather than read the file front to back. Pointed at a signed storage URL, it fetches the index, does the math, range-reads the few megabytes around the target keyframe, and emits one JPEG.
 
 <FrameAnatomyDiagram />
 
@@ -46,15 +46,15 @@ ffmpeg composes all three when you pass the seek before the input—`-ss` ahead 
   A four-gigabyte video costs about as much to read as a large photo, if you know exactly where to look.
 </PullQuote>
 
-I measured it on the worst file we have, the 4.8 GB six-hour-forty tape: 1.9 to 3.0 seconds per frame, end to end, including the network—against a warm container; the first request after an idle spell pays a couple of seconds more while it wakes. And that's with our current masters storing the index at the tail of the file, which costs an extra round trip to the tail before the seek can start. New encodes will write the index up front—one flag at transcode time<Note id="4" />—and the same request should land well under a second. The encode pipeline, it turns out, is part of the feature: index placement, steady keyframe spacing, and a modest bitrate are what keep a frame read photo-sized.
+I measured it on the worst file we have, the 4.8 GB six-hour-forty tape: 1.9 to 3.0 seconds per frame, end to end, including the network -- against a warm container; the first request after an idle spell pays a couple of seconds more while it wakes. And that's with our current masters storing the index at the tail of the file, which costs an extra round trip to the tail before the seek can start. New encodes will write the index up front -- one flag at transcode time<Note id="4" /> -- and the same request should land well under a second. The encode pipeline, it turns out, is part of the feature: index placement, steady keyframe spacing, and a modest bitrate are what keep a frame read photo-sized.
 
 ## The service is boring on purpose
 
-The whole thing is one small service and one route. An edge worker is the single front door for all customer media; every URL it honors is signed and expiring. Frame requests go to a scale-to-zero container running pinned ffmpeg, which holds a read-only storage credential and answers only to the worker. Extracted frames cache at the edge—the worker verifies the signature, then drops it from the cache key and snaps timestamps to the whole second, so two people asking for the same moment share one extraction and the second look is instant. No database, no queue, no pre-processing job crawling the archive. When nobody asks for frames, it costs nothing; when everybody does, the compute bill is single-digit dollars a month at millions of requests.
+The whole thing is one small service and one route. An edge worker is the single front door for all customer media; every URL it honors is signed and expiring. Frame requests go to a scale-to-zero container running pinned ffmpeg, which holds a read-only storage credential and answers only to the worker. Extracted frames cache at the edge -- the worker verifies the signature, then drops it from the cache key and snaps timestamps to the whole second, so two people asking for the same moment share one extraction and the second look is instant. No database, no queue, no pre-processing job crawling the archive. When nobody asks for frames, it costs nothing; when everybody does, the edge cache answers most of them, and the compute bill stays in single-digit dollars a month even at millions of requests.
 
 <FrameRequestDiagram />
 
-There is nothing clever in that paragraph, and that's the point. The cleverness budget went into finding the facts, not into architecture.
+None of that is clever, and that's the point. The cleverness budget went into finding the facts, not into architecture.
 
 ## at=auto mode
 
@@ -62,25 +62,27 @@ There is nothing clever in that paragraph, and that's the point. The cleverness 
 
 The rejection thresholds come from calibrating on real tapes. Saturated leaders run ULOW ~217, VCR OSD blue screens run ~166-167, and real content tops around 114. We run at 160, so the service drops uniformly blue frames while keeping content.
 
-Near-black detection uses YHIGH—the 90th-percentile luma—to catch dead-signal black frames. The threshold is 32 (TV black 16 plus analog noise headroom). Real content runs YHIGH 110-214, so the filter drops only dead frames.
+Near-black detection uses YHIGH -- the 90th-percentile luma -- to catch dead-signal black frames.<Note id="5" /> The threshold is 32 (TV black 16 plus analog noise headroom). Real content runs YHIGH 110-214, so the filter drops only dead frames.
 
-If both windows exhaust, it seeks once to ~mid-tape 3s and retries. If that also fails, the service returns `412 PRECONDITION_FAILED` (reason=`auto_blue_exhausted`) and the caller shows a placeholder.
+If the opening window exhausts, it seeks once to mid-tape and retries against a three-second window. If that also fails, the service returns a precondition-failed error with a machine-readable reason, and the caller shows a placeholder.
 
-<Figure alt="2x3 grid of rejected frames"caption="Rejected frames from test fixtures. Blue tape leader, VCR OSD blue screen, near-black fade, dead-signal black, SMPTE bars (kept), and one good frame.">
-  <img src="/images/writing/one-frame-from-a-four-gigabyte-video/rejected-frames.png" alt="2x3 grid of rejected frames showing blue leader, black dead frame, black near-black frame, SMPTE bars (kept), and good frame (kept)" />
-</Figure>
+<Figure
+  src="/images/writing/one-frame-from-a-four-gigabyte-video/rejected-frames.png"
+  alt="2x3 grid of synthetic test frames: solid blue, solid black, near-black, solid green, and two SMPTE color-bar frames"
+  caption="Synthetic test fixtures through the at=auto filter: blue tape leader, dead-signal black, near-black fade, a stand-in good frame, and SMPTE bars. The filter rejects the blue and black frames; the bars and the good frame survive."
+/>
 
 <AutoRejectionDiagram />
 
-One ffmpeg pass does extraction and rejection simultaneously. The service returns a representative thumbnail in the same two seconds as manual timecode extraction.
+One ffmpeg pass does extraction and rejection simultaneously. The service returns a representative thumbnail in the same round-trip as a manual timecode.
 
 ## What it unlocked
 
-The Slack thread after that link was the best part. Within hours the founder who'd thought it impossible was designing on top of it: grab ten frames from a video, let a model pick the most interesting one—a face, say—and make that the cover. Then the bigger question: how many frames do you actually need to understand what's in an hour of home video? One per second is 3,600 images; one per ten seconds is 360, and probably closer to enough. Suddenly we're sketching AI analysis of a petabyte-scale archive as a bounded, priceable batch job, because sampling a video no longer means reading it. Extraction stops being the expensive part; the models become the bill.
+The Slack thread after that link was the best part. Within hours the ideas moved past cover images and scrubber previews: grab ten frames from a video, let a model pick the most interesting one -- a face, say -- and make that the cover. Then the bigger question: how many frames do you actually need to understand what's in an hour of home video? One per second is 3,600 images; one per ten seconds is 360, and probably closer to enough. Suddenly we're sketching AI analysis of the whole archive as a bounded, priceable batch job, because sampling a video no longer means reading it. Extraction is no longer the expensive part; the model calls are.
 
-Encoders that place keyframes at scene cuts have even left hints about where to sample—the file already marks the moments where the picture changes. Every idea in that thread used to open with "well, first we'd have to read the whole video," and die there. The primitive changed price, and the conversation changed shape the same afternoon.
+Encoders that place keyframes at scene cuts have even left hints about where to sample -- the file already marks the moments where the picture changes. Every idea in that thread used to open with "well, first we'd have to read the whole video," and die there. The primitive changed price, and the conversation changed shape the same afternoon.
 
-The problems a team files under impossible are often just problems priced under an old assumption. The assumption here was that video is opaque—that you get frames out of it the way you got them out of a VHS deck, by rolling through. The file format has disagreed since before some of our customers' tapes were recorded. What's left is this: write the index to the front of every new encode, and two seconds becomes half of one.
+The someday pile is mostly problems priced under an old assumption. The assumption here was that video is opaque -- that you get frames out of it the way you got them out of a VHS deck, by rolling through. The file format has disagreed since before some of our customers' tapes were recorded. What's left is this: write the index to the front of every new encode, and two seconds becomes half of one.
 
 <Footnotes
   notes={[
@@ -98,15 +100,11 @@ The problems a team files under impossible are often just problems priced under 
     },
     {
       id: '4',
-      body: 'The <a href="https://ffmpeg.org/ffmpeg-formats.html#mov_002c-mp4_002c-ismv"><code>-movflags +faststart</code></a> output flag relocates the moov atom to the front of the file, written for progressive web playback in the dial-up era and still earning its keep. Per file it\'s a cheap stream-copy remux, no re-encode—though across an archive like ours that still means rewriting every byte you own, which is why we\'re fixing it at the encoder for new files rather than backfilling. The measured tail-seek penalty on existing files is small enough to live with.',
+      body: 'The <a href="https://ffmpeg.org/ffmpeg-formats.html#mov_002c-mp4_002c-ismv"><code>-movflags +faststart</code></a> output flag relocates the moov atom to the front of the file, written for progressive web playback in the dial-up era and still earning its keep. Per file it\'s a cheap stream-copy remux, no re-encode -- though across an archive like ours that still means rewriting every byte you own, which is why we\'re fixing it at the encoder for new files rather than backfilling. The measured tail-seek penalty on existing files is small enough to live with.',
     },
     {
       id: '5',
       body: 'We use 90th-percentile YHIGH instead of mean luma because a dim ~15% strip would be wrongly dropped by mean. The 90th-percentile rule catches the signal floor while preserving content that has a bright foreground against a dark background.',
-    },
-    {
-      id: '6',
-      body: '`at=auto` samples the opening 15 seconds at 2 frames per second, runs signalstats to reject blue screens (ULOW Cb threshold 160) and near-black frames (YHIGH threshold 32), picks a representative thumbnail from survivors, falls back to mid-tape once if both windows exhaust, then returns 412 with placeholder fallback.',
     },
   ]}
 />
