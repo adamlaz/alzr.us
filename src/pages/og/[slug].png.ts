@@ -13,7 +13,7 @@ const PAPER = '#f8f8f8';
 const RULE = '#dadae0';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('writing', ({ data }) => !data.draft);
+  const posts = await getCollection('writing', ({ data }) => import.meta.env.DEV || !data.draft);
   return posts.map((post) => ({ params: { slug: post.id } }));
 }
 
@@ -382,7 +382,7 @@ function render(treatment: Treatment, title: string) {
 }
 
 export const GET: APIRoute = async ({ params }) => {
-  const posts = await getCollection('writing', ({ data }) => !data.draft);
+  const posts = await getCollection('writing', ({ data }) => import.meta.env.DEV || !data.draft);
   const post = posts.find((p) => p.id === params.slug);
 
   if (!post) {
