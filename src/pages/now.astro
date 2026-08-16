@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const updated = new Date('2026-06-15');
+const updated = new Date('2026-08-15');
 const formatted = updated.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
@@ -24,17 +24,20 @@ const latest = posts[0];
 
   <ul class="now-list">
     <li>
-      <strong>Day job-</strong> mid-way through a senior mobile hire, running the
-      parallel-agent research and the per-candidate interview pages from the
-      <a href="/writing/the-interview-after-the-research">hiring posts</a> against a live
-      candidate pool.
+      <strong>Day job-</strong> the senior mobile hire from the
+      <a href="/writing/the-interview-after-the-research">hiring posts</a> landed and
+      started; the research workflow behind it got packaged as a kit a teammate now
+      runs (<a href="/writing/giving-the-brief-away">that story</a>), and it's pointed
+      at an engineering-leadership search next.
     </li>
     <li>
-      <strong>Advisory-</strong> the engagement I wrapped this spring is turning into the
-      next post I owe: a sanitized walkthrough of the audit kit. Not written yet.
+      <strong>Advisory-</strong> the diagnostic I owed a write-up finally has one-
+      <a href="/writing/nine-hypotheses-three-days-onsite">Nine hypotheses, three days
+      onsite</a>. The survey package is in the client's hands for the 90-day re-run.
     </li>
     <li>
-      <strong>Writing-</strong> just pushed a run of new posts; settling back to roughly one a month.{
+      <strong>Writing-</strong> five drafts cleared the editorial gate in one August push;
+      twelve posts on the site now.{
         latest && (
           <Fragment>
             {' '}
@@ -44,9 +47,10 @@ const latest = posts[0];
       }
     </li>
     <li>
-      <strong>Personal tooling-</strong> extending the automation that rebuilds my Obsidian
-      vault every morning. Right now: a daily brief podcast and a
-      research-narrative rollup.
+      <strong>Personal tooling-</strong> the morning vault automation keeps growing-
+      newest pieces are a drafted daily standup and reply drafts for texts I haven't
+      answered (drafts only; nothing sends itself). The 3D printer queue is its own
+      backlog now- see <a href="/writing/cad-by-conversation">CAD by conversation</a>.
     </li>
   </ul>
 
