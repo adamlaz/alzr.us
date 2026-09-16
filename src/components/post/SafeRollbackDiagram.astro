@@ -1,0 +1,17 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/safe-rollback-light.svg?raw';
+import darkSvg from '../../assets/diagrams/safe-rollback-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={400}
+  caption="Restore the backup only if the current file still matches what the installer wrote."
+>
+  With Codex closed, compare the current config file with the saved digest of
+  the installed file. A match allows restoration of the backup. If the file
+  has changed or the installed digest is missing, keep the current file and
+  report the conflict.
+</Diagram>

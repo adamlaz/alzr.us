@@ -17,7 +17,7 @@ export async function getStaticPaths() {
   return posts.map((post) => ({ params: { slug: post.id } }));
 }
 
-type Treatment = 'default' | 'candidate-grid' | 'struck-em-dash' | 'era-timeline';
+type Treatment = 'default' | 'candidate-grid' | 'struck-em-dash' | 'era-timeline' | 'agent-config';
 
 const frameStyle = {
   width: '100%',
@@ -368,6 +368,110 @@ function eraTimeline(title: string) {
   };
 }
 
+function agentConfig(title: string) {
+  return {
+    type: 'div',
+    props: {
+      style: frameStyle,
+      children: [
+        { type: 'div', props: { style: titleStyle(fitTitleSize(title, 64)), children: title } },
+        {
+          type: 'div',
+          props: {
+            style: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+            children: [
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    width: 370,
+                    height: 158,
+                    padding: 28,
+                    borderRadius: 8,
+                    background: COBALT,
+                    color: '#ffffff',
+                  },
+                  children: [
+                    {
+                      type: 'div',
+                      props: { style: { fontSize: 18, letterSpacing: '0.06em' }, children: 'SHARED REPO' },
+                    },
+                    { type: 'div', props: { style: { fontSize: 42, marginTop: 8 }, children: '~/.agents' } },
+                    {
+                      type: 'div',
+                      props: { style: { fontSize: 20, marginTop: 8 }, children: 'Instructions · skills · config' },
+                    },
+                  ],
+                },
+              },
+              {
+                type: 'svg',
+                props: {
+                  width: 90,
+                  height: 198,
+                  viewBox: '0 0 90 198',
+                  children: {
+                    type: 'path',
+                    props: {
+                      d: 'M0 99 H40 M40 27 V171 M40 27 H88 M40 99 H88 M40 171 H88 M80 22 L88 27 L80 32 M80 94 L88 99 L80 104 M80 166 L88 171 L80 176',
+                      fill: 'none',
+                      stroke: COBALT,
+                      strokeWidth: 2,
+                    },
+                  },
+                },
+              },
+              {
+                type: 'div',
+                props: {
+                  style: { display: 'flex', flexDirection: 'column', gap: 18 },
+                  children: ['Claude Code', 'Codex', 'opencode'].map((name) => ({
+                    type: 'div',
+                    props: {
+                      style: {
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: 290,
+                        height: 54,
+                        paddingLeft: 24,
+                        border: `1px solid ${RULE}`,
+                        borderRadius: 6,
+                        fontSize: 26,
+                        color: INK,
+                      },
+                      children: name,
+                    },
+                  })),
+                },
+              },
+            ],
+          },
+        },
+        {
+          type: 'div',
+          props: {
+            style: { display: 'flex', justifyContent: 'center', color: INK_SOFT, fontSize: 22 },
+            children: 'Sessions, credentials, and local approvals stay on the machine.',
+          },
+        },
+        {
+          type: 'div',
+          props: {
+            style: footerStyle,
+            children: [
+              { type: 'div', props: { style: wordmarkStyle, children: 'alzr.us' } },
+              { type: 'div', props: { style: accentRuleStyle, children: '' } },
+            ],
+          },
+        },
+      ],
+    },
+  };
+}
+
 function render(treatment: Treatment, title: string) {
   switch (treatment) {
     case 'candidate-grid':
@@ -376,6 +480,8 @@ function render(treatment: Treatment, title: string) {
       return struckEmDash(title);
     case 'era-timeline':
       return eraTimeline(title);
+    case 'agent-config':
+      return agentConfig(title);
     default:
       return defaultTreatment(title);
   }

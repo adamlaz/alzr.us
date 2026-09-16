@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="672" viewBox="0 0 400 672">
+<g font-family="Inter Variable, system-ui, sans-serif" font-size="18" fill="#eceae4">
+
+<rect x="24" y="8" width="352" height="106" rx="8" fill="#8fa1ef"/>
+<g fill="#14141a" text-anchor="middle">
+<text x="200" y="39" font-size="16" letter-spacing="1">SHARED REPO</text>
+<text x="200" y="70" font-size="26" font-weight="600">~/.agents</text>
+<text x="200" y="97" >Instructions · skills · config</text>
+</g>
+<path d="M200 114 V134 H24 V432" fill="none" stroke="#8fa1ef" stroke-width="2"/>
+
+<path d="M24 204 H52 m-6 -4 6 4 -6 4" fill="none" stroke="#8fa1ef" stroke-width="2"/>
+<rect x="60" y="158" width="316" height="98" rx="8" fill="#1d1d24" stroke="#3a3a43"/>
+<text x="80" y="187" font-size="22" font-weight="600">Claude Code</text>
+<text x="80" y="215" >Settings and skills: links</text>
+
+<path d="M24 318 H52 m-6 -4 6 4 -6 4" fill="none" stroke="#8fa1ef" stroke-width="2"/>
+<rect x="60" y="272" width="316" height="98" rx="8" fill="#1d1d24" stroke="#3a3a43"/>
+<text x="80" y="301" font-size="22" font-weight="600">Codex</text>
+<text x="80" y="329" >Settings: selective sync</text>
+<text x="80" y="355" >Skills: native discovery</text>
+<path d="M24 432 H52 m-6 -4 6 4 -6 4" fill="none" stroke="#8fa1ef" stroke-width="2"/>
+<rect x="60" y="386" width="316" height="98" rx="8" fill="#1d1d24" stroke="#3a3a43"/>
+<text x="80" y="415" font-size="22" font-weight="600">opencode</text>
+<text x="80" y="443" >Settings: links</text>
+<text x="80" y="469" >Skills: native discovery</text>
+<rect x="24" y="528" width="352" height="130" rx="8" fill="#25252d" stroke="#8a8a93" stroke-dasharray="5 5"/>
+<g text-anchor="middle">
+<text x="200" y="558" font-size="16" letter-spacing="1">STAYS ON THIS MAC</text>
+<text x="200" y="594" >Sessions · credentials</text>
+<text x="200" y="623" >Databases · local approvals</text>
+<text x="200" y="647" font-size="16">Outside shared-config sync</text>
+</g>
+</g>
+</svg>

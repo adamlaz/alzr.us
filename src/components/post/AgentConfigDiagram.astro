@@ -1,0 +1,18 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/agent-config-light.svg?raw';
+import darkSvg from '../../assets/diagrams/agent-config-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={400}
+  caption="The repo supplies shared settings. Each tool keeps its sessions, credentials, and local choices."
+>
+  The private ~/.agents repo holds shared instructions, skills, and config.
+  Claude Code uses links for settings and skills. Codex syncs selected settings
+  and discovers skills in the shared store. opencode uses linked settings and
+  discovers the same skills. Sessions, credentials, databases, and local
+  approvals stay on the machine, outside shared-config sync.
+</Diagram>
