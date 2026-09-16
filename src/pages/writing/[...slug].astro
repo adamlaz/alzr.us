@@ -24,7 +24,7 @@ const rt = readingTime(post.body ?? '');
 const minutes = Math.max(1, Math.round(rt.minutes));
 const readMin = `${minutes} min read`;
 
-const ogImage = `/og/${post.id}.png`;
+const ogImage = `/og/${post.id}.png${post.data.ogImageVersion ? `?v=${post.data.ogImageVersion}` : ''}`;
 ---
 
 <BaseLayout
