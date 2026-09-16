@@ -1,0 +1,202 @@
+---
+title: 'Dotfiles for my AI agents'
+date: 2026-09-15T12:00:00Z
+description: 'Three coding agents, one private config repo, and a cleanup that broke normal startup. The useful work was deciding which files I own and which files the tools still need to write.'
+draft: false
+ogTreatment: agent-config
+pullQuote: 'I want to review a settings change without first figuring out which copy matters.'
+tags: ['ai-augmented-engineering', 'developer-tools', 'automation']
+---
+
+import PullQuote from '../../components/post/PullQuote.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+import AgentConfigDiagram from '../../components/post/AgentConfigDiagram.astro';
+import SafeRollbackDiagram from '../../components/post/SafeRollbackDiagram.astro';
+
+I tried to put my coding agents' configuration in one place and broke Codex.
+
+I wanted one place to maintain my instructions without taking over files the
+tools needed to change. My settings lived beside session history, credentials,
+and permission choices the applications wrote as I worked.
+
+## Three tools had accumulated three histories
+
+I use Claude Code, Codex, and opencode, the last one connected to a local
+model through LM Studio. Each had its own instructions, skills, settings,
+and connections to services such as databases and notes apps. Those service
+connections use Model Context Protocol, or MCP.
+
+I had added instructions during individual tasks, registered a server at the
+wrong scope, and left config behind for tools I no longer opened. Finding
+the right place to edit a rule meant checking several directories.
+
+My [writing-voice guide](/writing/writing-voice-guide-for-ai-assistants) was
+one example. The assistants needed the same guide, and my vault scripts
+depended on its path. But I didn't need an agent reading the whole thing to
+debug a database query.
+
+## A repo for the parts I mean to maintain
+
+The shared files now live in a private git repo at `~/.agents`:
+
+```text
+~/.agents/
+  AGENTS.md       shared instructions, under 2 KB
+  skills/         reusable instructions and reference material
+  claude/         Claude-specific settings, commands, and hooks
+  codex/          shared settings, rules, and instruction sources
+  opencode/       opencode configuration
+  mcp/            shared server definitions
+  secrets/        references to credentials in 1Password
+  install.sh      install, inspect, adopt, and restore
+```
+
+Most connections to the tools are file-level symlinks. A settings file can
+point into the repo while the sessions, credentials, caches, and databases
+beside it stay where the application expects them. GNU Stow has supported
+this general approach to dotfiles for years.<Note id="1" />
+
+<AgentConfigDiagram />
+
+To change a rule in the writing guide, I now edit
+`~/.agents/skills/writing-voice/writing-voice.md`. Codex and opencode discover
+that skill in the shared store; Claude reads it through a symlink. Nine
+vault scripts reach the same file through the old path,
+`~/.config/writing-voice.md`, which is also a symlink. I can review one diff
+without hunting for copies to update.
+
+The skill's short description tells an agent when to load the guide. The
+longer instructions stay out of unrelated tasks.<Note id="2" /> Two other
+skills in the store belong to the terminal app that hosts my sessions. That
+app rewrites them, so I leave them gitignored.
+
+I still maintain separate config formats for each tool. The MCP definitions
+need hand translation, and the checks compare server names rather than
+proving that every setting means the same thing in all three tools.
+
+## The session history was part of the migration
+
+Before changing the Claude registrations, I had 41 Claude sessions to close
+and needed a way to resume them.
+
+We recorded session IDs and working directories, backed up the transcripts,
+and saved resume commands. We also checked that a copy of a saved
+conversation would resume. I waited until the sessions were closed before
+changing Claude's machine-local registrations.
+
+The installer refuses to replace a real file that differs from the repo
+copy. I can adopt the local change, which backs it up and imports it, or
+leave the conflict for review. A tool may have changed that file during a
+session.
+
+<PullQuote>
+  The repo copy doesn't get to win by default.
+</PullQuote>
+
+## The test covered the wrong way of starting Codex
+
+The original Codex plan put shared model settings and MCP definitions in a
+separate file and added this to the base config:
+
+```toml
+profile = "shared"
+```
+
+On my installed Codex CLI build, 0.154.0, that line prevented startup. We had
+tested `codex --profile shared`, which worked, then assumed that selecting
+the profile in the base config would work too. I found the mistake when I
+tried to start Codex the usual way.
+
+We removed the selector and merged the shared settings into the base config.
+The installer now adds missing values from the shared file while Codex is
+closed. It refuses a differing value and preserves the app's other settings.
+
+Then Codex wrote a per-tool approval preference under the PostHog server
+while we were checking the connection. The new drift detector reported a
+conflict because it compared the entire server table.
+
+The connection hadn't changed. We fixed the comparison to check the managed
+connection fields and preserve the tool's approval table, then added a
+regression test for that case.
+
+## The terminal was only one of the clients
+
+I replaced credential literals in the shared config with environment-variable
+references. The repo holds a template with 1Password references;
+`op inject` fills it with the values and writes a local env file.<Note id="3" />
+That file is plaintext. I keep it out of git and restrict access to my user
+account: mode 600 on the file, 700 on its directory.
+
+A shell export didn't complete the job. VS Code and ChatGPT needed the
+values in the GUI launch environment too, so a LaunchAgent loads them with
+`launchctl setenv`.
+
+We verified the GUI values, resumed work, and later found them empty. I
+don't know what reset them. We reloaded the loader and checked the values
+against the saved file. Service calls succeeded; I checked the apps again
+the next morning.
+
+A server appearing in a config check hadn't told me whether I could use it
+from the app where I worked.
+
+## The rollback needed its own refusal rule
+
+Reviewing the repaired installer turned up another problem: uninstall could
+copy the old Codex config back over a file the app had changed since
+installation.
+
+A regression test reproduced it: add a setting after installation, run
+uninstall, lose the setting. Restoring the backup erased the later edit.
+
+The installer now saves a digest, a fingerprint of the installed file's
+contents, alongside the backup. Before restoring, it checks that the
+current file still matches. A later edit or a missing digest stops the
+rollback. It also refuses to restore Codex config while Codex is running.
+
+<SafeRollbackDiagram />
+
+That is the same ownership rule I use for automated writes in my
+[Obsidian vault](/writing/treating-a-notes-app-like-production): a writer
+has to notice when somebody else has changed the thing it intends to replace.
+
+## A check I can run before work
+
+The routine is now:
+
+```sh
+~/.agents/install.sh --dry-run
+~/.agents/install.sh --check
+```
+
+I run apply only when I have changes to install.
+The check covers links, instructions, shared Codex settings, MCP names,
+credential literals, and environment delivery. Eleven regression tests cover
+the Codex sync and rollback behavior. Changes to settings still need a
+human review and an intentional commit.
+
+If you use one agent and rarely change its setup, this may be more machinery
+than you need. An existing dotfiles manager may handle the file links just
+fine. The custom parts here came from files with multiple writers, local
+permissions that needed to survive, and sessions I wanted to resume.
+
+By Tuesday morning, I'd checked the apps and `install.sh --check` passed.
+Four unrelated settings and skill files were still modified by other work.
+Those four files stayed modified.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: '<a href="https://www.gnu.org/software/stow/">GNU Stow</a> manages symlinks from a maintained directory tree into an installation location. Its documentation explicitly covers home-directory configuration under version control. The file-linking idea predates coding agents; this installer adds checks for the particular files and writers on my Mac.',
+    },
+    {
+      id: '2',
+      body: 'The <a href="https://agentskills.io/specification#progressive-disclosure">Agent Skills specification</a> describes progressive loading of skill metadata, instructions, and supporting resources. The practical change here was moving the writing guide out of the always-loaded global instructions while preserving the path used by existing scripts.',
+    },
+    {
+      id: '3',
+      body: '1Password documents <a href="https://www.1password.dev/cli/secrets-template-syntax">secret references in config templates</a> and their resolution through op inject. Resolving a template produces a file containing actual secrets; keeping the template in git does not make the rendered output suitable for git.',
+    },
+  ]}
+/>

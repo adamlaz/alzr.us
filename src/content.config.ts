@@ -10,7 +10,9 @@ const writing = defineCollection({
     draft: z.boolean().default(false),
     tags: z.array(z.string()).optional(),
     pullQuote: z.string().optional(),
-    ogTreatment: z.enum(['default', 'candidate-grid', 'struck-em-dash', 'era-timeline']).default('default'),
+    ogTreatment: z
+      .enum(['default', 'candidate-grid', 'struck-em-dash', 'era-timeline', 'agent-config'])
+      .default('default'),
   }),
 });
 
