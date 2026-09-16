@@ -17,7 +17,7 @@ export async function getStaticPaths() {
   return posts.map((post) => ({ params: { slug: post.id } }));
 }
 
-type Treatment = 'default' | 'candidate-grid' | 'struck-em-dash' | 'era-timeline' | 'agent-config';
+type Treatment = 'default' | 'candidate-grid' | 'writing-samples' | 'era-timeline' | 'agent-config';
 
 const frameStyle = {
   width: '100%',
@@ -184,7 +184,63 @@ function candidateGrid(title: string) {
   };
 }
 
-function struckEmDash(title: string) {
+function writingSamples(title: string) {
+  const sample = (label: string, left: number, top: number, rotation: number, front = false) => ({
+    type: 'div',
+    props: {
+      style: {
+        display: 'flex',
+        position: 'absolute',
+        flexDirection: 'column',
+        left,
+        top,
+        width: 290,
+        height: 320,
+        padding: '28px 26px',
+        border: `2px solid ${front ? COBALT : RULE}`,
+        background: front ? '#ffffff' : PAPER,
+        transform: `rotate(${rotation}deg)`,
+      },
+      children: [
+        {
+          type: 'div',
+          props: {
+            style: { display: 'flex', fontSize: 18, letterSpacing: '0.1em', color: front ? COBALT : INK_SOFT },
+            children: label,
+          },
+        },
+        ...(front
+          ? [
+              {
+                type: 'div',
+                props: {
+                  style: { display: 'flex', flexDirection: 'column', gap: 16, marginTop: 38 },
+                  children: [220, 196, 212, 152, 204, 178].map((width, index) => ({
+                    type: 'div',
+                    props: {
+                      style: {
+                        display: 'flex',
+                        width,
+                        height: 5,
+                        background: index === 3 ? COBALT : RULE,
+                      },
+                    },
+                  })),
+                },
+              },
+              {
+                type: 'div',
+                props: {
+                  style: { display: 'flex', marginTop: 32, color: COBALT, fontSize: 21 },
+                  children: 'Start here.',
+                },
+              },
+            ]
+          : []),
+      ],
+    },
+  });
+
   return {
     type: 'div',
     props: {
@@ -196,9 +252,9 @@ function struckEmDash(title: string) {
             style: {
               display: 'flex',
               flex: 1,
-              flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'space-between',
+              paddingBottom: 36,
             },
             children: [
               {
@@ -206,11 +262,9 @@ function struckEmDash(title: string) {
                 props: {
                   style: {
                     display: 'flex',
-                    position: 'relative' as const,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 480,
-                    height: 240,
+                    flexDirection: 'column',
+                    width: 640,
+                    gap: 28,
                   },
                   children: [
                     {
@@ -218,29 +272,25 @@ function struckEmDash(title: string) {
                       props: {
                         style: {
                           display: 'flex',
-                          fontSize: 280,
-                          lineHeight: 1,
+                          fontSize: 19,
                           color: COBALT,
-                          fontWeight: 700,
-                          letterSpacing: '-0.04em',
+                          letterSpacing: '0.14em',
                         },
-                        children: '—',
+                        children: 'WRITING + AI',
                       },
                     },
                     {
                       type: 'div',
                       props: {
-                        style: {
-                          display: 'flex',
-                          position: 'absolute' as const,
-                          left: 40,
-                          right: 40,
-                          top: '50%',
-                          height: 4,
-                          background: COBALT,
-                          transform: 'rotate(-12deg)',
-                        },
-                        children: '',
+                        style: { ...titleStyle(72, 520), lineHeight: 1.06 },
+                        children: title,
+                      },
+                    },
+                    {
+                      type: 'div',
+                      props: {
+                        style: { display: 'flex', fontSize: 26, color: INK_SOFT },
+                        children: 'Give it something you actually wrote.',
                       },
                     },
                   ],
@@ -250,11 +300,17 @@ function struckEmDash(title: string) {
                 type: 'div',
                 props: {
                   style: {
-                    marginTop: 32,
-                    ...titleStyle(fitTitleSize(title, 40), 920),
-                    textAlign: 'center' as const,
+                    display: 'flex',
+                    position: 'relative',
+                    width: 360,
+                    height: 410,
+                    flexShrink: 0,
                   },
-                  children: title,
+                  children: [
+                    sample('NOTES', 44, -12, 7),
+                    sample('EMAILS', 8, 38, -6),
+                    sample('MY WRITING', 38, 124, 2, true),
+                  ],
                 },
               },
             ],
@@ -476,8 +532,8 @@ function render(treatment: Treatment, title: string) {
   switch (treatment) {
     case 'candidate-grid':
       return candidateGrid(title);
-    case 'struck-em-dash':
-      return struckEmDash(title);
+    case 'writing-samples':
+      return writingSamples(title);
     case 'era-timeline':
       return eraTimeline(title);
     case 'agent-config':
