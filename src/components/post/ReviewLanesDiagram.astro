@@ -1,0 +1,21 @@
+---
+import darkSvg from '../../assets/diagrams/review-lanes-dark.svg?raw';
+import lightSvg from '../../assets/diagrams/review-lanes-light.svg?raw';
+import Diagram from './Diagram.astro';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={680}
+  caption="Where review lives: UI changes merge on green CI alone; only the adapter boundaries and CI config ask for a second pair of eyes."
+>
+  A two-branch diagram starting from a pull request opened with a station-impact
+  checklist declaring what the change touches. On the left, the fast lane for UI
+  and flows covers screens, the station kit, copy, keyboard shortcuts, the pause
+  guide, interactive training, and QA review UI -- self-merging on green CI in a
+  median of six minutes with no human approval required. On the right, the
+  contract lane for seams and gates covers order, media, inspection, and chat
+  adapters, local mock parity with production rules, and CI workflow and browser
+  benchmark gates -- requiring co-owner review and reviewed by commit on the branch.
+</Diagram>

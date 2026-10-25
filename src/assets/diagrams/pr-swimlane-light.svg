@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="360" viewBox="0 0 680 360">
+  <g font-family="Inter Variable, system-ui, sans-serif" fill="#1c1d24">
+    <!-- Top Section: Three Phase Cards with Proportional Stacked Bars -->
+    <!-- Card 1: Week 1 -->
+    <rect x="16" y="12" width="208" height="86" rx="8" fill="#f1f0ec" stroke="#cfcfd1" stroke-width="1.5" />
+    <text x="28" y="33" font-size="13" font-weight="700" fill="#1c1d24">Week 1: Build &amp; launch</text>
+    <text x="28" y="53" font-size="13" font-weight="600" fill="#8a8a90">Me 4 · Eng 1</text>
+    <rect x="28" y="65" width="144" height="14" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="1.5" />
+    <rect x="176" y="65" width="36" height="14" rx="3" fill="#ffffff" stroke="#8a8a90" stroke-width="1.5" />
+
+    <!-- Card 2: Weeks 2-3 -->
+    <rect x="236" y="12" width="208" height="86" rx="8" fill="#f1f0ec" stroke="#cfcfd1" stroke-width="1.5" />
+    <text x="248" y="33" font-size="13" font-weight="700" fill="#1c1d24">Weeks 2-3: Floor loops &amp; OOO</text>
+    <text x="248" y="53" font-size="13" font-weight="600" fill="#8a8a90">PM 8 · Me 8</text>
+    <rect x="248" y="65" width="90" height="14" rx="3" fill="#2f3eb0" />
+    <rect x="342" y="65" width="90" height="14" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="1.5" />
+
+    <!-- Card 3: Week 4 -->
+    <rect x="456" y="12" width="208" height="86" rx="8" fill="#ffffff" stroke="#2f3eb0" stroke-width="2" />
+    <text x="468" y="33" font-size="13" font-weight="700" fill="#2f3eb0">Week 4: Steady state</text>
+    <text x="468" y="53" font-size="13" font-weight="600" fill="#1c1d24">PM 11 · Me 3 · Eng 1</text>
+    <rect x="468" y="65" width="132" height="14" rx="3" fill="#2f3eb0" />
+    <rect x="604" y="65" width="34" height="14" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="1.5" />
+    <rect x="642" y="65" width="10" height="14" rx="2" fill="#ffffff" stroke="#8a8a90" stroke-width="1.5" />
+
+    <!-- Shaded absence window: two-week OOO & async gap -->
+    <rect x="371" y="114" width="174" height="198" rx="6" fill="#f1f0ec" stroke="#cfcfd1" stroke-dasharray="4 4" />
+    <text x="458" y="133" font-size="12" font-weight="600" text-anchor="middle" fill="#8a8a90">Two-week OOO &amp; async gap</text>
+
+    <!-- Lane tracks -->
+    <line x1="216" y1="166" x2="656" y2="166" stroke="#cfcfd1" stroke-width="1.5" />
+    <line x1="216" y1="238" x2="656" y2="238" stroke="#cfcfd1" stroke-width="1.5" />
+    <line x1="216" y1="296" x2="656" y2="296" stroke="#cfcfd1" stroke-width="1.5" />
+
+    <!-- Lane labels (min 12px, titles 15px) -->
+    <text x="16" y="161" font-size="15" font-weight="700">Product manager</text>
+    <text x="16" y="180" font-size="12" fill="#8a8a90">19 merged · 14 self in ~6m</text>
+
+    <text x="16" y="233" font-size="15" font-weight="700">Me (contracts &amp; CI)</text>
+    <text x="16" y="252" font-size="12" fill="#8a8a90">15 merged · 19 commits on 6</text>
+
+    <text x="16" y="291" font-size="15" font-weight="700">Engineer</text>
+    <text x="16" y="310" font-size="12" fill="#8a8a90">2 merged (v1 + slips)</text>
+
+    <!-- Callout 1: 8 floor issues -> 1 PR (8m) on Day 7 -->
+    <line x1="304" y1="140" x2="304" y2="157" stroke="#2f3eb0" stroke-width="1.5" />
+    <rect x="188" y="116" width="176" height="24" rx="12" fill="#ffffff" stroke="#2f3eb0" stroke-width="1.5" />
+    <text x="276" y="132" font-size="12" font-weight="600" text-anchor="middle" fill="#2f3eb0">8 floor issues -&gt; 1 PR (8m)</text>
+
+    <!-- Callout 2: 6-PR hardening Sunday on Day 13 -->
+    <line x1="392" y1="212" x2="392" y2="225" stroke="#c0402b" stroke-width="1.5" />
+    <rect x="378" y="188" width="160" height="24" rx="12" fill="#f7e6e2" stroke="#c0402b" stroke-width="1.5" />
+    <text x="458" y="204" font-size="12" font-weight="600" text-anchor="middle" fill="#8f2b1c">6-PR hardening Sunday</text>
+
+    <!-- Callout 3: 11 PRs on return across Days 24-30 -->
+    <path d="M 553 148 L 553 142 L 641 142 L 641 148" fill="none" stroke="#2f3eb0" stroke-width="1.5" />
+    <rect x="548" y="116" width="116" height="24" rx="12" fill="#2f3eb0" />
+    <text x="606" y="132" font-size="12" font-weight="700" text-anchor="middle" fill="#ffffff">11 PRs on return</text>
+
+    <!-- Callout 4: v1 (41 files) on Day 1 -->
+    <line x1="225" y1="296" x2="234" y2="296" stroke="#8a8a90" stroke-width="1.5" />
+    <rect x="234" y="284" width="96" height="24" rx="12" fill="#ffffff" stroke="#cfcfd1" stroke-width="1.5" />
+    <text x="282" y="300" font-size="12" font-weight="600" text-anchor="middle" fill="#1c1d24">v1 (41 files)</text>
+
+    <!-- Markers -->
+    <circle cx="304" cy="166" r="7" fill="#2f3eb0" />
+<circle cx="333" cy="166" r="11" fill="#2f3eb0" /><text x="333" y="170" font-size="12" font-weight="700" text-anchor="middle" fill="#ffffff">4</text>
+<circle cx="348" cy="166" r="7" fill="#2f3eb0" />
+<circle cx="363" cy="166" r="11" fill="#2f3eb0" /><text x="363" y="170" font-size="12" font-weight="700" text-anchor="middle" fill="#ffffff">2</text>
+<circle cx="553" cy="166" r="11" fill="#2f3eb0" /><text x="553" y="170" font-size="12" font-weight="700" text-anchor="middle" fill="#ffffff">2</text>
+<circle cx="612" cy="166" r="11" fill="#2f3eb0" /><text x="612" y="170" font-size="12" font-weight="700" text-anchor="middle" fill="#ffffff">5</text>
+<circle cx="627" cy="166" r="7" fill="#2f3eb0" />
+<circle cx="641" cy="166" r="11" fill="#2f3eb0" /><text x="641" y="170" font-size="12" font-weight="700" text-anchor="middle" fill="#ffffff">3</text>
+    <circle cx="656" cy="166" r="7.5" fill="#f7f6f2" stroke="#2f3eb0" stroke-width="2" stroke-dasharray="3 2" />
+    <rect x="209" y="231" width="14" height="14" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="2" />
+<rect x="238" y="231" width="14" height="14" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="2" />
+<rect x="249" y="227" width="22" height="22" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="2" /><text x="260" y="242" font-size="12" font-weight="700" text-anchor="middle" fill="#8f2b1c">2</text>
+<rect x="308" y="227" width="22" height="22" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="2" /><text x="319" y="242" font-size="12" font-weight="700" text-anchor="middle" fill="#8f2b1c">2</text>
+<rect x="381" y="227" width="22" height="22" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="2" /><text x="392" y="242" font-size="12" font-weight="700" text-anchor="middle" fill="#8f2b1c">6</text>
+<rect x="546" y="231" width="14" height="14" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="2" />
+<rect x="630" y="227" width="22" height="22" rx="3" fill="#f7e6e2" stroke="#c0402b" stroke-width="2" /><text x="641" y="242" font-size="12" font-weight="700" text-anchor="middle" fill="#8f2b1c">2</text>
+    <polygon points="216,287 225,296 216,305 207,296" fill="#ffffff" stroke="#1c1d24" stroke-width="1.8" />
+<polygon points="553,287 562,296 553,305 544,296" fill="#ffffff" stroke="#1c1d24" stroke-width="1.8" />
+
+    <!-- Date axis -->
+    <line x1="216" y1="322" x2="656" y2="322" stroke="#cfcfd1" stroke-width="1" />
+    
+          <line x1="216" y1="322" x2="216" y2="328" stroke="#8a8a90" stroke-width="1.2" />
+          <text x="216" y="344" font-size="12" text-anchor="middle" fill="#8a8a90">Day 1</text>
+        
+          <line x1="304" y1="322" x2="304" y2="328" stroke="#8a8a90" stroke-width="1.2" />
+          <text x="304" y="344" font-size="12" text-anchor="middle" fill="#8a8a90">Day 7</text>
+        
+          <line x1="377" y1="322" x2="377" y2="328" stroke="#8a8a90" stroke-width="1.2" />
+          <text x="377" y="344" font-size="12" text-anchor="middle" fill="#8a8a90">Day 12</text>
+        
+          <line x1="553" y1="322" x2="553" y2="328" stroke="#8a8a90" stroke-width="1.2" />
+          <text x="553" y="344" font-size="12" text-anchor="middle" fill="#8a8a90">Day 24</text>
+        
+          <line x1="656" y1="322" x2="656" y2="328" stroke="#8a8a90" stroke-width="1.2" />
+          <text x="656" y="344" font-size="12" text-anchor="middle" fill="#8a8a90">Day 31</text>
+        
+  </g>
+</svg>

@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="430" viewBox="0 0 680 430">
+  <g font-family="Inter Variable, system-ui, sans-serif" fill="#eceae4">
+    <!-- Title & Legend -->
+    <text x="20" y="26" font-size="15.5" font-weight="700" fill="#eceae4">UI words per screen state: before redesign vs. locked CI budget today</text>
+
+    <rect x="20" y="38" width="18" height="12" rx="3" fill="#8fa1ef" />
+    <text x="44" y="48" font-size="12" font-weight="600" fill="#eceae4">Locked CI budget today</text>
+
+    <rect x="200" y="38" width="18" height="12" rx="3" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="3 2" />
+    <text x="224" y="48" font-size="12" fill="#8a8a93">Before redesign / trim pass</text>
+
+    <text x="660" y="48" font-size="12" text-anchor="end" fill="#8a8a93">* +2-3 words for order-history strip</text>
+
+    <!-- Baseline & grid ticks -->
+    <line x1="190" y1="84" x2="190" y2="386" stroke="#3a3a43" stroke-width="1.5" />
+    
+          <line x1="190" y1="386" x2="190" y2="391" stroke="#3a3a43" stroke-width="1.2" />
+          <text x="190" y="407" font-size="12" text-anchor="middle" fill="#8a8a93">0</text>
+        
+          <line x1="245" y1="386" x2="245" y2="391" stroke="#3a3a43" stroke-width="1.2" />
+          <text x="245" y="407" font-size="12" text-anchor="middle" fill="#8a8a93">5</text>
+        
+          <line x1="300" y1="386" x2="300" y2="391" stroke="#3a3a43" stroke-width="1.2" />
+          <text x="300" y="407" font-size="12" text-anchor="middle" fill="#8a8a93">10</text>
+        
+          <line x1="355" y1="386" x2="355" y2="391" stroke="#3a3a43" stroke-width="1.2" />
+          <text x="355" y="407" font-size="12" text-anchor="middle" fill="#8a8a93">15</text>
+        
+          <line x1="410" y1="386" x2="410" y2="391" stroke="#3a3a43" stroke-width="1.2" />
+          <text x="410" y="407" font-size="12" text-anchor="middle" fill="#8a8a93">20</text>
+        
+          <line x1="465" y1="386" x2="465" y2="391" stroke="#3a3a43" stroke-width="1.2" />
+          <text x="465" y="407" font-size="12" text-anchor="middle" fill="#8a8a93">25</text>
+        
+          <line x1="520" y1="386" x2="520" y2="391" stroke="#3a3a43" stroke-width="1.2" />
+          <text x="520" y="407" font-size="12" text-anchor="middle" fill="#8a8a93">30</text>
+        
+          <line x1="575" y1="386" x2="575" y2="391" stroke="#3a3a43" stroke-width="1.2" />
+          <text x="575" y="407" font-size="12" text-anchor="middle" fill="#8a8a93">35</text>
+        
+          <line x1="630" y1="386" x2="630" y2="391" stroke="#3a3a43" stroke-width="1.2" />
+          <text x="630" y="407" font-size="12" text-anchor="middle" fill="#8a8a93">40</text>
+        
+    <line x1="190" y1="386" x2="630" y2="386" stroke="#3a3a43" stroke-width="1" />
+
+    
+      <text x="178" y="107" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Tape playing</text>
+      
+        <rect x="190" y="92" width="319" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <rect x="521" y="92" width="32" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <line x1="513" y1="89" x2="507" y2="117" stroke="#eceae4" stroke-width="2" />
+        <line x1="520" y1="89" x2="514" y2="117" stroke="#eceae4" stroke-width="2" />
+        <text x="561" y="107" font-size="12.5" font-weight="700" fill="#eceae4">148 words (-95%)</text>
+      
+      <rect x="190" y="92" width="88" height="22" rx="4" fill="#8fa1ef" />
+      <circle cx="200" cy="103" r="3" fill="#14141a" opacity="0.8" />
+      <text x="271" y="107" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">8</text>
+    
+
+      <text x="178" y="140" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Fail symptom picker</text>
+      
+        <rect x="190" y="125" width="374" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <circle cx="564" cy="136" r="3.5" fill="#8a8a93" />
+        <text x="572" y="140" font-size="12.5" font-weight="500" fill="#8a8a93">was 34</text>
+      
+      <rect x="190" y="125" width="33" height="22" rx="4" fill="#8fa1ef" />
+      
+      <text x="216" y="140" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">3</text>
+    
+
+      <text x="178" y="173" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Order ready</text>
+      
+        <rect x="190" y="158" width="319" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <circle cx="509" cy="169" r="3.5" fill="#8a8a93" />
+        <text x="517" y="173" font-size="12.5" font-weight="500" fill="#8a8a93">was 29</text>
+      
+      <rect x="190" y="158" width="33" height="22" rx="4" fill="#8fa1ef" />
+      
+      <text x="216" y="173" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">3</text>
+    
+
+      <text x="178" y="206" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Round 2 ready</text>
+      
+        <rect x="190" y="191" width="264" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <circle cx="454" cy="202" r="3.5" fill="#8a8a93" />
+        <text x="462" y="206" font-size="12.5" font-weight="500" fill="#8a8a93">was 24</text>
+      
+      <rect x="190" y="191" width="143" height="22" rx="4" fill="#8fa1ef" />
+      <circle cx="200" cy="202" r="3" fill="#14141a" opacity="0.8" />
+      <text x="326" y="206" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">13</text>
+    
+
+      <text x="178" y="239" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Exception (note open)</text>
+      
+        <rect x="190" y="224" width="231" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <circle cx="421" cy="235" r="3.5" fill="#8a8a93" />
+        <text x="429" y="239" font-size="12.5" font-weight="500" fill="#8a8a93">was 21</text>
+      
+      <rect x="190" y="224" width="165" height="22" rx="4" fill="#8fa1ef" />
+      <circle cx="200" cy="235" r="3" fill="#14141a" opacity="0.8" />
+      <text x="348" y="239" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">15</text>
+    
+
+      <text x="178" y="272" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Can't inspect (note open)</text>
+      
+        <rect x="190" y="257" width="220" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <circle cx="410" cy="268" r="3.5" fill="#8a8a93" />
+        <text x="418" y="272" font-size="12.5" font-weight="500" fill="#8a8a93">was 20</text>
+      
+      <rect x="190" y="257" width="165" height="22" rx="4" fill="#8fa1ef" />
+      <circle cx="200" cy="268" r="3" fill="#14141a" opacity="0.8" />
+      <text x="348" y="272" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">15</text>
+    
+
+      <text x="178" y="305" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Inspection result</text>
+      
+        <rect x="190" y="290" width="198" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <circle cx="388" cy="301" r="3.5" fill="#8a8a93" />
+        <text x="396" y="305" font-size="12.5" font-weight="500" fill="#8a8a93">was 18</text>
+      
+      <rect x="190" y="290" width="165" height="22" rx="4" fill="#8fa1ef" />
+      <circle cx="200" cy="301" r="3" fill="#14141a" opacity="0.8" />
+      <text x="348" y="305" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">15</text>
+    
+
+      <text x="178" y="338" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Already inspected*</text>
+      
+        <rect x="190" y="323" width="275" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <circle cx="465" cy="334" r="3.5" fill="#8a8a93" />
+        <text x="473" y="338" font-size="12.5" font-weight="500" fill="#8a8a93">was 25</text>
+      
+      <rect x="190" y="323" width="187" height="22" rx="4" fill="#8fa1ef" />
+      <circle cx="200" cy="334" r="3" fill="#14141a" opacity="0.8" />
+      <text x="370" y="338" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">17</text>
+    
+
+      <text x="178" y="371" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Round 2 tape*</text>
+      
+        <rect x="190" y="356" width="275" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
+        <circle cx="465" cy="367" r="3.5" fill="#8a8a93" />
+        <text x="473" y="371" font-size="12.5" font-weight="500" fill="#8a8a93">was 25</text>
+      
+      <rect x="190" y="356" width="198" height="22" rx="4" fill="#8fa1ef" />
+      <circle cx="200" cy="367" r="3" fill="#14141a" opacity="0.8" />
+      <text x="381" y="371" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">18</text>
+    
+
+    <!-- 15-word rule cap reference line -->
+    <line x1="355" y1="80" x2="355" y2="386" stroke="#e0654d" stroke-width="2" stroke-dasharray="6 4" />
+    <rect x="291" y="58" width="128" height="22" rx="4" fill="#3a221d" stroke="#e0654d" stroke-width="1.2" />
+    <text x="355" y="73" font-size="12" font-weight="700" text-anchor="middle" fill="#f0b6a8">15-word rule cap</text>
+  </g>
+</svg>
