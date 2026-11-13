@@ -164,7 +164,7 @@ That Sunday -- one day, 29 commits, 212 files -- I reversed the day-one rule. We
 - **At most 15 UI words per state, locked to the exact count.** A browser helper counts visible words and fails the build if a state goes over budget.<Note id="1" /> On the tape screen, the back arrow and `Esc` lost their text labels, the note box folded behind `Note (N)`, and the duplicate shortcut footer was deleted.
 - **Video takes at least 60% of the screen, with nothing smaller than 20 px.** Small text slows people down at arm's length.<Note id="2" /> Browser tests check the video area and call `getComputedStyle()` to ban type under 20 px and tracked all-caps labels.
 - **`Pass` and `Fail` get equal weight, with one keycap per control.** When most tapes pass, a huge green `Pass` button trains people to miss defects.<Note id="3" /> All four verdicts sit in an even 2x2 grid with custom icons. Key presses flash for `120 ms` and saves play a short tone per outcome.
-- **No `"Are you sure?"` dialogs, and barcode scans can't trigger shortcuts.** Confirm dialogs just teach people to double-tap `Enter`, so saves happen immediately and `Z` undoes the last tape. Barcode scanners fire digits every `40 ms` followed by `Enter`; a timing guard catches scanner bursts before they hit symptoms `1` through `8`.
+- **No `"Are you sure?"` dialogs, and barcode scans can't trigger shortcuts.** Confirm dialogs just teach people to double-tap `Enter`, so saves happen immediately and `Z` undoes the last tape. A barcode scanner types its whole code a few milliseconds per character, then `Enter`; a timing guard treats four or more keys under `30 ms` apart as a scan and puts back whatever they touched, symptoms `1` through `8` included.
 
 <BeforeAfter
   beforeSrc="/images/writing/review-the-contracts-not-the-pixels/10-tape-fail-symptom-picked.before.png"
@@ -204,7 +204,15 @@ We also replaced the old pause screen with a single overlay shared by the statio
   caption="The pause overlay shared by the station and training: built from the same single shortcut definition as the live controls and checked in CI so every row fits on one line at 20 px or larger."
 />
 
-The redesign sits on a branch today, waiting for the PM and floor lead to run it through training first.
+The redesign sat on a branch for four days. Then the PM merged main into it, ran live orders and the training lessons through it, and put a couple of inspectors on it for an afternoon. By that evening he had a pull request open against my branch: nine commits of fixes from the floor, among them a 4:3 video frame, clocks that no longer jitter, a wider tape list, and a rebuilt name picker. The commits changed `DESIGN.md` and the browser benchmarks along with the code, and where a word budget went up, the reason went into the test file: the ready screen now asks who digitized each format, so its ceiling went from `3` words to `16`.
+
+<Figure
+  src="/images/writing/review-the-contracts-not-the-pixels/09-tape-playing.today.png"
+  alt="The tape screen after the PM's floor fixes: tapes listed by number with a format chip, a 4:3 video frame the full height of its column, a wider answer column with the four verdicts, Note and Save, and who digitized the tapes at the foot of the tape list."
+  caption="The tape screen after the PM's fixes from the floor: a 4:3 frame, the tape list by number, and who digitized each format under it."
+/>
+
+He left one change for me. The video rule said 60% of the screen, but a 4:3 tape in a 4:3 frame the full height of its column is 55%; the old number had been counting black bars. He moved the rule to 55% in `DESIGN.md`, the research doc and the benchmark, and wrote `"This one is your call, Laz."` That is the review I want to be doing: one line, about a contract, with the reasoning attached. I said yes and merged it the next day.
 
 ## Owning the seams
 
