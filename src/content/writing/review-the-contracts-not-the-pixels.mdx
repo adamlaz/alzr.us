@@ -1,7 +1,7 @@
 ---
 title: "Review the contracts, not the pixels"
 date: 2026-10-26
-description: "How a one-page agent build brief, mock-backed adapters, and required CI let our product manager own a plant-floor inspection station -- and let me work on the seams when I wanted a distraction during a family emergency."
+description: "How a one-page agent build brief, mock-backed adapters, and required CI let our product manager own a plant-floor inspection station while I worked on the seams."
 draft: false
 ogTreatment: default
 pullQuote: "Once agents write the code, my job moves to the brief, the contracts, and the checks -- and that is what let a product manager own the front end."
@@ -24,7 +24,7 @@ import WordsPerStateDiagram from '../../components/post/WordsPerStateDiagram.ast
 
 I run engineering at a consumer product that helps families preserve their memories. Boxes of VHS, VHS-C, 8mm, and MiniDV tapes arrive at the plant, get cleaned and digitized on capture rigs, and come out as video files. Before a box ships back, an inspector at a keyboard-first kiosk scans the box barcode, jumps across each digitized video, and records `Pass`, `Fail` (with symptoms), `Pass with exception`, or `Could not inspect`.
 
-We built that station in four days. Right before it launched, an unexpected family emergency pulled me out of the office. I was told I didn't need to work at all -- and for the screen, I didn't. Over the first month, our product manager shipped 19 pull requests to that repo, self-merging 14 on green CI in a median of six minutes, while I dropped in on the contracts when I wanted a distraction.
+We built that station in four days, and it launched while I was out of the office. Over the first month, our product manager shipped 19 pull requests to that repo, most of them self-merged on green CI, while I worked on the contracts.
 
 ## Ten days on the seams, four days to the floor
 
@@ -55,7 +55,7 @@ Monday and Tuesday I added CI gates (format, unit tests, build, and browser test
 
 ## What went into the brief
 
-If you hand a coding agent a product doc with open UI choices and staging dependencies, it guesses at the boundaries and writes two thousand lines of code it can't run.
+Handed a product doc with open UI choices and staging dependencies, the agent would have guessed at the boundaries and written two thousand lines of code it couldn't run.
 
 The Sunday-night brief opened with two lines:
 
@@ -76,7 +76,7 @@ The brief ended with acceptance checks the agent had to run itself in mock mode 
 
 Building v1 also caught a bug in my brief. I had used the playback URL as the file's ID in the saved record. While wiring the media adapter, the engineer and the agent noticed that production issues expiring signed URLs. Reopening an order an hour later -- or comparing a recapture against Round 1 -- would see a different string for the same file. They split the contract into a permanent storage reference and a temporary playback link.
 
-## Reviewing the app before writing a line of code
+## Reviewing the app without a staging deploy
 
 When the v1 pull request opened Monday morning, the PM didn't need a staging deploy. Because it ran on mocks, he reviewed the flow in pull-request comments against what an inspector actually knows at the desk:
 
@@ -95,7 +95,7 @@ Two days later, he sat with inspectors and filed eight issues from real boxes: p
 
 > Merging this myself since it's just UI changes on the station.
 
-The next day, while I was still away with family, we shipped recapture rounds and `"Passed with exception"`. When a failed tape comes back from a second capture pass, the station shows Round 1's failure, plays the new file, and lets the inspector pass it or record an exception. The PM built the UI flow. When I wanted an hour to think about something else that night, I opened my laptop, walked his branch through three capture rounds in mock mode, pushed 12 commits on top, and shipped the back-end change alongside it.
+The next day, we shipped recapture rounds and `"Passed with exception"`. When a failed tape comes back from a second capture pass, the station shows Round 1's failure, plays the new file, and lets the inspector pass it or record an exception. The PM built the UI flow. That night I walked his branch through three capture rounds in mock mode, pushed 12 commits on top, and shipped the back-end change alongside it.
 
 ## Green CI for the screen, human review for the contracts
 
@@ -121,13 +121,13 @@ Two days later, he opened a large QA-review pull request. Looking at the diff, I
 
 ## Out of the office on both sides
 
-When the family emergency hit, I was told I didn't need to work at all. For the station's UI, I really didn't -- the PM was shipping floor fixes in minutes without me.
+Once I was on that plane, I was told I didn't need to work at all. For the station's UI, I really didn't -- the PM was shipping floor fixes in minutes without me.
 
-Honestly, I needed the distraction, and building like this is fun. A couple of years ago, checking in for an hour from out of town meant answering messages or sitting in a meeting. You couldn't actually build something in the margins of a hard week and then shut your laptop. With coding agents and a repo that runs on local mocks, I could open my laptop when I wanted a break, wire a contract or tighten a test suite in an hour, and close it again without holding anyone up.
+I needed the distraction, and building like this is fun. A couple of years ago, checking in for an hour from out of town meant answering messages or sitting in a meeting. You couldn't actually build something in the margins of a hard week and then shut your laptop. With coding agents and a repo that runs on local mocks, I could open my laptop when I wanted a break, wire a contract or tighten a test suite in an hour, and close it again without holding anyone up.
 
 Back-end work ran the same way. Right after building the QA review page on mocks, the PM filed an issue with the exact read endpoint his page needed. The issue was the contract. When I had a quiet window, I picked it up with an agent, shipped the endpoint the next day, and shipped watched-ranges the day after.
 
-Across weeks two and three, our schedules barely overlapped. I was in and out with family the first two weeks, and the PM left on a planned two-week break right after. On the first Sunday of his break, still out of town and looking for a few hours of focus, I hardened the repo across six pull requests:
+Across weeks two and three, our schedules barely overlapped. I was in and out the first two weeks, and the PM left on a planned two-week break right after. On the first Sunday of his break, I hardened the repo across six pull requests:
 
 1. **Code owners and the pull-request template**, setting up green-CI self-merge and the `"Station impact"` checklist.
 2. **Per-test order data**, so parallel browser tests stopped fighting over sample order `1001`.
@@ -212,13 +212,13 @@ The redesign sat on a branch for four days. Then the PM merged main into it, ran
   caption="The tape screen after the PM's fixes from the floor: a 4:3 frame, the tape list by number, and who digitized each format under it."
 />
 
-He left one change for me. The video rule said 60% of the screen, but a 4:3 tape in a 4:3 frame the full height of its column is 55%; the old number had been counting black bars. He moved the rule to 55% in `DESIGN.md`, the research doc and the benchmark, and wrote `"This one is your call, Laz."` That is the review I want to be doing: one line, about a contract, with the reasoning attached. I said yes and merged it the next day.
+He left one call for me. The video rule said 60% of the screen, but a 4:3 tape in a 4:3 frame the full height of its column is 55%; the old number had been counting black bars. He moved the rule to 55% in `DESIGN.md`, the research doc and the benchmark, and wrote `"This one is your call, Laz."` Even the pixel question reached me as a one-line rule change, with his reasoning attached. I said yes and merged it the next day.
 
 ## Owning the seams
 
 <GuardrailStackDiagram />
 
-I don't want to be in the approval path for button labels, shortcut legends, or symptom copy -- whether I'm at my desk or out of town with family. I want to own the seams where a bad merge can corrupt production data, and make everything else safe to self-merge on green CI. That's why the station kept moving when I didn't need to work, and why dropping in for an hour when I wanted a distraction was actually fun. Inside those seams, our product manager owns the station -- down to a line he merged onto the home screen in week four, right above the barcode input:
+I don't want to approve button labels. I want to own the seams where a bad merge corrupts production data, and let everything else self-merge on green CI. Inside those seams, our product manager owns the station -- down to a line he merged onto the home screen in week four, right above the barcode input:
 
 > Every tape here is a family's memory. Your job is to make sure we send them the best quality possible.
 
