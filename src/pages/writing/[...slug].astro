@@ -21,6 +21,9 @@ const formatted = post.data.date.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
+  // Frontmatter dates parse as midnight UTC; format there so the byline
+  // doesn't slip a day in timezones west of it.
+  timeZone: 'UTC',
 });
 
 const body = post.body ?? '';
