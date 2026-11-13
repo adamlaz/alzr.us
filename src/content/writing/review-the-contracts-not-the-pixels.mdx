@@ -174,7 +174,7 @@ That Sunday -- one day, 29 commits, 212 files -- I reversed the day-one rule. We
   afterAlt="After redesign: failing tape TP-001 with Blue screen (key 3) selected in a two-column grid of eight custom fault icons, collapsed verdict strip at the top, and 3 frame UI words."
   beforeLabel="Before (checkbox list)"
   afterLabel="After (3 frame words)"
-  caption="Pressing W collapses the verdict strip and opens eight visual symptom tiles (keys 1-8). Total frame copy outside the tiles: 3 words."
+  caption="Pressing W collapses the verdict strip and opens eight visual symptom tiles (keys 1-8). Total frame copy outside the tiles: 3 words that Sunday; by merge it was 10."
 />
 
 Once we finished trimming copy across every state (giving Round 2 a few extra words to show what failed in Round 1), we locked each state's ceiling in CI to its exact count. That night, adding one word to the `8`-word tape screen or the `3`-word fail picker broke the build.
@@ -205,12 +205,12 @@ We also replaced the old pause screen with a single overlay shared by the statio
   caption="The pause overlay shared by the station and training: built from the same single shortcut definition as the live controls and checked in CI so every row fits on one line at 20 px or larger."
 />
 
-The redesign sat on a branch for four days. Then the PM merged main into it, ran live orders and the training lessons through it, and put a couple of inspectors on it for an afternoon. By that evening he had a pull request open against my branch: nine commits of fixes from the floor, among them a 4:3 video frame, clocks that no longer jitter, a wider tape list, and a rebuilt name picker. The commits changed `DESIGN.md` and the browser benchmarks along with the code, and where a word budget went up, the reason went into the test file: the ready screen now asks who digitized each format, so its ceiling went from `3` words to `16`.
+The redesign sat on a branch for four days. Then the PM merged main into it, worked through it himself, and opened a pull request against my branch: nine commits of fixes, among them a 4:3 video frame, clocks that no longer jitter, a wider tape list, and a rebuilt name picker. The commits changed `DESIGN.md` and the browser benchmarks along with the code, and where a word budget went up, the reason went into the test file: the ready screen now asks who digitized each format, so its ceiling went from `3` words to `16`.
 
 <Figure
   src="/images/writing/review-the-contracts-not-the-pixels/09-tape-playing.today.png"
-  alt="The tape screen after the PM's floor fixes: tapes listed by number with a format chip, a 4:3 video frame the full height of its column, a wider answer column with the four verdicts, Note and Save, and who digitized the tapes at the foot of the tape list."
-  caption="The tape screen after the PM's fixes from the floor: a 4:3 frame, the tape list by number, and who digitized each format under it."
+  alt="The tape screen after the PM's fixes: tapes listed by number with a format chip, a 4:3 video frame the full height of its column, a wider answer column with the four verdicts, Note and Save, and who digitized the tapes at the foot of the tape list."
+  caption="The tape screen after the PM's fixes: a 4:3 frame, the tape list by number, and who digitized each format under it."
 />
 
 He left one call for me. The video rule said 60% of the screen, but a 4:3 tape in a 4:3 frame the full height of its column is 55%; the old number had been counting black bars. He moved the rule to 55% in `DESIGN.md`, the research doc and the benchmark, and wrote `"This one is your call, Laz."` Even the pixel question reached me as a one-line rule change, with his reasoning attached. I said yes and merged it the next day.
