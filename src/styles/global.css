@@ -193,6 +193,7 @@
 
   /* ── Z-index scale (semantic, never arbitrary) ── */
   --z-progress: 20;   /* reading-progress hairline */
+  --z-depth: 25;      /* depth posts: sticky depth pill, under the nav */
   --z-header: 30;     /* sticky nav -- above the page + progress rule */
   --z-skip-link: 100; /* skip-link beats everything */
 

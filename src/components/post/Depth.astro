@@ -1,0 +1,85 @@
+---
+/**
+ * <Depth> -- content shown only at some reading depths (depth posts only).
+ *
+ *   <Depth max={1}>            levels 1-1 (business only)
+ *   <Depth min={4}>            levels 4-5
+ *   <Depth inline min={4}>..   a <span> inside a paragraph
+ *
+ * Block children must be separated from the tags by blank lines so MDX parses
+ * them as markdown blocks. Blocks don't nest. Visibility is pure CSS keyed off
+ * the post body's data-depth attribute, so no-JS readers get level 3; the
+ * slider script animates between levels.
+ */
+import { DEPTH_LEVELS, DEPTH_MAX, DEPTH_MIN, isDepthLevel } from '../../lib/depth';
+
+interface Props {
+  min?: number;
+  max?: number;
+  inline?: boolean;
+}
+
+const { min = DEPTH_MIN, max = DEPTH_MAX, inline = false } = Astro.props;
+
+if (!isDepthLevel(min) || !isDepthLevel(max)) {
+  throw new Error(`<Depth> min and max must be whole numbers from 1 to 5 (got min=${min}, max=${max}).`);
+}
+if (min > max) {
+  throw new Error(`<Depth> min (${min}) is greater than max (${max}).`);
+}
+
+const levels = DEPTH_LEVELS.filter((l) => l >= min && l <= max).join(' ');
+---
+
+{
+  inline ? (
+    <span class="depth depth--inline" data-depth-levels={levels}><slot /></span>
+  ) : (
+    <div class="depth depth--block" data-depth-levels={levels}>
+      <slot />
+    </div>
+  )
+}
+
+<style>
+  /* A block wrapper takes no box of its own: its children sit in the post's
+     flow exactly as unwrapped markdown would, so margins collapse the same way
+     and the default level is pixel-identical to plain prose. */
+  .depth--block {
+    display: contents;
+  }
+
+  /* Hide whatever the current level excludes. data-depth-hold keeps a leaving
+     wrapper rendered while the slider script animates it out. */
+  :global([data-depth='1']) .depth:not([data-depth-levels~='1']):not([data-depth-hold]),
+  :global([data-depth='2']) .depth:not([data-depth-levels~='2']):not([data-depth-hold]),
+  :global([data-depth='3']) .depth:not([data-depth-levels~='3']):not([data-depth-hold]),
+  :global([data-depth='4']) .depth:not([data-depth-levels~='4']):not([data-depth-hold]),
+  :global([data-depth='5']) .depth:not([data-depth-levels~='5']):not([data-depth-hold]) {
+    display: none;
+  }
+
+  /* Inline clauses wrap across lines like the text around them; the wash the
+     script fades in on arrival paints per line fragment. */
+  .depth--inline {
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    border-radius: 2px;
+  }
+
+  /* A clause that just arrived gets a brief cobalt wash so the eye can find
+     it in a paragraph that reflowed. Motion-only: the script skips it under
+     reduced motion. */
+  .depth--inline.depth--arrived {
+    animation: depth-arrive 1100ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @keyframes depth-arrive {
+    from {
+      background-color: var(--accent-subtle);
+    }
+    to {
+      background-color: transparent;
+    }
+  }
+</style>

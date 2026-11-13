@@ -1,0 +1,47 @@
+---
+/**
+ * Depth posts: resolve the reader's level before the body paints.
+ *
+ * Rendered as the first child of the post body ([data-depth-root]), so it runs
+ * after the header (readout + control) is parsed and before any content is.
+ * Order: ?depth= (1-5, business, technical) > remembered choice > 3.
+ * Mirrors resolveInitial() in src/scripts/depth-slider.ts -- keep the two in
+ * step. data-astro-rerun: ClientRouter re-runs it on every navigation.
+ */
+---
+
+<script is:inline data-astro-rerun>
+  (() => {
+    const root = document.querySelector('[data-depth-root]');
+    if (!root) return;
+    const parse = (value) => {
+      if (value == null) return 0;
+      const v = String(value).trim().toLowerCase();
+      if (v === 'business') return 1;
+      if (v === 'technical') return 5;
+      const n = Number(v);
+      return Number.isInteger(n) && n >= 1 && n <= 5 ? n : 0;
+    };
+    let level = parse(new URLSearchParams(location.search).get('depth'));
+    if (!level) {
+      try {
+        level = parse(localStorage.getItem('depth'));
+      } catch {
+        level = 0;
+      }
+    }
+    level = level || 3;
+    root.dataset.depth = String(level);
+    const label = (root.dataset.depthLabels || '').split('|')[level - 1];
+    const min = (root.dataset.depthMinutes || '').split(' ')[level - 1];
+    if (!label || !min) return;
+    for (const el of document.querySelectorAll('[data-depth-readout]')) {
+      el.textContent = `${label} · ${min} min read`;
+    }
+    for (const el of document.querySelectorAll('[data-depth-input]')) {
+      el.value = String(level);
+      el.setAttribute('aria-valuetext', `${label}, ${min} min read`);
+    }
+    for (const el of document.querySelectorAll('[data-depth-control]')) el.hidden = false;
+  })();
+</script>

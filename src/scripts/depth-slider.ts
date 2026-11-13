@@ -1,0 +1,702 @@
+/**
+ * Depth slider -- reshapes a depth post between five reading levels.
+ *
+ * Visibility is pure CSS: the post body carries data-depth="N" and every
+ * <Depth> wrapper lists the levels it covers, so with no JS the reader gets the
+ * server-rendered level 3. This script only adds the motion and the controls:
+ *
+ *  - Leaving blocks collapse (height, margins, padding, borders to 0) and fade;
+ *    entering blocks expand from 0 and fade in. Block wrappers are
+ *    display: contents, so each child box animates in the normal flow and
+ *    margins collapse exactly as they do at rest.
+ *  - Inline clauses fade; their paragraph's height eases to the new size.
+ *  - A level change mid-animation retargets from the current animated values,
+ *    so fast drags never stack or snap.
+ *  - Scroll anchoring is manual: the first element in view that is stable at
+ *    both levels keeps its viewport offset every frame (Safari has no CSS
+ *    overflow-anchor). Reduced motion switches instantly, still anchored.
+ *
+ * Lifecycle: binds on load and astro:page-load, tears down on astro:before-swap.
+ * Everything per-page hangs off one AbortController, so nothing leaks across
+ * ClientRouter navigations.
+ */
+import {
+  DEPTH_DEFAULT,
+  DEPTH_LABELS,
+  DEPTH_PARAM,
+  DEPTH_STORAGE_KEY,
+  type DepthLevel,
+  depthReadout,
+  isDepthLevel,
+  parseDepth,
+} from '../lib/depth';
+
+const DURATION = 320; // ms, block collapse/expand
+const EASE_SIZE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+const EASE_FADE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
+const SETTLE_MS = 350; // URL + storage + announcement after the slider rests
+const HOLD = 'data-depth-hold';
+
+const SIZE_PROPS = [
+  'height',
+  'marginTop',
+  'marginBottom',
+  'paddingTop',
+  'paddingBottom',
+  'borderTopWidth',
+  'borderBottomWidth',
+] as const;
+type SizeProp = (typeof SIZE_PROPS)[number];
+type Box = Record<SizeProp, number>;
+type Boxy = HTMLElement | SVGElement;
+
+const ZERO: Box = {
+  height: 0,
+  marginTop: 0,
+  marginBottom: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  borderTopWidth: 0,
+  borderBottomWidth: 0,
+};
+
+const CLIP = typeof CSS !== 'undefined' && CSS.supports('overflow', 'clip') ? 'clip' : 'hidden';
+
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ── Level resolution: ?depth= > remembered choice > 3 ──
+
+function readStored(): DepthLevel | null {
+  try {
+    return parseDepth(localStorage.getItem(DEPTH_STORAGE_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(level: DepthLevel): void {
+  try {
+    localStorage.setItem(DEPTH_STORAGE_KEY, String(level));
+  } catch {
+    // Private mode or blocked storage: the URL still carries the level.
+  }
+}
+
+function resolveInitial(): DepthLevel {
+  return parseDepth(new URLSearchParams(location.search).get(DEPTH_PARAM)) ?? readStored() ?? DEPTH_DEFAULT;
+}
+
+function readMinutes(root: HTMLElement): number[] {
+  const mins = (root.dataset.depthMinutes ?? '').split(' ').map(Number);
+  return mins.length === 5 && mins.every((n) => n > 0) ? mins : [];
+}
+
+/** Sync every control + readout to `level`. Safe to call before binding. */
+function paintUI(level: DepthLevel, minutes: number[]): void {
+  const min = minutes[level - 1];
+  const label = DEPTH_LABELS[level];
+  const valuetext = min ? `${label}, ${min} min read` : label;
+  for (const input of document.querySelectorAll<HTMLInputElement>('[data-depth-input]')) {
+    if (input.value !== String(level)) input.value = String(level);
+    input.setAttribute('aria-valuetext', valuetext);
+  }
+  if (!min) return;
+  for (const el of document.querySelectorAll('[data-depth-readout]')) el.textContent = depthReadout(level, min);
+  for (const el of document.querySelectorAll('[data-depth-label]')) el.textContent = label;
+  for (const el of document.querySelectorAll('[data-depth-min]')) el.textContent = `${min} min`;
+}
+
+/** Apply the resolved level with no motion: first paint and incoming swaps. */
+function prepaint(root: HTMLElement): DepthLevel {
+  const level = resolveInitial();
+  root.dataset.depth = String(level);
+  paintUI(level, readMinutes(root));
+  for (const el of document.querySelectorAll<HTMLElement>('[data-depth-control]')) el.hidden = false;
+  return level;
+}
+
+// ── Box helpers ──
+
+/** The rendered boxes a wrapper contributes to the flow, looking through
+ *  display: contents. */
+function flowBoxes(parent: Element): Boxy[] {
+  const out: Boxy[] = [];
+  for (const child of parent.children) {
+    if (!(child instanceof HTMLElement || child instanceof SVGElement)) continue;
+    const display = getComputedStyle(child).display;
+    if (display === 'none') continue;
+    if (display === 'contents') out.push(...flowBoxes(child));
+    else out.push(child);
+  }
+  return out;
+}
+
+function readBox(el: Element): Box {
+  const cs = getComputedStyle(el);
+  return {
+    height: el.getBoundingClientRect().height,
+    marginTop: Number.parseFloat(cs.marginTop) || 0,
+    marginBottom: Number.parseFloat(cs.marginBottom) || 0,
+    paddingTop: Number.parseFloat(cs.paddingTop) || 0,
+    paddingBottom: Number.parseFloat(cs.paddingBottom) || 0,
+    borderTopWidth: Number.parseFloat(cs.borderTopWidth) || 0,
+    borderBottomWidth: Number.parseFloat(cs.borderBottomWidth) || 0,
+  };
+}
+
+function readOpacity(el: Element): number {
+  const o = Number.parseFloat(getComputedStyle(el).opacity);
+  return Number.isFinite(o) ? o : 1;
+}
+
+/** Inline tables and inline-level boxes can't collapse by height; they fade
+ *  and toggle instead. */
+function canCollapse(el: Element): boolean {
+  const d = getComputedStyle(el).display;
+  return !d.startsWith('inline') && !d.startsWith('table');
+}
+
+// Elements can carry their own inline overflow (Shiki sets overflow-x: auto on
+// code blocks). Clip for the animation, then put theirs back exactly.
+const savedOverflow = new WeakMap<Element, [string, string]>();
+
+function clip(el: Boxy): void {
+  if (!savedOverflow.has(el)) savedOverflow.set(el, [el.style.overflowX, el.style.overflowY]);
+  el.style.overflow = CLIP;
+}
+
+function unclip(el: Element): void {
+  const saved = savedOverflow.get(el);
+  if (!saved || !(el instanceof HTMLElement || el instanceof SVGElement)) return;
+  savedOverflow.delete(el);
+  el.style.removeProperty('overflow');
+  if (saved[0]) el.style.overflowX = saved[0];
+  if (saved[1]) el.style.overflowY = saved[1];
+}
+
+function boxFrame(b: Box): Keyframe {
+  const kf: Keyframe = {};
+  for (const p of SIZE_PROPS) kf[p] = `${b[p]}px`;
+  return kf;
+}
+
+/** The nearest ancestor that lays out as a block (the paragraph an inline
+ *  clause sits in). */
+function blockHost(el: Element): HTMLElement | null {
+  let node = el.parentElement;
+  while (node) {
+    const d = getComputedStyle(node).display;
+    if (d !== 'inline' && d !== 'contents') return node;
+    node = node.parentElement;
+  }
+  return null;
+}
+
+interface Wrapper {
+  el: HTMLElement;
+  inline: boolean;
+  levels: Set<number>;
+  host: HTMLElement | null;
+  gen: number; // bumps on every retarget; stale completions check it
+  busy: boolean;
+}
+
+class DepthController {
+  readonly root: HTMLElement;
+  private level: DepthLevel;
+  private readonly minutes: number[];
+  private readonly wrappers: Wrapper[];
+  private readonly ac = new AbortController();
+  private readonly running = new Set<Animation>();
+  private readonly anims = new Map<Element, Animation[]>();
+  private readonly hostGen = new Map<Element, number>();
+  private anchor: { el: Element; top: number } | null = null;
+  private lastAnchor: { el: Element; top: number } | null = null;
+  private quiet = false; // swallow scroll events caused by anchor corrections
+  private corrected = false;
+  private loop = 0;
+  private release = 0;
+  private frame = 0;
+  private pending: DepthLevel | null = null;
+  private settleTimer = 0;
+  private observer: IntersectionObserver | null = null;
+
+  constructor(root: HTMLElement) {
+    this.root = root;
+    this.minutes = readMinutes(root);
+    this.level = prepaint(root);
+    this.wrappers = [...root.querySelectorAll<HTMLElement>('.depth')].map((el) => {
+      const inline = el.classList.contains('depth--inline');
+      return {
+        el,
+        inline,
+        levels: new Set((el.dataset.depthLevels ?? '').split(' ').map(Number)),
+        host: inline ? blockHost(el) : null,
+        gen: 0,
+        busy: false,
+      };
+    });
+    this.wireControls();
+    this.wirePill();
+    root.dataset.depthBound = '';
+  }
+
+  destroy(): void {
+    this.ac.abort();
+    this.observer?.disconnect();
+    cancelAnimationFrame(this.loop);
+    cancelAnimationFrame(this.release);
+    cancelAnimationFrame(this.frame);
+    clearTimeout(this.settleTimer);
+    this.settleAll();
+    this.quiet = false;
+    document.documentElement.style.removeProperty('overflow-anchor');
+    delete this.root.dataset.depthBound;
+  }
+
+  // ── Controls ──
+
+  private wireControls(): void {
+    const { signal } = this.ac;
+    for (const input of document.querySelectorAll<HTMLInputElement>('[data-depth-input]')) {
+      input.addEventListener('input', () => this.request(Number(input.value)), { signal });
+    }
+    // End labels are a pointer shortcut; keyboard users get Home/End natively.
+    for (const el of document.querySelectorAll<HTMLElement>('[data-depth-set]')) {
+      el.addEventListener('click', () => this.request(Number(el.dataset.depthSet)), { signal });
+    }
+    // A reader's own scroll during a transition wins over the anchor.
+    const release = (e: Event) => {
+      if (this.anchor && !(e.target instanceof Element && e.target.closest('.depth-control'))) this.anchor = null;
+    };
+    window.addEventListener('wheel', release, { passive: true, signal });
+    window.addEventListener('touchmove', release, { passive: true, signal });
+    // Anchor corrections scroll the page every frame. Keep those scrolls from
+    // reaching page-level listeners: the router records scroll position on
+    // every scrollend (Safari caps history writes at 100 per 10 s) and the
+    // mobile nav would slide in and out over the paragraph being held.
+    const swallow = (e: Event) => {
+      if (this.quiet) e.stopImmediatePropagation();
+    };
+    window.addEventListener('scroll', swallow, { capture: true, signal });
+    window.addEventListener('scrollend', swallow, { capture: true, signal });
+  }
+
+  /** Coalesce input events to one level change per frame. */
+  private request(n: number): void {
+    if (!isDepthLevel(n)) return;
+    this.pending = n;
+    if (this.frame) return;
+    this.frame = requestAnimationFrame(() => {
+      this.frame = 0;
+      const next = this.pending;
+      this.pending = null;
+      if (!next || next === this.level) return;
+      this.apply(next);
+      clearTimeout(this.settleTimer);
+      this.settleTimer = window.setTimeout(() => this.settle(), SETTLE_MS);
+    });
+  }
+
+  /** After the slider rests: shareable URL, remembered choice, announcement. */
+  private settle(): void {
+    const level = this.level;
+    try {
+      const url = new URL(location.href);
+      url.searchParams.set(DEPTH_PARAM, String(level));
+      // Keep the router's history.state (scroll + index) intact.
+      history.replaceState(history.state, '', url);
+    } catch {
+      // Safari throttles history writes; the next settle catches up.
+    }
+    writeStored(level);
+    const live = document.querySelector('[data-depth-live]');
+    const min = this.minutes[level - 1];
+    const time = min ? `, ${min} min read` : '';
+    if (live) live.textContent = `Showing the ${DEPTH_LABELS[level].toLowerCase()} version${time}.`;
+  }
+
+  /** The compact control appears once the header control scrolls away, and
+   *  steps aside when the reader reaches the end of the post. On phones it
+   *  follows the sticky nav: out of the way while reading down, back on any
+   *  scroll up, so it never sits over the text being read. */
+  private wirePill(): void {
+    const pill = document.querySelector<HTMLElement>('[data-depth-pill]');
+    const header = document.querySelector<HTMLElement>('[data-depth-control]');
+    if (!pill || !header) return;
+    pill.hidden = false;
+    const end = document.querySelector('[data-depth-end]');
+    const narrow = matchMedia('(max-width: 40rem)');
+    let headerAbove = false;
+    let atEnd = false;
+    let readingDown = false;
+    let lastY = window.scrollY;
+    let ticking = false;
+    const update = () => {
+      const keep = pill.contains(document.activeElement);
+      const tucked = narrow.matches && readingDown;
+      pill.dataset.shown = String(keep || (headerAbove && !atEnd && !tucked));
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const y = window.scrollY;
+        if (Math.abs(y - lastY) < 8) return;
+        readingDown = y > lastY;
+        lastY = y;
+        update();
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true, signal: this.ac.signal });
+    this.observer = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.target === header) headerAbove = !e.isIntersecting && e.boundingClientRect.top < 0;
+        else atEnd = e.isIntersecting || e.boundingClientRect.top < 0;
+      }
+      update();
+    });
+    this.observer.observe(header);
+    if (end) this.observer.observe(end);
+    pill.addEventListener('focusout', () => requestAnimationFrame(update), { signal: this.ac.signal });
+  }
+
+  // ── Level changes ──
+
+  private apply(next: DepthLevel): void {
+    const prev = this.level;
+    this.level = next;
+    paintUI(next, this.minutes);
+
+    const changing = this.wrappers.filter((w) => w.levels.has(prev) !== w.levels.has(next));
+    if (changing.length === 0) {
+      this.root.dataset.depth = String(next);
+      return;
+    }
+    const blocks = changing.filter((w) => !w.inline);
+    const inlines = changing.filter((w) => w.inline);
+    const hosts = new Set<HTMLElement>();
+    for (const w of inlines) if (w.host) hosts.add(w.host);
+
+    // READ: the anchor, from the layout as the reader sees it right now.
+    const unstable = new Set<Element>(blocks.map((w) => w.el));
+    for (const w of this.wrappers) if (w.busy && !w.inline) unstable.add(w.el);
+    const picked = this.pickAnchor(unstable, hosts);
+    // Same paragraph as last time and it hasn't moved: hold its original
+    // offset, so sub-pixel rounding can't drift across repeated changes.
+    const last = this.lastAnchor;
+    if (picked && last && picked.el === last.el && Math.abs(picked.top - last.top) < 1) picked.top = last.top;
+    this.anchor = picked ?? this.anchor;
+
+    if (reducedMotion()) {
+      this.settleAll();
+      this.root.dataset.depth = String(next);
+      this.keepAnchor();
+      this.lastAnchor = this.anchor;
+      this.anchor = null;
+      this.releaseScroll();
+      return;
+    }
+
+    // READ: current (possibly mid-animation) state of everything retargeting.
+    const from = new Map<Element, { box: Box; opacity: number }>();
+    for (const w of blocks) {
+      if (!this.rendered(w)) continue;
+      for (const el of flowBoxes(w.el)) from.set(el, { box: readBox(el), opacity: readOpacity(el) });
+    }
+    const inlineFrom = new Map<Element, number>();
+    for (const w of inlines) inlineFrom.set(w.el, this.rendered(w) ? readOpacity(w.el) : 0);
+    const hostFrom = new Map<Element, number>();
+    for (const h of hosts) hostFrom.set(h, h.getBoundingClientRect().height);
+
+    // WRITE: drop in-flight animations, switch level, keep leavers rendered.
+    for (const el of from.keys()) this.stop(el);
+    for (const w of inlines) this.stop(w.el);
+    for (const h of hosts) this.stopHost(h);
+    for (const w of changing) {
+      w.gen++;
+      w.busy = true;
+      if (w.levels.has(next)) w.el.removeAttribute(HOLD);
+      else w.el.setAttribute(HOLD, '');
+    }
+    this.root.dataset.depth = String(next);
+
+    // READ: natural sizes at the new level.
+    const plans = blocks.map((w) => {
+      const els = flowBoxes(w.el);
+      const enter = w.levels.has(next);
+      const to = enter ? els.map((el) => readBox(el)) : [];
+      return { w, els, enter, to };
+    });
+    const hostTo = new Map<Element, number>();
+    for (const h of hosts) hostTo.set(h, h.getBoundingClientRect().height);
+
+    // WRITE: animate.
+    for (const { w, els, enter, to } of plans) {
+      const started: Animation[] = [];
+      els.forEach((el, i) => {
+        const start = from.get(el) ?? { box: ZERO, opacity: 0 };
+        if (canCollapse(el)) started.push(this.size(el, start.box, enter ? to[i] : ZERO));
+        started.push(this.fade(el, start.opacity, enter ? 1 : 0));
+      });
+      this.whenDone(w, started, () => {
+        if (!enter) w.el.removeAttribute(HOLD);
+        for (const el of els) this.clear(el);
+      });
+    }
+
+    for (const w of inlines) {
+      const start = inlineFrom.get(w.el) ?? 0;
+      if (w.levels.has(next)) {
+        const a = this.fade(w.el, start, 1);
+        if (start === 0) this.wash(w.el);
+        this.whenDone(w, [a], () => this.clear(w.el));
+      } else {
+        // Fade the clause out in place, then let the paragraph close the gap.
+        const a = this.fade(w.el, start, 0, DURATION * 0.45);
+        this.whenDone(w, [a], () => this.closeInline(w));
+      }
+    }
+
+    for (const h of hosts) {
+      if (from.has(h)) continue; // inside a block that is already resizing
+      this.resizeHost(h, hostFrom.get(h) ?? 0, hostTo.get(h) ?? 0);
+    }
+
+    this.keepAnchor();
+    this.startLoop();
+  }
+
+  private rendered(w: Wrapper): boolean {
+    return getComputedStyle(w.el).display !== 'none';
+  }
+
+  /** Second half of an inline exit: drop the clause, ease the paragraph. */
+  private closeInline(w: Wrapper): void {
+    const host = w.host;
+    const h0 = host ? host.getBoundingClientRect().height : 0;
+    if (host) this.stopHost(host);
+    w.el.removeAttribute(HOLD);
+    this.clear(w.el);
+    w.busy = false;
+    if (host) this.resizeHost(host, h0, host.getBoundingClientRect().height);
+    // The loop may have wound down while the clause faded; hold the same
+    // paragraph through the reflow (startLoop is a no-op while it runs).
+    if (!this.anchor) this.anchor = this.lastAnchor;
+    this.keepAnchor();
+    this.startLoop();
+  }
+
+  private resizeHost(host: HTMLElement, h0: number, h1: number): void {
+    if (Math.abs(h0 - h1) < 0.5) return;
+    const gen = (this.hostGen.get(host) ?? 0) + 1;
+    this.hostGen.set(host, gen);
+    clip(host);
+    const a = this.track(
+      host,
+      host.animate([{ height: `${h0}px` }, { height: `${h1}px` }], {
+        duration: DURATION * 0.75,
+        easing: EASE_SIZE,
+        fill: 'forwards',
+      }),
+    );
+    a.finished.then(
+      () => {
+        if (this.hostGen.get(host) === gen) this.clear(host);
+      },
+      () => {},
+    );
+  }
+
+  // ── Animation primitives ──
+
+  private size(el: Boxy, a: Box, b: Box): Animation {
+    clip(el);
+    return this.track(
+      el,
+      el.animate([boxFrame(a), boxFrame(b)], { duration: DURATION, easing: EASE_SIZE, fill: 'forwards' }),
+    );
+  }
+
+  /** Leaving content fades fast, entering content fades in after the space
+   *  starts to open, so outgoing and incoming text never overlap at full ink. */
+  private fade(el: Element, from: number, to: number, duration?: number): Animation {
+    const entering = to > from;
+    const dur = duration ?? (entering ? DURATION * 0.7 : DURATION * 0.55);
+    const delay = entering && from === 0 ? DURATION * 0.3 : 0;
+    return this.track(
+      el,
+      el.animate([{ opacity: from }, { opacity: to }], { duration: dur, delay, easing: EASE_FADE, fill: 'both' }),
+    );
+  }
+
+  /** A brief cobalt wash so the eye finds a clause that just arrived. */
+  private wash(el: HTMLElement): void {
+    el.classList.remove('depth--arrived');
+    void el.offsetWidth; // restart the CSS animation
+    el.classList.add('depth--arrived');
+    el.addEventListener('animationend', () => el.classList.remove('depth--arrived'), { once: true });
+  }
+
+  private track(el: Element, a: Animation): Animation {
+    this.running.add(a);
+    const list = this.anims.get(el) ?? [];
+    list.push(a);
+    this.anims.set(el, list);
+    const done = () => this.running.delete(a);
+    a.finished.then(done, done);
+    return a;
+  }
+
+  private whenDone(w: Wrapper, started: Animation[], fn: () => void): void {
+    const gen = w.gen;
+    Promise.all(started.map((a) => a.finished)).then(
+      () => {
+        if (w.gen !== gen) return;
+        fn();
+        w.busy = false;
+      },
+      () => {},
+    );
+  }
+
+  private stop(el: Element): void {
+    for (const a of this.anims.get(el) ?? []) a.cancel();
+    this.anims.delete(el);
+  }
+
+  private stopHost(host: Element): void {
+    this.hostGen.set(host, (this.hostGen.get(host) ?? 0) + 1);
+    this.stop(host);
+  }
+
+  private clear(el: Element): void {
+    this.stop(el);
+    unclip(el);
+  }
+
+  /** Jump everything to its resting state (reduced motion, teardown). */
+  private settleAll(): void {
+    for (const el of [...this.anims.keys()]) this.clear(el);
+    for (const w of this.wrappers) {
+      w.gen++;
+      w.busy = false;
+      w.el.removeAttribute(HOLD);
+      w.el.classList.remove('depth--arrived');
+    }
+    this.running.clear();
+  }
+
+  // ── Scroll anchoring ──
+
+  /** The first element in view that stays rendered across this change. */
+  private pickAnchor(unstable: Set<Element>, hosts: Set<Element>): { el: Element; top: number } | null {
+    const nav = document.querySelector('[data-sticky-nav]');
+    let inset = 0;
+    if (nav && getComputedStyle(nav).position === 'sticky' && !nav.hasAttribute('data-hidden')) {
+      inset = Math.max(0, nav.getBoundingClientRect().bottom);
+    }
+    const vh = window.innerHeight;
+    const header = this.root.closest('article')?.querySelector('header');
+    const candidates: Element[] = header ? [header] : [];
+    for (const child of this.root.children) {
+      if (child.classList.contains('depth--block')) {
+        if (unstable.has(child) || getComputedStyle(child).display === 'none') continue;
+        candidates.push(...child.children);
+      } else {
+        candidates.push(child);
+      }
+    }
+    for (const el of candidates) {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) continue;
+      if (r.bottom <= inset) continue;
+      if (r.top >= vh) break;
+      // A paragraph cut by the top edge whose own text is about to reflow
+      // would shift the line being read; prefer the next one.
+      if (r.top < inset && hosts.has(el)) continue;
+      return { el, top: r.top };
+    }
+    return null;
+  }
+
+  private keepAnchor(): void {
+    const a = this.anchor;
+    if (!a) return;
+    if (!a.el.isConnected) {
+      this.anchor = null;
+      return;
+    }
+    const delta = a.el.getBoundingClientRect().top - a.top;
+    if (Math.abs(delta) > 0.25) {
+      this.quiet = true;
+      this.corrected = true;
+      window.scrollTo({ top: window.scrollY + delta, behavior: 'instant' });
+    }
+  }
+
+  private startLoop(): void {
+    cancelAnimationFrame(this.release);
+    this.release = 0;
+    if (this.loop) return;
+    // Native scroll anchoring (Chromium, Firefox) would pick its own node and
+    // fight ours; switch it off while we hold the page.
+    document.documentElement.style.setProperty('overflow-anchor', 'none');
+    const tick = () => {
+      this.keepAnchor();
+      if (this.running.size > 0) {
+        this.loop = requestAnimationFrame(tick);
+        return;
+      }
+      this.loop = 0;
+      this.lastAnchor = this.anchor;
+      this.anchor = null;
+      document.documentElement.style.removeProperty('overflow-anchor');
+      this.releaseScroll();
+    };
+    this.loop = requestAnimationFrame(tick);
+  }
+
+  /** The last correction's scroll events land next frame: let them pass
+   *  quietly, then hand page listeners (the router) one real scrollend. */
+  private releaseScroll(): void {
+    cancelAnimationFrame(this.release);
+    this.release = requestAnimationFrame(() => {
+      this.release = 0;
+      this.quiet = false;
+      if (this.corrected) window.dispatchEvent(new Event('scrollend'));
+      this.corrected = false;
+    });
+  }
+}
+
+// ── Lifecycle ──
+
+let controller: DepthController | null = null;
+
+function teardown(): void {
+  controller?.destroy();
+  controller = null;
+}
+
+function boot(): void {
+  const root = document.querySelector<HTMLElement>('[data-depth-root]');
+  if (!root) {
+    teardown();
+    return;
+  }
+  if (controller?.root === root) return;
+  teardown();
+  controller = new DepthController(root);
+}
+
+boot();
+document.addEventListener('astro:page-load', boot);
+document.addEventListener('astro:before-swap', teardown);
+// Resolve the level on the incoming page before the view transition captures
+// it, so a remembered level never flashes level 3 first.
+document.addEventListener('astro:after-swap', () => {
+  const root = document.querySelector<HTMLElement>('[data-depth-root]');
+  if (root) prepaint(root);
+});

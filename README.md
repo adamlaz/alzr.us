@@ -61,6 +61,38 @@ Body content here.
 
 `draft: true` hides the post from the index and build.
 
+### Depth posts
+
+A post can let the reader choose how deep to go: a five-stop slider from **Business** (short, plain) to **Technical** (the deep dive). The levels are 1 Business, 2 Mostly business, 3 Balanced (the default), 4 Mostly technical, 5 Technical deep dive. Opt in with `depth: true` in frontmatter, then wrap level-specific content in `<Depth>`:
+
+```mdx
+import Depth from '../../components/post/Depth.astro';
+
+<Depth max={1}>
+
+Shown only at level 1.
+
+</Depth>
+
+<Depth min={4}>
+
+## A heading and paragraphs shown at levels 4-5
+
+</Depth>
+
+Shared text <Depth inline min={4}>with a technical clause</Depth> keeps going.
+```
+
+- `min` and `max` are 1-5 (defaults 1 and 5). `inline` renders a `<span>` inside a paragraph; a block wrapper takes no box of its own, so spacing matches plain markdown.
+- Leave a blank line after the opening tag and before the closing one, so the children parse as markdown blocks.
+- Don't nest `<Depth>` elements.
+- Content outside any `<Depth>` shows at every level. Write that shared spine so it reads well at both ends.
+- Keep `<Note>` (and `<Footnotes>`) out of `<Depth>`. Footnote numbers are set by hand, so a hidden note leaves a gap in the sequence and a Notes entry whose reference isn't on the page.
+- Reading time is computed per level at build. The meta line reads "Balanced · 6 min read" and updates as the reader drags.
+- Links can pin a level: `?depth=1` to `?depth=5`, `?depth=business`, `?depth=technical`. The reader's last choice is remembered across posts; a URL param wins over it.
+- Without JS, readers get level 3 and no slider. The RSS feed carries descriptions only, so it's unaffected.
+- Using `<Depth>` in a post without `depth: true` fails the build.
+
 ## Deploy
 
 `main` auto-deploys to Vercel. Domain `alzr.us` is on Cloudflare (DNS only — `proxied: false` so Vercel can issue TLS).
