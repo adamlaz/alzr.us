@@ -1,0 +1,23 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/triage-lanes-light.svg?raw';
+import darkSvg from '../../assets/diagrams/triage-lanes-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={400}
+  caption="Machines do the reading and the checking. Every decision is still a button a person presses."
+>
+  Two lanes, split by a hard line. In the top lane, machines check: 816
+  applications arrive in 32 hours. Scripts check the links and public work each
+  applicant gave. Three independent model reads score each application against
+  the role's rubric, and a majority vote settles the result. Each application
+  gets a short note plus flags. So far 812 are sorted into three tiers:
+  Research, 124; Maybe, 660; Likely pass, 28. A note on the tiers says Likely
+  pass needs evidence, never suspicion alone. The dividing line reads: only a
+  person moves anyone forward or out. In the bottom lane, a person decides, in
+  order: my own read of the queue, a 30-minute screen, a one-week work sample,
+  a deep dive with a teammate, and a final round.
+</Diagram>
