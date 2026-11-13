@@ -63,7 +63,7 @@ Body content here.
 
 ### Depth posts
 
-A post can let the reader choose how deep to go: a five-stop slider from **Summary** (short, plain) to **Deep dive** (the technical detail). The levels are 1 Summary, 2 Overview, 3 Full story (the default), 4 Under the hood, 5 Technical deep dive. Opt in with `depth: true` in frontmatter, then wrap level-specific content in `<Depth>`:
+A post can let the reader choose how deep to go: a five-stop slider from **Summary** (short, plain) to **Deep dive** (the technical detail). The levels are 1 Summary (where readers start), 2 Overview, 3 Full story, 4 Under the hood, 5 Technical deep dive. Opt in with `depth: true` in frontmatter, then wrap level-specific content in `<Depth>`:
 
 ```mdx
 import Depth from '../../components/post/Depth.astro';
@@ -91,7 +91,7 @@ Shared text <Depth inline min={4}>with a technical clause</Depth> keeps going.
 - Reading time is computed per level at build. The readout under the slider shows the level and its minutes, and updates as the reader drags.
 - After a change, each block the new level added gets a cobalt hairline in the left gutter for a moment, and each new inline clause a brief cobalt wash. Keep a `<Depth>` block to content that sits in the text column, so the mark lands beside it. The motion plan (timings, reduced-motion path) is at the top of `src/scripts/depth-slider.ts`.
 - Links can pin a level: `?depth=1` to `?depth=5`, `?depth=summary`, `?depth=deep-dive`. The older `?depth=business` and `?depth=technical` still work. The slider itself writes the number. The reader's last choice is remembered across posts; a URL param wins over it.
-- Without JS, readers get level 3 and no slider. The RSS feed carries descriptions only, so it's unaffected.
+- Readers start on level 1 unless a `?depth=` link or their remembered choice says otherwise. Without JS, readers get level 3 (the server render) and no slider, since they can't move it. The RSS feed carries descriptions only, so it's unaffected.
 - Using `<Depth>` in a post without `depth: true` fails the build.
 
 ## Deploy

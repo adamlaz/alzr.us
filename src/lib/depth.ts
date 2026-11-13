@@ -4,14 +4,19 @@
  *
  * A depth post opts in with `depth: true` in frontmatter and wraps level-specific
  * content in <Depth min={..} max={..}>. Level 1 is the short summary,
- * level 5 the technical deep dive, level 3 the default.
+ * level 5 the technical deep dive. Readers start on level 1; the server
+ * renders level 3 so readers without JS (who can't move the slider) get the
+ * full story.
  */
 
 export type DepthLevel = 1 | 2 | 3 | 4 | 5;
 
 export const DEPTH_MIN: DepthLevel = 1;
 export const DEPTH_MAX: DepthLevel = 5;
-export const DEPTH_DEFAULT: DepthLevel = 3;
+/** Where a reader starts when no ?depth= link or remembered choice says otherwise. */
+export const DEPTH_DEFAULT: DepthLevel = 1;
+/** What the server renders: the no-JS view, before the prepaint script picks the reader's level. */
+export const DEPTH_STATIC: DepthLevel = 3;
 export const DEPTH_LEVELS: readonly DepthLevel[] = [1, 2, 3, 4, 5];
 
 export const DEPTH_LABELS: Record<DepthLevel, string> = {
