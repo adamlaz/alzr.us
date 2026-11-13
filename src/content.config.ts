@@ -10,6 +10,8 @@ const writing = defineCollection({
     draft: z.boolean().default(false),
     tags: z.array(z.string()).optional(),
     pullQuote: z.string().optional(),
+    // Opt-in reading-depth slider (Business <-> Technical). See <Depth>.
+    depth: z.boolean().default(false),
     ogImageVersion: z.number().int().positive().optional(),
     ogTreatment: z
       .enum(['default', 'candidate-grid', 'writing-samples', 'era-timeline', 'agent-config'])

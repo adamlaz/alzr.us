@@ -1,7 +1,10 @@
 ---
 import { getCollection, render } from 'astro:content';
 import readingTime from 'reading-time';
+import DepthControl from '../../components/post/DepthControl.astro';
+import DepthPrepaint from '../../components/post/DepthPrepaint.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { DEPTH_DEFAULT, DEPTH_LABELS, DEPTH_LEVELS, depthBodyAt, usesDepth } from '../../lib/depth';
 
 export async function getStaticPaths() {
   const posts = await getCollection('writing', ({ data }) => import.meta.env.DEV || !data.draft);
@@ -20,8 +23,17 @@ const formatted = post.data.date.toLocaleDateString('en-US', {
   day: 'numeric',
 });
 
-const rt = readingTime(post.body ?? '');
-const minutes = Math.max(1, Math.round(rt.minutes));
+const body = post.body ?? '';
+const minutesFor = (text: string) => Math.max(1, Math.round(readingTime(text).minutes));
+
+// Depth posts: reading time per level, computed from the body as each level
+// would show it. Level 3 is server-rendered; the slider swaps in the rest.
+const isDepth = post.data.depth;
+if (!isDepth && usesDepth(body)) {
+  throw new Error(`writing/${post.id}: uses <Depth> but its frontmatter is missing \`depth: true\`.`);
+}
+const depthMinutes = isDepth ? DEPTH_LEVELS.map((level) => minutesFor(depthBodyAt(body, level))) : [];
+const minutes = isDepth ? depthMinutes[DEPTH_DEFAULT - 1] : minutesFor(body);
 const readMin = `${minutes} min read`;
 
 const ogImage = `/og/${post.id}.png${post.data.ogImageVersion ? `?v=${post.data.ogImageVersion}` : ''}`;
@@ -38,20 +50,29 @@ const ogImage = `/og/${post.id}.png${post.data.ogImageVersion ? `?v=${post.data.
   <div class="reading-progress" aria-hidden="true"></div>
   <article class="post">
     <header>
-      <p class="meta eyebrow">
+      <p class:list={['meta eyebrow', { 'meta--depth': isDepth }]}>
         <time datetime={post.data.date.toISOString()}>{formatted}</time>
         <span class="dot" aria-hidden="true">·</span>
-        <span class="reading-time">{readMin}</span>
+        <span class="reading-time" data-depth-readout={isDepth ? '' : undefined}>{readMin}</span>
       </p>
       <h1 data-kinetic transition:name={`post-title-${post.id}`}>{post.data.title}</h1>
       <p class="description">{post.data.description}</p>
+      {isDepth && <DepthControl variant="header" minutes={depthMinutes} />}
     </header>
-    <div class="body">
+    <div
+      class="body"
+      data-depth-root={isDepth ? '' : undefined}
+      data-depth={isDepth ? DEPTH_DEFAULT : undefined}
+      data-depth-minutes={isDepth ? depthMinutes.join(' ') : undefined}
+      data-depth-labels={isDepth ? DEPTH_LEVELS.map((level) => DEPTH_LABELS[level]).join('|') : undefined}
+    >
+      {isDepth && <DepthPrepaint />}
       <Content />
     </div>
-    <footer>
+    <footer data-depth-end={isDepth ? '' : undefined}>
       <a href="/writing">← All posts</a>
     </footer>
+    {isDepth && <DepthControl variant="sticky" minutes={depthMinutes} />}
   </article>
 </BaseLayout>
 
@@ -112,6 +133,28 @@ const ogImage = `/og/${post.id}.png${post.data.ogImageVersion ? `?v=${post.data.
 
   .meta .dot {
     color: var(--rule);
+  }
+
+  /* Depth posts: the readout ("Balanced · 6 min read") changes length with the
+     level. Below md it takes its own line, so the header never re-wraps (and
+     shifts the page) as the reader drags. */
+  .meta--depth {
+    flex-wrap: wrap;
+    row-gap: var(--space-3xs);
+  }
+
+  .meta--depth .reading-time {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 40rem) {
+    .meta--depth .dot {
+      display: none;
+    }
+
+    .meta--depth .reading-time {
+      flex-basis: 100%;
+    }
   }
 
   h1 {
