@@ -3,7 +3,7 @@
  * the client (slider, URL param, remembered choice).
  *
  * A depth post opts in with `depth: true` in frontmatter and wraps level-specific
- * content in <Depth min={..} max={..}>. Level 1 is the plain business read,
+ * content in <Depth min={..} max={..}>. Level 1 is the short summary,
  * level 5 the technical deep dive, level 3 the default.
  */
 
@@ -15,10 +15,10 @@ export const DEPTH_DEFAULT: DepthLevel = 3;
 export const DEPTH_LEVELS: readonly DepthLevel[] = [1, 2, 3, 4, 5];
 
 export const DEPTH_LABELS: Record<DepthLevel, string> = {
-  1: 'Business',
-  2: 'Mostly business',
-  3: 'Balanced',
-  4: 'Mostly technical',
+  1: 'Summary',
+  2: 'Overview',
+  3: 'Full story',
+  4: 'Under the hood',
   5: 'Technical deep dive',
 };
 
@@ -29,13 +29,14 @@ export const DEPTH_SEEN_KEY = 'depth-seen';
 /** URL search param that pins a level for a shared link. */
 export const DEPTH_PARAM = 'depth';
 
-const NAMED: Record<string, DepthLevel> = { business: 1, technical: 5 };
+// `business` and `technical` are the scale's first names; links in the wild use them.
+const NAMED: Record<string, DepthLevel> = { summary: 1, 'deep-dive': 5, business: 1, technical: 5 };
 
 export function isDepthLevel(n: unknown): n is DepthLevel {
   return typeof n === 'number' && Number.isInteger(n) && n >= DEPTH_MIN && n <= DEPTH_MAX;
 }
 
-/** Parse `?depth=` / a stored value: 1-5, or the names `business` (1) and `technical` (5). */
+/** Parse `?depth=` / a stored value: 1-5, or the names `summary` (1) and `deep-dive` (5). */
 export function parseDepth(value: string | null | undefined): DepthLevel | null {
   if (value == null) return null;
   const v = value.trim().toLowerCase();

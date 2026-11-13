@@ -23,7 +23,7 @@ const label = DEPTH_LABELS[level];
 const min = minutes[level - 1];
 const valuetext = `${label}, ${min} min read`;
 const ticks = [0, 1, 2, 3, 4];
-const ariaLabel = 'Reading depth, from business to technical';
+const ariaLabel = 'Reading depth, from summary to deep dive';
 // The minutes roll like an odometer: one clipped slot per digit, padded to the
 // widest level so the readout's width never changes.
 const digits = Math.max(...minutes.map((m) => String(m).length));
@@ -34,7 +34,7 @@ const slots = [...String(min).padStart(digits, '\u00a0')];
   variant === 'header' ? (
     <div class="depth-control depth-control--header" data-depth-control data-depth-instrument data-level={level} hidden>
       <span class="end eyebrow" data-depth-set="1" aria-hidden="true">
-        Business
+        Summary
       </span>
       <div class="track">
         <span class="fill" aria-hidden="true" />
@@ -61,7 +61,7 @@ const slots = [...String(min).padStart(digits, '\u00a0')];
         </span>
       </div>
       <span class="end eyebrow" data-depth-set="5" aria-hidden="true">
-        Technical
+        Deep dive
       </span>
       <span class="now" aria-hidden="true">
         <span class="label" data-depth-label>{label}</span>
@@ -153,47 +153,43 @@ const slots = [...String(min).padStart(digits, '\u00a0')];
   }
 
   /* ── Level: one attribute drives the thumb, the ink, the ticks and the
-     label's axes. SOFT carries the change: Business is warm (round terminals,
-     a little lighter, and the wordmark's WONK at rest); Technical is crisp
-     (sharp terminals, a little firmer, tighter). Optical size is left to the
-     browser, so the label always gets the cut drawn for its size. ── */
+     label's axes. SOFT carries the change, with weight behind it: Summary is
+     warm (round terminals, lighter); Technical deep dive is crisp (sharp
+     terminals, firmer, tighter). Optical size is left to the browser, so the label
+     always gets the cut drawn for its size. WONK stays off: at this size it
+     changes no glyph. ── */
   .depth-control[data-level='1'] {
     --level: 1;
     --soft: 100;
-    --wonk: 1;
-    --wght: 400;
+    --wght: 380;
     --tracking: 0em;
   }
 
   .depth-control[data-level='2'] {
     --level: 2;
     --soft: 75;
-    --wonk: 0;
-    --wght: 425;
+    --wght: 420;
     --tracking: -0.004em;
   }
 
   .depth-control[data-level='3'] {
     --level: 3;
     --soft: 50;
-    --wonk: 0;
-    --wght: 450;
+    --wght: 460;
     --tracking: -0.008em;
   }
 
   .depth-control[data-level='4'] {
     --level: 4;
     --soft: 25;
-    --wonk: 0;
-    --wght: 475;
+    --wght: 500;
     --tracking: -0.012em;
   }
 
   .depth-control[data-level='5'] {
     --level: 5;
     --soft: 0;
-    --wonk: 0;
-    --wght: 500;
+    --wght: 540;
     --tracking: -0.016em;
   }
 
@@ -242,15 +238,17 @@ const slots = [...String(min).padStart(digits, '\u00a0')];
 
   /* ── Readout: the level in Fraunces, its axes following the slider; the
      minutes in mono, because they are a measurement. ── */
+  /* Set large enough for the terminals to show the change: 24px on a small
+     phone, 28px from md up. */
   .label {
     font-family: var(--font-display);
-    font-size: 1.25rem;
-    line-height: 1.3;
+    font-size: clamp(1.5rem, 1.25rem + 1.25vw, 1.75rem);
+    line-height: 1.25;
     letter-spacing: var(--tracking);
     font-optical-sizing: auto;
     font-variation-settings:
       'SOFT' var(--soft),
-      'WONK' var(--wonk),
+      'WONK' 0,
       'wght' var(--wght);
     color: var(--text);
     white-space: nowrap;
@@ -353,7 +351,7 @@ const slots = [...String(min).padStart(digits, '\u00a0')];
 
   .tick:first-child,
   .tick:last-child {
-    height: 0.6875rem;
+    height: 0.5625rem;
   }
 
   /* Passed ticks take ink and a second pixel of weight: lightness and width,
@@ -577,7 +575,7 @@ const slots = [...String(min).padStart(digits, '\u00a0')];
      shifts as the label changes. Sized to the longest label at its heaviest;
      shorter ones sit centered in the slot so the pill stays balanced. */
   .depth-control--sticky .label {
-    min-width: 9.25em;
+    min-width: 9.5em;
     font-size: 0.95rem;
     text-align: center;
   }

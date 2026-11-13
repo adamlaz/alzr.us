@@ -31,11 +31,10 @@
  *    travel).
  *  - Detent on arrival: the thumb compresses to 0.9 and settles, 260 ms, no
  *    overshoot; the tick under it flashes past the thumb's edges, 420 ms.
- *  - Label: Fraunces SOFT (100 at Business to 0 at Technical) with a narrow
- *    wght and tracking shift, tweened from wherever they are to the new
- *    level, 300 ms, same ease, so a drag reads as one morph. Optical size is
- *    the browser's. WONK rests at 1 on Business only; it rides the same
- *    tween, so its glyph swap lands while SOFT is moving.
+ *  - Label: Fraunces SOFT (100 at Summary to 0 at Technical deep dive) with wght 380
+ *    to 540 and a small tracking shift, tweened from wherever they are to the
+ *    new level, 300 ms, same ease, so a drag reads as one morph. Optical size
+ *    is the browser's.
  *  - Minutes: each changed digit rolls in its slot, up when the number grows,
  *    260 ms, tens 30 ms behind ones.
  *  Keyboard, end labels and both controls all run through the same path.
