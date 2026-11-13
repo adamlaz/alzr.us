@@ -6,6 +6,9 @@ draft: true
 ogTreatment: default
 pullQuote: 'The single line worth pulling out and setting in display serif.'
 tags: ['example']
+# depth: true turns on the Business <-> Technical reading-depth slider.
+# See the commented <Depth> example below and "Depth posts" in README.md.
+depth: false
 ---
 
 import PullQuote from '../../components/post/PullQuote.astro';
@@ -13,6 +16,32 @@ import Callout from '../../components/post/Callout.astro';
 import Figure from '../../components/post/Figure.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
+
+{/*
+  Depth posts (set `depth: true` above). Import the component:
+
+    import Depth from '../../components/post/Depth.astro';
+
+  Then wrap level-specific content. Levels: 1 Business, 2 Mostly business,
+  3 Balanced (default), 4 Mostly technical, 5 Technical deep dive.
+
+    <Depth max={1}>
+
+    A plain-language paragraph shown only at level 1.
+
+    </Depth>
+
+    <Depth min={4}>
+
+    ## A heading and paragraphs shown at levels 4-5
+
+    </Depth>
+
+    Shared text <Depth inline min={4}>with a technical clause</Depth> continues.
+
+  Rules: blank lines inside block tags; no nesting; keep <Note> and
+  <Footnotes> outside any Depth (hand-set numbers would skip).
+*/}
 
 Opening paragraph. Lead with the finding or the central argument, then the
 reasoning. Aim for a hook in the first three sentences that passes the
