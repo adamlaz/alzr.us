@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="340" viewBox="0 0 680 340">
+  <g font-family="Inter Variable, system-ui, sans-serif" fill="#1c1d24">
+    
+        <!-- Layer 1 -->
+        <rect x="20" y="18" width="640" height="66" rx="8" fill="#ffffff" stroke="#cfcfd1" stroke-width="1.5" />
+        <path d="M 28 18 H 210 V 84 H 28 A 8 8 0 0 1 20 76 V 26 A 8 8 0 0 1 28 18 Z" fill="#f1f0ec" />
+        <line x1="210" y1="18" x2="210" y2="84" stroke="#cfcfd1" stroke-width="1.5" />
+
+        <text x="38" y="45" font-size="12" font-weight="700" letter-spacing="0.05em" fill="#8a8a90">1. ONE-PAGE</text>
+        <text x="38" y="65" font-size="13.5" font-weight="700" letter-spacing="0.03em" fill="#1c1d24">AGENT BRIEF</text>
+
+        <text x="230" y="46" font-size="14.5" font-weight="600" fill="#1c1d24">Six hard rules · zero open choices</text>
+        <text x="230" y="67" font-size="13.5" fill="#8a8a90">Self-checkable acceptance criteria</text>
+
+        <rect x="568" y="38" width="74" height="26" rx="5" fill="#f1f0ec" stroke="#cfcfd1" stroke-width="1" />
+        <text x="605" y="55" font-size="12" font-weight="700" letter-spacing="0.04em" text-anchor="middle" fill="#8a8a90">SPEC</text>
+        
+            <line x1="115" y1="84" x2="115" y2="98" stroke="#8a8a90" stroke-width="1.5" stroke-dasharray="3 2" />
+            <polygon points="115,98 111,92 119,92" fill="#8a8a90" />
+          
+      
+
+        <!-- Layer 2 -->
+        <rect x="20" y="98" width="640" height="66" rx="8" fill="#ffffff" stroke="#c0402b" stroke-width="2" />
+        <path d="M 28 98 H 210 V 164 H 28 A 8 8 0 0 1 20 156 V 106 A 8 8 0 0 1 28 98 Z" fill="#f7e6e2" />
+        <line x1="210" y1="98" x2="210" y2="164" stroke="#c0402b" stroke-width="1.5" />
+
+        <text x="38" y="125" font-size="12" font-weight="700" letter-spacing="0.05em" fill="#8f2b1c">2. MOCK-BACKED</text>
+        <text x="38" y="145" font-size="13.5" font-weight="700" letter-spacing="0.03em" fill="#8f2b1c">ADAPTERS</text>
+
+        <text x="230" y="126" font-size="14.5" font-weight="600" fill="#1c1d24">Order, media, inspection &amp; Slack seams</text>
+        <text x="230" y="147" font-size="13.5" fill="#8a8a90">Mock refuses what prod refuses</text>
+
+        <rect x="568" y="118" width="74" height="26" rx="5" fill="#f7e6e2" stroke="#c0402b" stroke-width="1" />
+        <text x="605" y="135" font-size="12" font-weight="700" letter-spacing="0.04em" text-anchor="middle" fill="#8f2b1c">SEAMS</text>
+        
+            <line x1="115" y1="164" x2="115" y2="178" stroke="#8a8a90" stroke-width="1.5" stroke-dasharray="3 2" />
+            <polygon points="115,178 111,172 119,172" fill="#8a8a90" />
+          
+      
+
+        <!-- Layer 3 -->
+        <rect x="20" y="178" width="640" height="66" rx="8" fill="#ffffff" stroke="#c0402b" stroke-width="2" />
+        <path d="M 28 178 H 210 V 244 H 28 A 8 8 0 0 1 20 236 V 186 A 8 8 0 0 1 28 178 Z" fill="#f7e6e2" />
+        <line x1="210" y1="178" x2="210" y2="244" stroke="#c0402b" stroke-width="1.5" />
+
+        <text x="38" y="205" font-size="12" font-weight="700" letter-spacing="0.05em" fill="#8f2b1c">3. CODE-OWNERS +</text>
+        <text x="38" y="225" font-size="13.5" font-weight="700" letter-spacing="0.03em" fill="#8f2b1c">PR CHECKLIST</text>
+
+        <text x="230" y="206" font-size="14.5" font-weight="600" fill="#1c1d24">UI &amp; copy self-merge on green CI</text>
+        <text x="230" y="227" font-size="13.5" fill="#8a8a90">Adapter &amp; CI changes request a code owner</text>
+
+        <rect x="568" y="198" width="74" height="26" rx="5" fill="#f7e6e2" stroke="#c0402b" stroke-width="1" />
+        <text x="605" y="215" font-size="12" font-weight="700" letter-spacing="0.04em" text-anchor="middle" fill="#8f2b1c">ROUTING</text>
+        
+            <line x1="115" y1="244" x2="115" y2="258" stroke="#8a8a90" stroke-width="1.5" stroke-dasharray="3 2" />
+            <polygon points="115,258 111,252 119,252" fill="#8a8a90" />
+          
+      
+
+        <!-- Layer 4 -->
+        <rect x="20" y="258" width="640" height="66" rx="8" fill="#ffffff" stroke="#2f3eb0" stroke-width="2" />
+        <path d="M 28 258 H 210 V 324 H 28 A 8 8 0 0 1 20 316 V 266 A 8 8 0 0 1 28 258 Z" fill="#2f3eb0" />
+        <line x1="210" y1="258" x2="210" y2="324" stroke="#2f3eb0" stroke-width="1.5" />
+
+        <text x="38" y="285" font-size="12" font-weight="700" letter-spacing="0.05em" fill="#ffffff">4. BROWSER</text>
+        <text x="38" y="305" font-size="13.5" font-weight="700" letter-spacing="0.03em" fill="#ffffff">BENCHMARK SUITE</text>
+
+        <text x="230" y="286" font-size="14.5" font-weight="600" fill="#1c1d24">Locked word caps · &gt;=55% video · &gt;=20px type</text>
+        <text x="230" y="307" font-size="13.5" fill="#8a8a90">Keycaps · training &amp; pause guide</text>
+
+        <rect x="568" y="278" width="74" height="26" rx="5" fill="#f1f0ec" stroke="#2f3eb0" stroke-width="1" />
+        <text x="605" y="295" font-size="12" font-weight="700" letter-spacing="0.04em" text-anchor="middle" fill="#2f3eb0">CI GATE</text>
+        
+      
+  </g>
+</svg>

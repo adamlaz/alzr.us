@@ -1,0 +1,23 @@
+---
+import darkSvg from '../../assets/diagrams/pr-swimlane-dark.svg?raw';
+import lightSvg from '../../assets/diagrams/pr-swimlane-light.svg?raw';
+import Diagram from './Diagram.astro';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={680}
+  caption="Pull requests by role over the station's first month (Day 1 to Day 31). Proportional stacked bars at top show leadership flipping from engineering in Week 1 to the product manager in Week 4."
+>
+  A two-part diagram of pull requests over the station's first 31 days. Across
+  the top, three phase cards with proportional stacked bars show who led each
+  period: Week 1 (Build and launch: Me 4, Engineer 1), Weeks 2-3 (Floor loops
+  and OOO: PM 8, Me 8), and Week 4 (Steady state: PM 11, Me 3, Engineer 1).
+  Below, a three-lane timeline plots pull requests across the product manager
+  (filled circles, 19 merged with 14 self-merged in a median of about 5 minutes,
+  plus 1 open), me on contracts and CI (squares, 15 merged plus 19 commits on 6
+  PM pull requests), and our engineer (diamonds, 2 merged), with callouts for v1
+  (41 files), 7 of 8 floor issues closed in 1 PR merged 4 minutes after opening, the 6-PR hardening
+  Sunday during the two-week OOO and async gap, and 11 PRs on return.
+</Diagram>

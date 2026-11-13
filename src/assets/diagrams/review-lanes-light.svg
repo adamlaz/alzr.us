@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="340" viewBox="0 0 680 340">
+  <g font-family="Inter Variable, system-ui, sans-serif" fill="#1c1d24">
+    <!-- Top banner node -->
+    <rect x="20" y="16" width="640" height="64" rx="8" fill="#f1f0ec" stroke="#cfcfd1" stroke-width="1.5" />
+    <text x="340" y="38" font-size="12" font-weight="700" letter-spacing="0.06em" text-anchor="middle" fill="#8a8a90">PULL REQUEST OPENED</text>
+    <text x="340" y="61" font-size="15" font-weight="600" text-anchor="middle" fill="#1c1d24">"Station impact" checklist declares what the change touches</text>
+
+    <!-- Split connectors from top banner to the two lane cards -->
+    <path d="M 340 80 L 340 94 L 174 94 L 174 106" fill="none" stroke="#2f3eb0" stroke-width="2" />
+    <polygon points="174,110 169,102 179,102" fill="#2f3eb0" />
+
+    <path d="M 340 80 L 340 94 L 506 94 L 506 106" fill="none" stroke="#c0402b" stroke-width="2" />
+    <polygon points="506,110 501,102 511,102" fill="#c0402b" />
+
+    <!-- Left Card: Fast Lane (UI & Flows) -->
+    <rect x="20" y="110" width="308" height="210" rx="8" fill="#ffffff" stroke="#2f3eb0" stroke-width="2" />
+    <text x="40" y="136" font-size="12" font-weight="700" letter-spacing="0.05em" fill="#2f3eb0">FAST LANE · UI &amp; FLOWS</text>
+    <text x="40" y="162" font-size="18" font-weight="600" fill="#1c1d24">Self-merges on green CI</text>
+    <line x1="40" y1="176" x2="308" y2="176" stroke="#cfcfd1" stroke-width="1" />
+
+    <circle cx="46" cy="197" r="3.5" fill="#2f3eb0" />
+    <text x="58" y="202" font-size="14" fill="#1c1d24">Screens, station kit &amp; copy</text>
+
+    <circle cx="46" cy="223" r="3.5" fill="#2f3eb0" />
+    <text x="58" y="228" font-size="14" fill="#1c1d24">Keyboard shortcuts &amp; pause guide</text>
+
+    <circle cx="46" cy="249" r="3.5" fill="#2f3eb0" />
+    <text x="58" y="254" font-size="14" fill="#1c1d24">Interactive training &amp; QA review UI</text>
+
+    <rect x="36" y="272" width="276" height="32" rx="6" fill="#f1f0ec" stroke="#cfcfd1" stroke-width="1" />
+    <text x="174" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="#1c1d24">No approval required · ~5 min median</text>
+
+    <!-- Right Card: Contract Lane (Seams & Gates) -->
+    <rect x="352" y="110" width="308" height="210" rx="8" fill="#ffffff" stroke="#c0402b" stroke-width="2" />
+    <rect x="356" y="114" width="300" height="202" rx="5" fill="none" stroke="#c0402b" stroke-width="1" stroke-dasharray="4 3" />
+    <text x="372" y="136" font-size="12" font-weight="700" letter-spacing="0.05em" fill="#8f2b1c">CONTRACT LANE · SEAMS &amp; GATES</text>
+    <text x="372" y="162" font-size="18" font-weight="600" fill="#1c1d24">Code owner requested</text>
+    <line x1="372" y1="176" x2="640" y2="176" stroke="#cfcfd1" stroke-width="1" />
+
+    <rect x="374.5" y="193.5" width="7" height="7" rx="1.5" fill="#c0402b" />
+    <text x="390" y="202" font-size="14" fill="#1c1d24">Order, media, inspection &amp; Slack seams</text>
+
+    <rect x="374.5" y="219.5" width="7" height="7" rx="1.5" fill="#c0402b" />
+    <text x="390" y="228" font-size="14" fill="#1c1d24">Local mock parity with production rules</text>
+
+    <rect x="374.5" y="245.5" width="7" height="7" rx="1.5" fill="#c0402b" />
+    <text x="390" y="254" font-size="14" fill="#1c1d24">CI workflow &amp; PR template</text>
+
+    <rect x="368" y="272" width="276" height="32" rx="6" fill="#f7e6e2" stroke="#c0402b" stroke-width="1" />
+    <text x="506" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="#8f2b1c">Not required · reviewed by commit</text>
+  </g>
+</svg>

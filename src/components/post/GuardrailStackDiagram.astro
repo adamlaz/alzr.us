@@ -1,0 +1,22 @@
+---
+import darkSvg from '../../assets/diagrams/guardrail-stack-dark.svg?raw';
+import lightSvg from '../../assets/diagrams/guardrail-stack-light.svg?raw';
+import Diagram from './Diagram.astro';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={680}
+  caption="The four-layer guardrail stack, ordered from the initial one-page build brief down to the browser benchmark suite that locks the UI rules in CI."
+>
+  A four-row architectural stack showing the guardrails that keep agent-written
+  changes safe. Layer 1 is the one-page agent brief: six hard rules, zero open
+  choices, and self-checkable acceptance criteria. Layer 2 is mock-backed
+  adapters across order, media, inspection, and Slack seams, where the local mock
+  refuses what production refuses. Layer 3 is code-owners routing plus the pull
+  request checklist: UI and copy self-merge on green CI while adapter and CI
+  changes request a code owner. Layer 4 is the browser benchmark suite: locked
+  per-state word caps, at least 55 percent video area, a 20-pixel type floor,
+  visible keycaps, and interactive training and pause-guide checks.
+</Diagram>

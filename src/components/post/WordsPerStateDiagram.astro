@@ -1,0 +1,21 @@
+---
+import darkSvg from '../../assets/diagrams/words-per-state-dark.svg?raw';
+import lightSvg from '../../assets/diagrams/words-per-state-light.svg?raw';
+import Diagram from './Diagram.astro';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={680}
+  caption="UI words per screen state under the browser benchmark's counting rules (order data, keycaps, and two-word symptom tiles excluded), as locked that Sunday night. Each state's count became its exact CI budget against a 15-word target; the two over it say why in the test file, and the floor fixes later raised several budgets. Training lesson states carry a separate 12-word coaching ceiling."
+>
+  A broken-axis horizontal bar chart comparing UI word counts across nine screen
+  states before redesign or the final trim pass against the CI budgets locked
+  that Sunday, with a vertical dashed line at the 15-word target. Tape playing
+  dropped from 148 words to 8 (-95 percent), the Fail symptom picker from 34 to
+  3, Order ready from 29 to 3, Round 2 ready from 24 to 13, Exception with the
+  note open from 21 to 15, Could not inspect with the note open from 20 to 15,
+  Inspection result from 18 to 15, Already inspected from 25 to 17, and Round 2 tape from
+  25 to 18 (the last two include a 2-to-3-word prior-inspection strip).
+</Diagram>
