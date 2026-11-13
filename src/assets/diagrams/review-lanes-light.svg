@@ -28,25 +28,25 @@
     <text x="58" y="254" font-size="14" fill="#1c1d24">Interactive training &amp; QA review UI</text>
 
     <rect x="36" y="272" width="276" height="32" rx="6" fill="#f1f0ec" stroke="#cfcfd1" stroke-width="1" />
-    <text x="174" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="#1c1d24">No human approval required · ~6 min median</text>
+    <text x="174" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="#1c1d24">No approval required · ~5 min median</text>
 
     <!-- Right Card: Contract Lane (Seams & Gates) -->
     <rect x="352" y="110" width="308" height="210" rx="8" fill="#ffffff" stroke="#c0402b" stroke-width="2" />
     <rect x="356" y="114" width="300" height="202" rx="5" fill="none" stroke="#c0402b" stroke-width="1" stroke-dasharray="4 3" />
     <text x="372" y="136" font-size="12" font-weight="700" letter-spacing="0.05em" fill="#8f2b1c">CONTRACT LANE · SEAMS &amp; GATES</text>
-    <text x="372" y="162" font-size="18" font-weight="600" fill="#1c1d24">Required co-owner review</text>
+    <text x="372" y="162" font-size="18" font-weight="600" fill="#1c1d24">Code owner requested</text>
     <line x1="372" y1="176" x2="640" y2="176" stroke="#cfcfd1" stroke-width="1" />
 
     <rect x="374.5" y="193.5" width="7" height="7" rx="1.5" fill="#c0402b" />
-    <text x="390" y="202" font-size="14" fill="#1c1d24">Order, media, inspection &amp; chat adapters</text>
+    <text x="390" y="202" font-size="14" fill="#1c1d24">Order, media, inspection &amp; Slack seams</text>
 
     <rect x="374.5" y="219.5" width="7" height="7" rx="1.5" fill="#c0402b" />
     <text x="390" y="228" font-size="14" fill="#1c1d24">Local mock parity with production rules</text>
 
     <rect x="374.5" y="245.5" width="7" height="7" rx="1.5" fill="#c0402b" />
-    <text x="390" y="254" font-size="14" fill="#1c1d24">CI workflow &amp; browser benchmark gates</text>
+    <text x="390" y="254" font-size="14" fill="#1c1d24">CI workflow &amp; PR template</text>
 
     <rect x="368" y="272" width="276" height="32" rx="6" fill="#f7e6e2" stroke="#c0402b" stroke-width="1" />
-    <text x="506" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="#8f2b1c">Reviewed by commit on the branch</text>
+    <text x="506" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="#8f2b1c">Not required · reviewed by commit</text>
   </g>
 </svg>

@@ -6,31 +6,32 @@
 import { writeFileSync } from 'node:fs';
 import { dark, light } from './_palette.mjs';
 
-// Days index 0..30 = Day 1 .. Day 31
+// Days index 0..30 = Day 1 .. Day 31 (Mon 9/22 .. Wed 10/22, merge dates in ET, from the GitHub API).
+// dy nudges a marker off the lane line where consecutive days would overlap.
 const pmMerged = [
-  { offset: 6, n: 1 },
-  { offset: 8, n: 4 },
-  { offset: 9, n: 1 },
-  { offset: 10, n: 2 },
-  { offset: 23, n: 2 },
-  { offset: 27, n: 5 },
-  { offset: 28, n: 1 },
-  { offset: 29, n: 3 },
+  { offset: 7, n: 1 },
+  { offset: 8, n: 1 },
+  { offset: 9, n: 4 },
+  { offset: 12, n: 2 },
+  { offset: 23, n: 1 },
+  { offset: 24, n: 4 },
+  { offset: 28, n: 2 },
+  { offset: 29, n: 2, dy: -9 },
+  { offset: 30, n: 2 },
 ];
-const pmOpen = [{ offset: 30, n: 1 }];
+const pmOpen = [{ offset: 29, n: 1, dy: 10 }];
 
 const meMerged = [
-  { offset: 0, n: 1 },
-  { offset: 2, n: 1 },
+  { offset: 1, n: 2 },
   { offset: 3, n: 2 },
   { offset: 7, n: 2 },
   { offset: 12, n: 6 },
-  { offset: 23, n: 1 },
-  { offset: 29, n: 2 },
+  { offset: 29, n: 1, dy: -9 },
+  { offset: 30, n: 2 },
 ];
 
 const engMerged = [
-  { offset: 0, n: 1 },
+  { offset: 1, n: 1 },
   { offset: 23, n: 1 },
 ];
 
@@ -43,7 +44,7 @@ function render(p) {
   const outX1 = xFor(11) - 6;
   const outX2 = xFor(22) + 6;
   const hardenX = xFor(12);
-  const firstPmX = xFor(6);
+  const floorPrX = xFor(8);
 
   const laneY = {
     pm: 166,
@@ -51,11 +52,12 @@ function render(p) {
     eng: 296,
   };
 
-  const drawMarkers = (items, y, shape) =>
+  const drawMarkers = (items, laneYFor, shape) =>
     items
-      .map(({ offset, n }) => {
+      .map(({ offset, n, dy = 0 }) => {
         const cx = xFor(offset);
-        const r = n > 1 ? 11 : 7;
+        const y = laneYFor + dy;
+        const r = n > 1 ? 8.5 : 6.5;
         let glyph = '';
         if (shape === 'circle') {
           glyph = `<circle cx="${cx}" cy="${y}" r="${r}" fill="${p.accent}" />`;
@@ -119,7 +121,7 @@ function render(p) {
 
     <!-- Lane labels (min 12px, titles 15px) -->
     <text x="16" y="${laneY.pm - 5}" font-size="15" font-weight="700">Product manager</text>
-    <text x="16" y="${laneY.pm + 14}" font-size="12" fill="${p.line}">19 merged · 14 self in ~6m</text>
+    <text x="16" y="${laneY.pm + 14}" font-size="12" fill="${p.line}">19 merged · 14 self in ~5m</text>
 
     <text x="16" y="${laneY.me - 5}" font-size="15" font-weight="700">Me (contracts &amp; CI)</text>
     <text x="16" y="${laneY.me + 14}" font-size="12" fill="${p.line}">15 merged · 19 commits on 6</text>
@@ -127,25 +129,25 @@ function render(p) {
     <text x="16" y="${laneY.eng - 5}" font-size="15" font-weight="700">Engineer</text>
     <text x="16" y="${laneY.eng + 14}" font-size="12" fill="${p.line}">2 merged (v1 + slips)</text>
 
-    <!-- Callout 1: 8 floor issues -> 1 PR (8m) on Day 7 -->
-    <line x1="${firstPmX}" y1="140" x2="${firstPmX}" y2="${laneY.pm - 9}" stroke="${p.accent}" stroke-width="1.5" />
+    <!-- Callout 1: 7 of 8 floor issues -> 1 PR (merged 4m after opening) on Day 9 -->
+    <line x1="${floorPrX}" y1="140" x2="${floorPrX}" y2="${laneY.pm - 8}" stroke="${p.accent}" stroke-width="1.5" />
     <rect x="188" y="116" width="176" height="24" rx="12" fill="${p.node}" stroke="${p.accent}" stroke-width="1.5" />
-    <text x="276" y="132" font-size="12" font-weight="600" text-anchor="middle" fill="${p.accent}">8 floor issues -&gt; 1 PR (8m)</text>
+    <text x="276" y="132" font-size="12" font-weight="600" text-anchor="middle" fill="${p.accent}">7 floor issues -&gt; 1 PR (4m)</text>
 
     <!-- Callout 2: 6-PR hardening Sunday on Day 13 -->
     <line x1="${hardenX}" y1="212" x2="${hardenX}" y2="${laneY.me - 13}" stroke="${p.fail}" stroke-width="1.5" />
     <rect x="${hardenX - 14}" y="188" width="160" height="24" rx="12" fill="${p.failFill}" stroke="${p.fail}" stroke-width="1.5" />
     <text x="${hardenX + 66}" y="204" font-size="12" font-weight="600" text-anchor="middle" fill="${p.failText}">6-PR hardening Sunday</text>
 
-    <!-- Callout 3: 11 PRs on return across Days 24-30 -->
-    <path d="M ${xFor(23)} 148 L ${xFor(23)} 142 L ${xFor(29)} 142 L ${xFor(29)} 148" fill="none" stroke="${p.accent}" stroke-width="1.5" />
+    <!-- Callout 3: 11 PRs on return across Days 24-31 -->
+    <path d="M ${xFor(23)} 148 L ${xFor(23)} 142 L ${xFor(30)} 142 L ${xFor(30)} 148" fill="none" stroke="${p.accent}" stroke-width="1.5" />
     <rect x="548" y="116" width="116" height="24" rx="12" fill="${p.accent}" />
     <text x="606" y="132" font-size="12" font-weight="700" text-anchor="middle" fill="${p.onAccent}">11 PRs on return</text>
 
-    <!-- Callout 4: v1 (41 files) on Day 1 -->
-    <line x1="${xFor(0) + 9}" y1="${laneY.eng}" x2="234" y2="${laneY.eng}" stroke="${p.line}" stroke-width="1.5" />
-    <rect x="234" y="${laneY.eng - 12}" width="96" height="24" rx="12" fill="${p.node}" stroke="${p.border}" stroke-width="1.5" />
-    <text x="282" y="${laneY.eng + 4}" font-size="12" font-weight="600" text-anchor="middle" fill="${p.text}">v1 (41 files)</text>
+    <!-- Callout 4: v1 (41 files), merged Day 2 -->
+    <line x1="${xFor(1) + 9}" y1="${laneY.eng}" x2="250" y2="${laneY.eng}" stroke="${p.line}" stroke-width="1.5" />
+    <rect x="250" y="${laneY.eng - 12}" width="96" height="24" rx="12" fill="${p.node}" stroke="${p.border}" stroke-width="1.5" />
+    <text x="298" y="${laneY.eng + 4}" font-size="12" font-weight="600" text-anchor="middle" fill="${p.text}">v1 (41 files)</text>
 
     <!-- Markers -->
     ${drawMarkers(pmMerged, laneY.pm, 'circle')}

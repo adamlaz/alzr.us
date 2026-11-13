@@ -1,6 +1,6 @@
 // Regenerates words-per-state-{light,dark}.svg. Author-time only.
 // Editorial horizontal bar/dumbbell comparison chart of UI words per screen state:
-// before redesign vs. locked CI budget today, with a broken axis for the 148-word
+// before redesign vs. the CI budget locked that Sunday (the floor fixes raised some later), with a broken axis for the 148-word
 // legacy tape-playing screen so the 0..40 word range has wide, legible bars.
 // Run: node src/assets/diagrams/words-per-state.gen.mjs
 import { writeFileSync } from 'node:fs';
@@ -11,8 +11,8 @@ const states = [
   { label: 'Fail symptom picker', before: 34, after: 3 },
   { label: 'Order ready', before: 29, after: 3 },
   { label: 'Round 2 ready', before: 24, after: 13 },
-  { label: 'Exception (note open)', before: 21, after: 15 },
-  { label: "Can't inspect (note open)", before: 20, after: 15 },
+  { label: 'Exception + note', before: 21, after: 15 },
+  { label: 'Could not inspect + note', before: 20, after: 15 },
   { label: 'Inspection result', before: 18, after: 15 },
   { label: 'Already inspected*', before: 25, after: 17 },
   { label: 'Round 2 tape*', before: 25, after: 18 },
@@ -71,10 +71,10 @@ function render(p) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="680" height="430" viewBox="0 0 680 430">
   <g font-family="Inter Variable, system-ui, sans-serif" fill="${p.text}">
     <!-- Title & Legend -->
-    <text x="20" y="26" font-size="15.5" font-weight="700" fill="${p.text}">UI words per screen state: before redesign vs. locked CI budget today</text>
+    <text x="20" y="26" font-size="15.5" font-weight="700" fill="${p.text}">UI words per screen state: before the redesign vs. the Sunday-night budget</text>
 
     <rect x="20" y="38" width="18" height="12" rx="3" fill="${p.accent}" />
-    <text x="44" y="48" font-size="12" font-weight="600" fill="${p.text}">Locked CI budget today</text>
+    <text x="44" y="48" font-size="12" font-weight="600" fill="${p.text}">Locked that Sunday</text>
 
     <rect x="200" y="38" width="18" height="12" rx="3" fill="${p.edgeFill}" stroke="${p.line}" stroke-width="1.5" stroke-dasharray="3 2" />
     <text x="224" y="48" font-size="12" fill="${p.line}">Before redesign / trim pass</text>
@@ -96,10 +96,10 @@ function render(p) {
 
     ${rowsSvg.join('\n')}
 
-    <!-- 15-word rule cap reference line -->
+    <!-- 15-word target reference line -->
     <line x1="${budgetX}" y1="80" x2="${budgetX}" y2="${chartBottom}" stroke="${p.fail}" stroke-width="2" stroke-dasharray="6 4" />
     <rect x="${budgetX - 64}" y="58" width="128" height="22" rx="4" fill="${p.failFill}" stroke="${p.fail}" stroke-width="1.2" />
-    <text x="${budgetX}" y="73" font-size="12" font-weight="700" text-anchor="middle" fill="${p.failText}">15-word rule cap</text>
+    <text x="${budgetX}" y="73" font-size="12" font-weight="700" text-anchor="middle" fill="${p.failText}">15-word target</text>
   </g>
 </svg>\n`;
 }

@@ -1,6 +1,6 @@
 // Regenerates review-lanes-{light,dark}.svg. Author-time only.
 // Native SVG showing how pull requests split via the station-impact checklist
-// into the fast lane (self-merges on green CI) vs the contract lane (co-owner review).
+// into the fast lane (self-merges on green CI) vs the contract lane (code owner requested, never required).
 // Run: node src/assets/diagrams/review-lanes.gen.mjs
 import { writeFileSync } from 'node:fs';
 import { dark, light } from './_palette.mjs';
@@ -36,26 +36,26 @@ function render(p) {
     <text x="58" y="254" font-size="14" fill="${p.text}">Interactive training &amp; QA review UI</text>
 
     <rect x="36" y="272" width="276" height="32" rx="6" fill="${p.edgeFill}" stroke="${p.border}" stroke-width="1" />
-    <text x="174" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="${p.text}">No human approval required · ~6 min median</text>
+    <text x="174" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="${p.text}">No approval required · ~5 min median</text>
 
     <!-- Right Card: Contract Lane (Seams & Gates) -->
     <rect x="352" y="110" width="308" height="210" rx="8" fill="${p.node}" stroke="${p.fail}" stroke-width="2" />
     <rect x="356" y="114" width="300" height="202" rx="5" fill="none" stroke="${p.fail}" stroke-width="1" stroke-dasharray="4 3" />
     <text x="372" y="136" font-size="12" font-weight="700" letter-spacing="0.05em" fill="${p.failText}">CONTRACT LANE · SEAMS &amp; GATES</text>
-    <text x="372" y="162" font-size="18" font-weight="600" fill="${p.text}">Required co-owner review</text>
+    <text x="372" y="162" font-size="18" font-weight="600" fill="${p.text}">Code owner requested</text>
     <line x1="372" y1="176" x2="640" y2="176" stroke="${p.border}" stroke-width="1" />
 
     <rect x="374.5" y="193.5" width="7" height="7" rx="1.5" fill="${p.fail}" />
-    <text x="390" y="202" font-size="14" fill="${p.text}">Order, media, inspection &amp; chat adapters</text>
+    <text x="390" y="202" font-size="14" fill="${p.text}">Order, media, inspection &amp; Slack seams</text>
 
     <rect x="374.5" y="219.5" width="7" height="7" rx="1.5" fill="${p.fail}" />
     <text x="390" y="228" font-size="14" fill="${p.text}">Local mock parity with production rules</text>
 
     <rect x="374.5" y="245.5" width="7" height="7" rx="1.5" fill="${p.fail}" />
-    <text x="390" y="254" font-size="14" fill="${p.text}">CI workflow &amp; browser benchmark gates</text>
+    <text x="390" y="254" font-size="14" fill="${p.text}">CI workflow &amp; PR template</text>
 
     <rect x="368" y="272" width="276" height="32" rx="6" fill="${p.failFill}" stroke="${p.fail}" stroke-width="1" />
-    <text x="506" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="${p.failText}">Reviewed by commit on the branch</text>
+    <text x="506" y="293" font-size="12.5" font-weight="600" text-anchor="middle" fill="${p.failText}">Not required · reviewed by commit</text>
   </g>
 </svg>\n`;
 }

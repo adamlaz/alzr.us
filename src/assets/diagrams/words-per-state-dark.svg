@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="430" viewBox="0 0 680 430">
   <g font-family="Inter Variable, system-ui, sans-serif" fill="#eceae4">
     <!-- Title & Legend -->
-    <text x="20" y="26" font-size="15.5" font-weight="700" fill="#eceae4">UI words per screen state: before redesign vs. locked CI budget today</text>
+    <text x="20" y="26" font-size="15.5" font-weight="700" fill="#eceae4">UI words per screen state: before the redesign vs. the Sunday-night budget</text>
 
     <rect x="20" y="38" width="18" height="12" rx="3" fill="#8fa1ef" />
-    <text x="44" y="48" font-size="12" font-weight="600" fill="#eceae4">Locked CI budget today</text>
+    <text x="44" y="48" font-size="12" font-weight="600" fill="#eceae4">Locked that Sunday</text>
 
     <rect x="200" y="38" width="18" height="12" rx="3" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="3 2" />
     <text x="224" y="48" font-size="12" fill="#8a8a93">Before redesign / trim pass</text>
@@ -90,7 +90,7 @@
       <text x="326" y="206" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">13</text>
     
 
-      <text x="178" y="239" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Exception (note open)</text>
+      <text x="178" y="239" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Exception + note</text>
       
         <rect x="190" y="224" width="231" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
         <circle cx="421" cy="235" r="3.5" fill="#8a8a93" />
@@ -101,7 +101,7 @@
       <text x="348" y="239" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">15</text>
     
 
-      <text x="178" y="272" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Can't inspect (note open)</text>
+      <text x="178" y="272" font-size="13.5" font-weight="500" text-anchor="end" fill="#eceae4">Could not inspect + note</text>
       
         <rect x="190" y="257" width="220" height="22" rx="4" fill="#25252d" stroke="#8a8a93" stroke-width="1.5" stroke-dasharray="4 3" />
         <circle cx="410" cy="268" r="3.5" fill="#8a8a93" />
@@ -145,9 +145,9 @@
       <text x="381" y="371" font-size="12.5" font-weight="700" text-anchor="end" fill="#14141a">18</text>
     
 
-    <!-- 15-word rule cap reference line -->
+    <!-- 15-word target reference line -->
     <line x1="355" y1="80" x2="355" y2="386" stroke="#e0654d" stroke-width="2" stroke-dasharray="6 4" />
     <rect x="291" y="58" width="128" height="22" rx="4" fill="#3a221d" stroke="#e0654d" stroke-width="1.2" />
-    <text x="355" y="73" font-size="12" font-weight="700" text-anchor="middle" fill="#f0b6a8">15-word rule cap</text>
+    <text x="355" y="73" font-size="12" font-weight="700" text-anchor="middle" fill="#f0b6a8">15-word target</text>
   </g>
 </svg>

@@ -28,7 +28,7 @@
         <text x="38" y="125" font-size="12" font-weight="700" letter-spacing="0.05em" fill="#f0b6a8">2. MOCK-BACKED</text>
         <text x="38" y="145" font-size="13.5" font-weight="700" letter-spacing="0.03em" fill="#f0b6a8">ADAPTERS</text>
 
-        <text x="230" y="126" font-size="14.5" font-weight="600" fill="#eceae4">Order, media, inspection &amp; chat seams</text>
+        <text x="230" y="126" font-size="14.5" font-weight="600" fill="#eceae4">Order, media, inspection &amp; Slack seams</text>
         <text x="230" y="147" font-size="13.5" fill="#8a8a93">Mock refuses what prod refuses</text>
 
         <rect x="568" y="118" width="74" height="26" rx="5" fill="#3a221d" stroke="#e0654d" stroke-width="1" />
@@ -48,7 +48,7 @@
         <text x="38" y="225" font-size="13.5" font-weight="700" letter-spacing="0.03em" fill="#f0b6a8">PR CHECKLIST</text>
 
         <text x="230" y="206" font-size="14.5" font-weight="600" fill="#eceae4">UI &amp; copy self-merge on green CI</text>
-        <text x="230" y="227" font-size="13.5" fill="#8a8a93">Adapter &amp; CI changes require co-owner</text>
+        <text x="230" y="227" font-size="13.5" fill="#8a8a93">Adapter &amp; CI changes request a code owner</text>
 
         <rect x="568" y="198" width="74" height="26" rx="5" fill="#3a221d" stroke="#e0654d" stroke-width="1" />
         <text x="605" y="215" font-size="12" font-weight="700" letter-spacing="0.04em" text-anchor="middle" fill="#f0b6a8">ROUTING</text>
@@ -66,7 +66,7 @@
         <text x="38" y="285" font-size="12" font-weight="700" letter-spacing="0.05em" fill="#14141a">4. BROWSER</text>
         <text x="38" y="305" font-size="13.5" font-weight="700" letter-spacing="0.03em" fill="#14141a">BENCHMARK SUITE</text>
 
-        <text x="230" y="286" font-size="14.5" font-weight="600" fill="#eceae4">Locked word caps · &gt;=60% video · &gt;=20px type</text>
+        <text x="230" y="286" font-size="14.5" font-weight="600" fill="#eceae4">Locked word caps · &gt;=55% video · &gt;=20px type</text>
         <text x="230" y="307" font-size="13.5" fill="#8a8a93">Keycaps · training &amp; pause guide</text>
 
         <rect x="568" y="278" width="74" height="26" rx="5" fill="#25252d" stroke="#8fa1ef" stroke-width="1" />
