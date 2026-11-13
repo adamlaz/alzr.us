@@ -7,7 +7,7 @@ import { emit, rect, scale, t } from './_chart.mjs';
 
 const runs = [
   ['Calibration on 91 earlier applicants', '14 min', 14.78],
-  ['First night, 365 applications', '46 min', 53.74],
+  ['First night, 365 scored and written', '46 min', 53.74],
   ['Overnight arrivals, 153', '20 min', 23.58],
   ['Three runs after the review, all 812', '92 min, 48 of it rate-limited lookups', 45.29],
   ['Work-sample looks, 121', '', 5.34],
@@ -31,6 +31,6 @@ ${t(x(usd) + 8, y + (time ? 53 : 35), `$${usd.toFixed(2)}`, { size: 14, weight: 
     body: `${body}
 ${t(0, end + 26, '$143', { size: 30, weight: 500, font: 'display', fill: p.accent })}
 ${t(80, end + 14, 'in all, calibration and re-runs included', { size: 14 })}
-${t(80, end + 32, 'about 17 cents an application, all-in', { size: 14, fill: p.soft })}`,
+${t(80, end + 32, 'about 18 cents an application, all-in', { size: 14, fill: p.soft })}`,
   };
 });

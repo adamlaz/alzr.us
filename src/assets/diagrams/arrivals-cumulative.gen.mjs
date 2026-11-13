@@ -57,7 +57,7 @@ const running = (counts) => {
 
 emit(import.meta.url, 'arrivals-cumulative', (p) => {
   const H = 318;
-  const x = scale(0, 32, 30, 318);
+  const x = scale(0, 32, 40, 318);
   const y = scale(0, 850, 276, 22);
   const pts = (counts) => running(counts).map(([h, n]) => [x(h), y(n)]);
 

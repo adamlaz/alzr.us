@@ -5,7 +5,7 @@ import { dot, emit, line, scale, t } from './_chart.mjs';
 emit(import.meta.url, 'build-night', (p) => {
   const H = 170;
   const min = (h, m) => h * 60 + m;
-  const x = scale(min(19, 0), min(23, 30), 14, 406);
+  const x = scale(min(19, 0), min(23, 30), 26, 406);
   const Y = 86;
   const asked = x(min(19, 24));
   const calls = x(min(22, 15));

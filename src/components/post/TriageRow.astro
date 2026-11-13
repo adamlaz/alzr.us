@@ -20,7 +20,6 @@ import FlagIcon from './FlagIcon.astro';
     <ul class="flags" aria-label="Flags">
       <li><FlagIcon kind="good" /> Link is live</li>
       <li><FlagIcon kind="good" /> The write-up is theirs</li>
-      <li class="quiet">uncalibrated</li>
     </ul>
 
     <dl class="facts">
@@ -122,13 +121,6 @@ import FlagIcon from './FlagIcon.astro';
     margin: 0;
   }
 
-  .flags .quiet {
-    font-family: var(--font-mono);
-    font-size: var(--text-eyebrow);
-    letter-spacing: var(--tracking-eyebrow);
-    color: var(--text-muted);
-    align-self: center;
-  }
 
   .facts {
     display: grid;
