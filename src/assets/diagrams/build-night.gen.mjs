@@ -31,7 +31,7 @@ ${t(asked - 8, 22, '7:24', { size: 22, weight: 500, font: 'display' })}
 ${t(asked - 8, 42, 'I ask for a first pass.', { size: 14 })}
 ${t(asked - 8, 60, 'About 300 are already in.', { size: 14, fill: p.soft })}
 ${t(calls + 8, 132, '10:15', { size: 22, weight: 500, font: 'display', anchor: 'end' })}
-${t(calls + 8, 152, 'My calls are made', { size: 14, anchor: 'end' })}
+${t(calls + 8, 152, "I've made my calls", { size: 14, anchor: 'end' })}
 ${t(406, 22, '11:16', { size: 22, weight: 500, font: 'display', anchor: 'end', fill: p.accent })}
 ${t(406, 42, 'First 360 scored', { size: 14, anchor: 'end' })}
 ${t(406, 60, 'in 41 minutes', { size: 14, anchor: 'end', fill: p.soft })}`,
