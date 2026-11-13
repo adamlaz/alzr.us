@@ -10,12 +10,24 @@ import { writeFileSync } from 'node:fs';
 import { dark, light } from './_palette.mjs';
 
 export const W = 420;
+// Smallest label, in canvas units: about 11px once the canvas is 343px wide.
+const MIN_TEXT = 13.5;
 
 // `page` here is the real paper (charts have no box), not the diagram-box tint
 // the shared palette carries.
+// In dark mode the neutral mark is darker than the shared palette's line gray,
+// so a cobalt mark separates from it by lightness and not only by hue.
 const themes = {
   light: { ...light, page: '#f6f5f1', soft: '#55565f', grid: '#e3e2de', faint: '#c9c9cc', accentSoft: '#aab1e2' },
-  dark: { ...dark, page: '#08090c', soft: '#b9b7b1', grid: '#2b2b33', faint: '#4a4a54', accentSoft: '#414b86' },
+  dark: {
+    ...dark,
+    page: '#08090c',
+    line: '#5c5c64',
+    soft: '#b9b7b1',
+    grid: '#2b2b33',
+    faint: '#4a4a54',
+    accentSoft: '#414b86',
+  },
 };
 
 const FONT = {
@@ -37,7 +49,7 @@ export function t(x, y, value, o = {}) {
   return `<text ${attrs({
     x: r1(x),
     y: r1(y),
-    'font-size': o.size,
+    'font-size': o.size === undefined ? undefined : Math.max(o.size, MIN_TEXT),
     'font-weight': o.weight,
     'text-anchor': o.anchor,
     fill: o.fill,

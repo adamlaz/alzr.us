@@ -18,7 +18,7 @@ const { lightSvg, darkSvg, title, caption, maxWidth = 520 } = Astro.props;
 ---
 
 <figure class="post-chart" style={`--chart-max-width: ${maxWidth}px`}>
-  <p class="chart-title">{title}</p>
+  <div class="chart-title">{title}</div>
   <div class="chart light" set:html={lightSvg} aria-hidden="true"></div>
   <div class="chart dark" set:html={darkSvg} aria-hidden="true"></div>
   <p class="visually-hidden"><slot /></p>
@@ -39,7 +39,7 @@ const { lightSvg, darkSvg, title, caption, maxWidth = 520 } = Astro.props;
     font-variation-settings: 'opsz' 28, 'SOFT' 40, 'WONK' 0;
     font-size: 1.2rem;
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.22;
     letter-spacing: -0.01em;
     color: var(--text);
     text-wrap: balance;

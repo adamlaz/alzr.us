@@ -1,5 +1,5 @@
 // Run: node src/assets/diagrams/redaction.gen.mjs
-// Share of the packets handed to the scoring model that still carried a piece
+// Share of the saved packets that still carried a piece
 // of the applicant's own name, or a "City, ST" line. Before = the first
 // night's packets; after = the packets built after the fix. Same count both
 // sides. The after numbers describe the packets, not every score (see post).
@@ -28,6 +28,6 @@ ${t(x(after) + 10, y + 79, `${after}%`, { size: 22, weight: 500, font: 'display'
   return {
     height: 8 + rows.length * rowH + 14,
     body: `${body}
-${t(0, 8 + rows.length * rowH + 8, 'share of the packets the scoring model was given', { size: 12, fill: p.soft, font: 'mono' })}`,
+${t(0, 8 + rows.length * rowH + 8, 'share of saved packets', { size: 12, fill: p.soft, font: 'mono' })}`,
   };
 });

@@ -3,11 +3,13 @@
  * <FlagLegend> -- the four symbols on a triage row. Symbols carry the meaning
  * (never color), so the legend is the symbol, a short name, and one line.
  */
-const flags = [
-  { symbol: '✅', name: 'Good sign', means: 'Checked by a script.' },
-  { symbol: '⚠️', name: 'Problem', means: 'Checked by a script.' },
-  { symbol: '🔎', name: 'Look closer', means: 'Never decides a pile on its own.' },
-  { symbol: 'ℹ️', name: 'Worth knowing', means: '' },
+import FlagIcon from './FlagIcon.astro';
+
+const flags: { kind: 'good' | 'problem' | 'look' | 'info'; name: string; means: string }[] = [
+  { kind: 'good', name: 'Good sign', means: 'Checked by a script.' },
+  { kind: 'problem', name: 'Problem', means: 'Checked by a script.' },
+  { kind: 'look', name: 'Look closer', means: 'Never decides a pile on its own.' },
+  { kind: 'info', name: 'Worth knowing', means: 'Something to know before the call.' },
 ];
 ---
 
@@ -15,8 +17,8 @@ const flags = [
   {
     flags.map((flag) => (
       <li>
-        <span class="symbol" aria-hidden="true">
-          {flag.symbol}
+        <span class="symbol">
+          <FlagIcon kind={flag.kind} />
         </span>
         <span class="text">
           <strong>{flag.name}</strong>

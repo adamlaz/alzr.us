@@ -32,6 +32,6 @@ ${cols}
 ${line(left - 8, y(0), cx(3) + colW / 2 + 8, y(0), { stroke: p.line })}
 ${t(cx(3) + colW / 2, y(21) - 78, 'full marks', { size: 15, weight: 600, anchor: 'end', fill: p.accent })}
 ${t(cx(3) + colW / 2, y(21) - 60, 'of 765', { size: 13, anchor: 'end', fill: p.soft })}
-${t(left - 8, 297, 'score on the AI question, out of 4', { size: 12, fill: p.soft, font: 'mono' })}`,
+${t(left - 8, 297, 'score on the AI question', { size: 12, fill: p.soft, font: 'mono' })}`,
   };
 });

@@ -5,6 +5,7 @@
  * real row. The layout mirrors what a real row carries: the pile, the flag
  * strip, the vote, a note that names what to probe, and a first question.
  */
+import FlagIcon from './FlagIcon.astro';
 ---
 
 <figure class="triage-row">
@@ -17,8 +18,8 @@
     </div>
 
     <ul class="flags" aria-label="Flags">
-      <li><span aria-hidden="true">✅</span> Link is live</li>
-      <li><span aria-hidden="true">✅</span> The write-up is theirs</li>
+      <li><FlagIcon kind="good" /> Link is live</li>
+      <li><FlagIcon kind="good" /> The write-up is theirs</li>
       <li class="quiet">uncalibrated</li>
     </ul>
 
@@ -55,8 +56,7 @@
     </div>
   </div>
   <figcaption>
-    One row, redrawn with made-up data. The model wrote the note. The pile and the question are a place to start, and
-    the decision stays with me.
+    A made-up row in the real row's layout. No applicant wrote this.
   </figcaption>
 </figure>
 

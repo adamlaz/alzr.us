@@ -1,6 +1,6 @@
 // Run: node src/assets/diagrams/arrivals-cumulative.gen.mjs
 // Running total of applications over the first 32 hours, against the busiest
-// earlier 32 hours (one earlier posting) and a typical earlier posting (an
+// earlier 32 hours (one earlier posting, so four roles against one) and a typical earlier posting (an
 // approximate median). Aggregate counts per hour; hour 0 is the first hour
 // after posting. The wave's last, partial bucket (3 rows) is folded into the
 // 32-hour point so the line ends on the post's 816.
@@ -88,7 +88,8 @@ ${t(end, y(816) + 3, '816', { size: 30, weight: 500, font: 'display', fill: p.ac
 ${t(end, y(816) + 21, 'these four', { size: 13, fill: p.soft })}
 ${t(end, y(816) + 37, 'roles', { size: 13, fill: p.soft })}
 ${t(end, y(382) + 2, '382', { size: 20, weight: 500, font: 'display' })}
-${t(end, y(382) + 19, 'old record', { size: 13, fill: p.soft })}
+${t(end, y(382) + 19, 'our busiest', { size: 13, fill: p.soft })}
+${t(end, y(382) + 35, 'one posting', { size: 13, fill: p.soft })}
 ${t(end, y(36) - 10, '36', { size: 20, weight: 500, font: 'display' })}
 ${t(end, y(36) + 6, 'a typical', { size: 13, fill: p.soft })}
 ${t(end, y(36) + 22, 'posting', { size: 13, fill: p.soft })}`,

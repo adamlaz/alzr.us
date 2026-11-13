@@ -1,22 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="420" height="278" viewBox="0 0 420 278">
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="352" viewBox="0 0 420 352">
 <g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#eceae4">
-<text x="0" y="18" font-size="14">Calibration on 91 earlier applicants</text>
-<rect x="0" y="26" width="88.7" height="14" rx="3" fill="#8a8a93"/>
-<text x="96.7" y="39" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$14.78</text>
-<text x="0" y="66" font-size="14">First night, 365 applications</text>
-<rect x="0" y="74" width="322.4" height="14" rx="3" fill="#8fa1ef"/>
-<text x="330.4" y="87" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$53.74</text>
-<text x="0" y="114" font-size="14">Overnight arrivals, 153</text>
-<rect x="0" y="122" width="141.5" height="14" rx="3" fill="#8a8a93"/>
-<text x="149.5" y="135" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$23.58</text>
-<text x="0" y="162" font-size="14">Three runs after the review, all 812</text>
-<rect x="0" y="170" width="271.7" height="14" rx="3" fill="#8a8a93"/>
-<text x="279.7" y="183" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$45.29</text>
-<text x="0" y="210" font-size="14">Public-work checks, 121</text>
-<rect x="0" y="218" width="32" height="14" rx="3" fill="#8a8a93"/>
-<text x="40" y="231" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$5.34</text>
-<text x="0" y="268" font-size="30" font-weight="500" fill="#8fa1ef" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">$143</text>
-<text x="78" y="258" font-size="14">in all, with a 26-cent test</text>
-<text x="78" y="275" font-size="13" fill="#b9b7b1">about fifteen cents an application</text>
+<text x="0" y="18" font-size="15" font-weight="600">Calibration on 91 earlier applicants</text>
+<text x="0" y="36" font-size="13.5" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">14 min</text>
+<rect x="0" y="44" width="86" height="14" rx="3" fill="#5c5c64"/>
+<text x="94" y="57" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$14.78</text>
+<text x="0" y="84" font-size="15" font-weight="600">First night, 365 applications</text>
+<text x="0" y="102" font-size="13.5" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">46 min</text>
+<rect x="0" y="110" width="312.7" height="14" rx="3" fill="#8fa1ef"/>
+<text x="320.7" y="123" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$53.74</text>
+<text x="0" y="150" font-size="15" font-weight="600">Overnight arrivals, 153</text>
+<text x="0" y="168" font-size="13.5" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">20 min</text>
+<rect x="0" y="176" width="137.2" height="14" rx="3" fill="#5c5c64"/>
+<text x="145.2" y="189" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$23.58</text>
+<text x="0" y="216" font-size="15" font-weight="600">Three runs after the review, all 812</text>
+<text x="0" y="234" font-size="13.5" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">92 min, 48 of it rate-limited lookups</text>
+<rect x="0" y="242" width="263.5" height="14" rx="3" fill="#5c5c64"/>
+<text x="271.5" y="255" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$45.29</text>
+<text x="0" y="282" font-size="15" font-weight="600">Work-sample looks, 121</text>
+
+<rect x="0" y="290" width="31.1" height="14" rx="3" fill="#5c5c64"/>
+<text x="39.1" y="303" font-size="14" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">$5.34</text>
+<text x="0" y="342" font-size="30" font-weight="500" fill="#8fa1ef" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">$143</text>
+<text x="80" y="330" font-size="14">in all, calibration and re-runs included</text>
+<text x="80" y="348" font-size="14" fill="#b9b7b1">about 17 cents an application, all-in</text>
 </g>
 </svg>
