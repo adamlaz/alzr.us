@@ -4,9 +4,9 @@
  *
  * Rendered as the first child of the post body ([data-depth-root]), so it runs
  * after the header (readout + control) is parsed and before any content is.
- * Order: ?depth= (1-5, business, technical) > remembered choice > 3.
- * Mirrors resolveInitial() in src/scripts/depth-slider.ts -- keep the two in
- * step. data-astro-rerun: ClientRouter re-runs it on every navigation.
+ * Order: ?depth= (1-5, summary, deep-dive) > remembered choice > 3.
+ * Mirrors resolveInitial() and paintUI() in src/scripts/depth-slider.ts -- keep
+ * them in step. data-astro-rerun: ClientRouter re-runs it on every navigation.
  */
 ---
 
@@ -17,8 +17,8 @@
     const parse = (value) => {
       if (value == null) return 0;
       const v = String(value).trim().toLowerCase();
-      if (v === 'business') return 1;
-      if (v === 'technical') return 5;
+      if (v === 'summary' || v === 'business') return 1;
+      if (v === 'deep-dive' || v === 'technical') return 5;
       const n = Number(v);
       return Number.isInteger(n) && n >= 1 && n <= 5 ? n : 0;
     };
@@ -42,6 +42,17 @@
       el.value = String(level);
       el.setAttribute('aria-valuetext', `${label}, ${min} min read`);
     }
-    for (const el of document.querySelectorAll('[data-depth-control]')) el.hidden = false;
+    // The header control: thumb, ink and label axes follow data-level.
+    for (const el of document.querySelectorAll('[data-depth-control]')) {
+      el.dataset.level = String(level);
+      const name = el.querySelector('[data-depth-label]');
+      if (name) name.textContent = label;
+      const slots = el.querySelectorAll('[data-depth-slot]');
+      const padded = min.padStart(slots.length, '\u00a0');
+      slots.forEach((slot, i) => {
+        if (slot.firstElementChild) slot.firstElementChild.textContent = padded[i];
+      });
+      el.hidden = false;
+    }
   })();
 </script>

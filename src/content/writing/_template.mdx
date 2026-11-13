@@ -6,7 +6,7 @@ draft: true
 ogTreatment: default
 pullQuote: 'The single line worth pulling out and setting in display serif.'
 tags: ['example']
-# depth: true turns on the Business <-> Technical reading-depth slider.
+# depth: true turns on the Summary <-> Deep dive reading-depth slider.
 # See the commented <Depth> example below and "Depth posts" in README.md.
 depth: false
 ---
@@ -22,8 +22,8 @@ import Note from '../../components/post/Note.astro';
 
     import Depth from '../../components/post/Depth.astro';
 
-  Then wrap level-specific content. Levels: 1 Business, 2 Mostly business,
-  3 Balanced (default), 4 Mostly technical, 5 Technical deep dive.
+  Then wrap level-specific content. Levels: 1 Summary, 2 Overview,
+  3 Full story (default), 4 Under the hood, 5 Technical deep dive.
 
     <Depth max={1}>
 

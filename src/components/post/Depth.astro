@@ -2,7 +2,7 @@
 /**
  * <Depth> -- content shown only at some reading depths (depth posts only).
  *
- *   <Depth max={1}>            levels 1-1 (business only)
+ *   <Depth max={1}>            levels 1-1 (summary only)
  *   <Depth min={4}>            levels 4-5
  *   <Depth inline min={4}>..   a <span> inside a paragraph
  *
@@ -59,27 +59,52 @@ const levels = DEPTH_LEVELS.filter((l) => l >= min && l <= max).join(' ');
     display: none;
   }
 
-  /* Inline clauses wrap across lines like the text around them; the wash the
-     script fades in on arrival paints per line fragment. */
-  .depth--inline {
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
+  /* A clause that just arrived gets a faint cobalt wash, drawn through it
+     left to right and then faded, so the eye can find it in a paragraph that
+     reflowed. The text stays ink: a cobalt underline is how this site draws a
+     link. The script wraps the clause's words (after any leading punctuation)
+     in .depth-wash; the default box-decoration-break (slice) paints one
+     background across its line fragments, so the wash carries on from the end
+     of one row to the start of the next. The script animates the size (the
+     draw) and --depth-ink (the fade). */
+  :global(.depth-wash.depth--arrived) {
+    background-image: linear-gradient(var(--depth-ink), var(--depth-ink));
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
     border-radius: 2px;
   }
 
-  /* A clause that just arrived gets a brief cobalt wash so the eye can find
-     it in a paragraph that reflowed. Motion-only: the script skips it under
-     reduced motion. */
-  .depth--inline.depth--arrived {
-    animation: depth-arrive 1100ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Margin marks: after a level change the script draws a cobalt hairline in
+     the gutter beside each block that just appeared. They hang off the post
+     body, out of the flow, so they never move text; a negative left offset
+     can't add horizontal scroll. */
+  :global([data-depth-root]) {
+    position: relative;
   }
 
-  @keyframes depth-arrive {
-    from {
-      background-color: var(--accent-subtle);
+  :global(.depth-mark) {
+    position: absolute;
+    left: calc(-1 * var(--space-xs));
+    width: 1px;
+    background: var(--accent);
+    transform-origin: 50% 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (forced-colors: active) {
+    :global(.depth-mark) {
+      forced-color-adjust: none;
+      background: Highlight;
     }
-    to {
-      background-color: transparent;
-    }
+  }
+</style>
+
+<style is:global>
+  /* Registered so the wash's color can fade (a gradient can't). */
+  @property --depth-ink {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
   }
 </style>

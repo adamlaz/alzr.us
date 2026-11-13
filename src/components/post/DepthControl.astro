@@ -23,19 +23,24 @@ const label = DEPTH_LABELS[level];
 const min = minutes[level - 1];
 const valuetext = `${label}, ${min} min read`;
 const ticks = [0, 1, 2, 3, 4];
-const ariaLabel = 'Reading depth, from business to technical';
+const ariaLabel = 'Reading depth, from summary to deep dive';
+// The minutes roll like an odometer: one clipped slot per digit, padded to the
+// widest level so the readout's width never changes.
+const digits = Math.max(...minutes.map((m) => String(m).length));
+const slots = [...String(min).padStart(digits, '\u00a0')];
 ---
 
 {
   variant === 'header' ? (
-    <div class="depth-control depth-control--header" data-depth-control hidden>
+    <div class="depth-control depth-control--header" data-depth-control data-depth-instrument data-level={level} hidden>
       <span class="end eyebrow" data-depth-set="1" aria-hidden="true">
-        Business
+        Summary
       </span>
       <div class="track">
+        <span class="fill" aria-hidden="true" />
         <span class="ticks" aria-hidden="true">
           {ticks.map((i) => (
-            <span class="tick" style={`--i: ${i}`} />
+            <span class="tick" style={`--i: ${i}`} data-depth-tick />
           ))}
         </span>
         <input
@@ -49,21 +54,45 @@ const ariaLabel = 'Reading depth, from business to technical';
           aria-valuetext={valuetext}
           data-depth-input
         />
+        <span class="thumb" aria-hidden="true">
+          <span class="thumb-ring" data-depth-ring />
+          <span class="thumb-flash" data-depth-flash />
+          <span class="thumb-dot" data-depth-dot />
+        </span>
       </div>
       <span class="end eyebrow" data-depth-set="5" aria-hidden="true">
-        Technical
+        Deep dive
       </span>
-      <span class="now eyebrow" aria-hidden="true">
-        <span data-depth-label>{label}</span> · <span data-depth-min>{min} min</span>
+      <span class="now" aria-hidden="true">
+        <span class="label" data-depth-label>{label}</span>
+        <span class="min" data-depth-min>
+          <span class="odo">
+            {slots.map((ch) => (
+              <span class="odo-slot" data-depth-slot>
+                <span class="odo-cur">{ch}</span>
+                <span class="odo-ghost" />
+              </span>
+            ))}
+          </span>
+          <span class="unit">min</span>
+        </span>
       </span>
       <p class="visually-hidden" aria-live="polite" data-depth-live />
     </div>
   ) : (
-    <div class="depth-control depth-control--sticky" data-depth-pill data-shown="false" hidden>
+    <div
+      class="depth-control depth-control--sticky"
+      data-depth-pill
+      data-depth-instrument
+      data-level={level}
+      data-shown="false"
+      hidden
+    >
       <div class="track">
+        <span class="fill" aria-hidden="true" />
         <span class="ticks" aria-hidden="true">
           {ticks.map((i) => (
-            <span class="tick" style={`--i: ${i}`} />
+            <span class="tick" style={`--i: ${i}`} data-depth-tick />
           ))}
         </span>
         <input
@@ -77,9 +106,24 @@ const ariaLabel = 'Reading depth, from business to technical';
           aria-valuetext={valuetext}
           data-depth-input
         />
+        <span class="thumb" aria-hidden="true">
+          <span class="thumb-flash" data-depth-flash />
+          <span class="thumb-dot" data-depth-dot />
+        </span>
       </div>
-      <span class="readout eyebrow" aria-hidden="true">
-        <span data-depth-label>{label}</span><span class="readout-min"> · <span data-depth-min>{min} min</span></span>
+      <span class="readout" aria-hidden="true">
+        <span class="label" data-depth-label>{label}</span>
+        <span class="min" data-depth-min>
+          <span class="odo">
+            {slots.map((ch) => (
+              <span class="odo-slot" data-depth-slot>
+                <span class="odo-cur">{ch}</span>
+                <span class="odo-ghost" />
+              </span>
+            ))}
+          </span>
+          <span class="unit">min</span>
+        </span>
       </span>
     </div>
   )
@@ -94,6 +138,10 @@ const ariaLabel = 'Reading depth, from business to technical';
     /* Thumb diameter, and the color it "cuts" out of the rule beneath it. */
     --thumb: 0.875rem;
     --cut: var(--bg);
+    /* How long the thumb and the ink take to reach the next stop. The script
+       stretches it when a change crosses several stops. */
+    --travel: 180ms;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     gap: var(--space-xs);
@@ -104,21 +152,68 @@ const ariaLabel = 'Reading depth, from business to technical';
     display: none;
   }
 
+  /* ── Level: one attribute drives the thumb, the ink, the ticks and the
+     label's axes. SOFT carries the change, with weight behind it: Summary is
+     warm (round terminals, lighter); Technical deep dive is crisp (sharp
+     terminals, firmer, tighter). Optical size is left to the browser, so the label
+     always gets the cut drawn for its size. WONK stays off: at this size it
+     changes no glyph. ── */
+  .depth-control[data-level='1'] {
+    --level: 1;
+    --soft: 100;
+    --wght: 380;
+    --tracking: 0em;
+  }
+
+  .depth-control[data-level='2'] {
+    --level: 2;
+    --soft: 75;
+    --wght: 420;
+    --tracking: -0.004em;
+  }
+
+  .depth-control[data-level='3'] {
+    --level: 3;
+    --soft: 50;
+    --wght: 460;
+    --tracking: -0.008em;
+  }
+
+  .depth-control[data-level='4'] {
+    --level: 4;
+    --soft: 25;
+    --wght: 500;
+    --tracking: -0.012em;
+  }
+
+  .depth-control[data-level='5'] {
+    --level: 5;
+    --soft: 0;
+    --wght: 540;
+    --tracking: -0.016em;
+  }
+
   /* ── Header control: a quiet instrument under the standfirst ── */
   .depth-control--header {
     max-width: 26rem;
     margin-top: var(--space-md);
     flex-wrap: wrap;
+    row-gap: 0;
   }
 
   .depth-control--header .track {
     flex: 1 1 8rem;
   }
 
-  /* What the slider is set to, on its own line under the track. */
+  /* What the slider is set to, on its own line under the track: the level on
+     the left, the measurement on the right. Both hang off fixed edges, so the
+     label can change width as its axes move without shifting anything. */
   .now {
     flex: 0 0 100%;
-    color: var(--text-soft);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-sm);
   }
 
   .end {
@@ -129,10 +224,72 @@ const ariaLabel = 'Reading depth, from business to technical';
     transition: color 140ms ease;
   }
 
+  /* The end the slider rests on reads as ink. */
+  .depth-control[data-level='1'] .end[data-depth-set='1'],
+  .depth-control[data-level='5'] .end[data-depth-set='5'] {
+    color: var(--text);
+  }
+
   @media (hover: hover) {
     .end:hover {
       color: var(--text-soft);
     }
+  }
+
+  /* ── Readout: the level in Fraunces, its axes following the slider; the
+     minutes in mono, because they are a measurement. ── */
+  /* Set large enough for the terminals to show the change: 24px on a small
+     phone, 28px from md up. */
+  .label {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.25rem + 1.25vw, 1.75rem);
+    line-height: 1.25;
+    letter-spacing: var(--tracking);
+    font-optical-sizing: auto;
+    font-variation-settings:
+      'SOFT' var(--soft),
+      'WONK' 0,
+      'wght' var(--wght);
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .min {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5ch;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-eyebrow);
+    line-height: 1.5;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    white-space: nowrap;
+  }
+
+  .odo {
+    display: inline-flex;
+  }
+
+  /* One digit per slot. The mask is the window of the drum: a rolling digit
+     fades through its top and bottom edges instead of being cut off. */
+  .odo-slot {
+    position: relative;
+    display: inline-block;
+    width: 1ch;
+    text-align: center;
+    -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+    mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+  }
+
+  .odo-cur {
+    display: inline-block;
+  }
+
+  .odo-ghost {
+    position: absolute;
+    inset: 0;
   }
 
   /* ── Track: hairline rule + five ticks, the native input on top ── */
@@ -141,6 +298,8 @@ const ariaLabel = 'Reading depth, from business to technical';
     flex: 1;
     min-width: 0;
     height: var(--tap);
+    /* The thumb reads the track's width (cqw) to find its stop. */
+    container-type: inline-size;
   }
 
   .track::before {
@@ -153,6 +312,20 @@ const ariaLabel = 'Reading depth, from business to technical';
     background: var(--rule);
   }
 
+  /* Ink: the rule fills from the left end up to the thumb. */
+  .fill {
+    position: absolute;
+    left: calc(var(--thumb) / 2);
+    right: calc(var(--thumb) / 2);
+    top: calc(50% - 1px);
+    height: 2px;
+    background: var(--text);
+    transform-origin: 0 50%;
+    scale: calc((var(--level) - 1) / 4) 1;
+    transition: scale var(--travel) var(--ease-out);
+    pointer-events: none;
+  }
+
   .ticks {
     position: absolute;
     inset: 0;
@@ -160,21 +333,46 @@ const ariaLabel = 'Reading depth, from business to technical';
   }
 
   /* Ticks sit where the thumb's center lands at each step: the thumb travels
-     from half its width to the far edge minus half its width. Ends stand
-     taller, like a ruler. */
+     from half its width to the far edge minus half its width. They stand on
+     the rule like a ruler's markings, the ends taller. */
   .tick {
     position: absolute;
     top: 50%;
     left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--i) / 4);
     width: 1px;
     height: 0.4375rem;
-    translate: -50% -50%;
+    translate: -50% -100%;
     background: var(--text-muted);
+    /* The script sets --tick-delay so a tick inks as the thumb reaches it. */
+    transition:
+      background-color 120ms ease var(--tick-delay, 0ms),
+      opacity 120ms ease var(--tick-delay, 0ms);
   }
 
   .tick:first-child,
   .tick:last-child {
-    height: 0.6875rem;
+    height: 0.5625rem;
+  }
+
+  /* Passed ticks take ink and a second pixel of weight: lightness and width,
+     never hue, tell them from the ones ahead. */
+  .depth-control[data-level='1'] .tick:nth-child(-n + 1),
+  .depth-control[data-level='2'] .tick:nth-child(-n + 2),
+  .depth-control[data-level='3'] .tick:nth-child(-n + 3),
+  .depth-control[data-level='4'] .tick:nth-child(-n + 4),
+  .depth-control[data-level='5'] .tick {
+    background: var(--text);
+    width: 2px;
+  }
+
+  /* The tick the thumb is resting on steps aside, so an end tick never pokes
+     out above it. */
+  .depth-control[data-level='1'] .tick:nth-child(1),
+  .depth-control[data-level='2'] .tick:nth-child(2),
+  .depth-control[data-level='3'] .tick:nth-child(3),
+  .depth-control[data-level='4'] .tick:nth-child(4),
+  .depth-control[data-level='5'] .tick:nth-child(5) {
+    opacity: 0;
   }
 
   .range {
@@ -190,7 +388,7 @@ const ariaLabel = 'Reading depth, from business to technical';
     cursor: pointer;
   }
 
-  /* The ring moves to the thumb itself (below), where the eye already is. */
+  /* The ring moves to the drawn thumb (below), where the eye already is. */
   .range:focus-visible {
     outline: none;
   }
@@ -207,6 +405,9 @@ const ariaLabel = 'Reading depth, from business to technical';
     border: 0;
   }
 
+  /* The native thumb keeps its size and its job (pointer, keyboard, touch,
+     assistive tech) but paints nothing: .thumb is drawn in its place so it can
+     glide between stops, compress on a detent and breathe. */
   .range::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -214,11 +415,7 @@ const ariaLabel = 'Reading depth, from business to technical';
     height: var(--thumb);
     border: 0;
     border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 3px var(--cut);
-    transition:
-      transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
-      box-shadow 160ms ease;
+    background: transparent;
   }
 
   .range::-moz-range-thumb {
@@ -226,41 +423,113 @@ const ariaLabel = 'Reading depth, from business to technical';
     height: var(--thumb);
     border: 0;
     border-radius: 50%;
+    background: transparent;
+  }
+
+  .thumb {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: var(--thumb);
+    height: var(--thumb);
+    translate: calc((100cqw - var(--thumb)) * (var(--level) - 1) / 4) -50%;
+    transition:
+      translate var(--travel) var(--ease-out),
+      scale 160ms var(--ease-out);
+    pointer-events: none;
+  }
+
+  .thumb-dot {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
     background: var(--accent);
     box-shadow: 0 0 0 3px var(--cut);
-    transition:
-      transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
-      box-shadow 160ms ease;
+    transition: box-shadow 160ms ease;
   }
 
-  .range:focus-visible::-webkit-slider-thumb {
-    box-shadow:
-      0 0 0 3px var(--cut),
-      0 0 0 5px var(--ring);
+  /* Detent: the tick under the thumb flashes past its edges. At rest it is
+     invisible; the script plays it on arrival. */
+  .thumb-flash {
+    position: absolute;
+    left: calc(50% - 0.5px);
+    top: calc(50% - 0.875rem);
+    width: 1px;
+    height: 1.75rem;
+    background: var(--accent);
+    opacity: 0;
   }
 
-  .range:focus-visible::-moz-range-thumb {
+  /* First-visit breath: a hairline ring the script expands and fades once. */
+  .thumb-ring {
+    position: absolute;
+    left: calc(50% - 1.375rem);
+    top: calc(50% - 1.375rem);
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  .range:focus-visible ~ .thumb .thumb-dot {
     box-shadow:
       0 0 0 3px var(--cut),
       0 0 0 5px var(--ring);
   }
 
   @media (hover: hover) {
-    .range:hover::-webkit-slider-thumb {
-      transform: scale(1.15);
-    }
-
-    .range:hover::-moz-range-thumb {
-      transform: scale(1.15);
+    .range:hover ~ .thumb {
+      scale: 1.15;
     }
   }
 
-  .range:active::-webkit-slider-thumb {
-    transform: scale(1.25);
+  .range:active ~ .thumb {
+    scale: 1.25;
   }
 
-  .range:active::-moz-range-thumb {
-    transform: scale(1.25);
+  /* No container query units: place the thumb with left instead. */
+  @supports not (width: 1cqw) {
+    .thumb {
+      left: calc((100% - var(--thumb)) * (var(--level) - 1) / 4);
+      translate: 0 -50%;
+      transition:
+        left var(--travel) var(--ease-out),
+        scale 160ms var(--ease-out);
+    }
+  }
+
+  /* Reduced motion: the thumb, the ink and the ticks change in place. */
+  @media (prefers-reduced-motion: reduce) {
+    .fill,
+    .thumb,
+    .thumb-dot,
+    .tick {
+      transition: none;
+    }
+  }
+
+  /* Forced colors repaint backgrounds; keep the instrument drawn. */
+  @media (forced-colors: active) {
+    .thumb-dot {
+      forced-color-adjust: none;
+      background: Highlight;
+      box-shadow: 0 0 0 3px Canvas;
+    }
+
+    .range:focus-visible ~ .thumb .thumb-dot {
+      box-shadow:
+        0 0 0 3px Canvas,
+        0 0 0 5px CanvasText;
+    }
+
+    .fill,
+    .tick {
+      forced-color-adjust: none;
+      background: CanvasText;
+    }
   }
 
   /* ── Sticky pill: bottom-center, small, out of the way ── */
@@ -296,28 +565,29 @@ const ariaLabel = 'Reading depth, from business to technical';
     width: 6.5rem;
   }
 
-  /* Fixed width so the pill (and the track under a dragging finger) never
-     shifts as the label changes. Sized to the longest label; shorter ones sit
-     centered in the slot so the pill stays balanced. */
   .readout {
-    font-size: 0.7rem;
-    color: var(--text-soft);
-    white-space: nowrap;
-    text-align: center;
-    min-width: 20.5ch;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-xs);
   }
 
-  .readout-min {
+  /* Fixed width so the pill (and the track under a dragging finger) never
+     shifts as the label changes. Sized to the longest label at its heaviest;
+     shorter ones sit centered in the slot so the pill stays balanced. */
+  .depth-control--sticky .label {
+    min-width: 9.5em;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .depth-control--sticky .min {
     display: none;
+    font-size: 0.7rem;
   }
 
   @media (min-width: 40rem) {
-    .readout {
-      min-width: 30ch;
-    }
-
-    .readout-min {
-      display: inline;
+    .depth-control--sticky .min {
+      display: inline-flex;
     }
   }
 </style>
