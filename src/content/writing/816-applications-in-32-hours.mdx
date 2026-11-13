@@ -1,11 +1,11 @@
 ---
 title: '816 applications in 32 hours'
 date: 2026-11-12
-description: "Four roles drew 816 applications in a day and a half. I assumed everyone was applying with AI, then checked, and the AI tells had gone down. The first pass my agents built that night checks claims instead, for about fifteen cents an application. I still make every decision."
+description: "Four roles, 816 applications. I assumed everyone was applying with AI. Then I checked."
 draft: false
 depth: true
 ogTreatment: default
-pullQuote: 'Only 21 of about 770 applicants got full marks for a specific story about AI getting something wrong, with how they caught it and something to show for it.'
+pullQuote: 'Only 21 of the 765 applications scored so far got full marks for a specific story about AI getting something wrong, with how they caught it and something to show for it.'
 tags: ['ai-augmented-engineering', 'hiring', 'claude-code']
 ---
 
@@ -16,7 +16,6 @@ import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import TriageLanesDiagram from '../../components/post/TriageLanesDiagram.astro';
 import ArrivalsChart from '../../components/post/ArrivalsChart.astro';
-import ArrivalsHourlyChart from '../../components/post/ArrivalsHourlyChart.astro';
 import AiTellsChart from '../../components/post/AiTellsChart.astro';
 import AiScoresChart from '../../components/post/AiScoresChart.astro';
 import BuildNightTimeline from '../../components/post/BuildNightTimeline.astro';
@@ -27,40 +26,26 @@ import CalibrationChart from '../../components/post/CalibrationChart.astro';
 import GuardChart from '../../components/post/GuardChart.astro';
 import OverruleBoard from '../../components/post/OverruleBoard.astro';
 import RedactionChart from '../../components/post/RedactionChart.astro';
-import VotesChart from '../../components/post/VotesChart.astro';
-import WorkChecksChart from '../../components/post/WorkChecksChart.astro';
 import RunCostsChart from '../../components/post/RunCostsChart.astro';
 import ReadingHoursChart from '../../components/post/ReadingHoursChart.astro';
 import WhatTheySentChart from '../../components/post/WhatTheySentChart.astro';
 
 Ninety-two applications landed in the second hour. We posted four roles one
-afternoon, and 32 hours later there were 816<Depth inline min={2}>, about 770
-of them distinct</Depth>. My first thought was that everyone else must be
+afternoon, and 32 hours later there were 816, about 770 of them distinct. My first thought was that everyone else must be
 using AI to apply. My second was that I'd better step up my game.
 
 <ArrivalsChart />
 
-## More applicants, fewer AI tells
-
-Then I checked. The pace was real: about twice our previous record, and ten
-times what a normal posting gets in its first day and a half. The AI tells
-went the other way.
-
-<Depth min={3}>
-
-They came in two bursts: the spike in the second hour, then a second wave
-about 20 hours in.
-
-<ArrivalsHourlyChart />
-
-</Depth>
+Then I checked. The pace was real: the engineering role alone beat our busiest
+earlier posting, and all four together drew about twenty times what a typical
+posting gets in its first day and a half. The AI tells went the other way.
 
 <AiTellsChart />
 
 <Depth min={2}>
 
 Median intro length didn't move: 71 words before, 72 now. No two strangers
-share even a fifth of their phrasing. Applicants who visibly used AI, by
+share even a fifth of their six-word phrases. Applicants who visibly used AI, by
 saying so or by addressing an AI reader, came to about 1%.
 
 </Depth>
@@ -84,22 +69,12 @@ than anyone can read it.
 
 ## What did the AI get wrong?
 
-That's the form's key question, in full: *What did the AI get wrong, and how
-did you catch it?* Only 21 of the 765 applications scored so far got full
+The form asks: *What did the AI get wrong, and how did you catch it?* Only 21 of the 765 applications scored so far got full
 marks: a specific story, how they caught it, and something to show for it.
 Half scored a 2 out of 4, some version of "AI makes mistakes, so I always
 review."
 
 <AiScoresChart />
-
-<Depth min={3}>
-
-The 4s share a shape. They name the mistake, say how they noticed, and link
-something you can open. A typical 2, written as a composite: "AI can make
-mistakes, so I always review its output carefully and test edge cases before
-anything ships." It's true of everyone, and there's nothing to open.
-
-</Depth>
 
 <Depth min={2}>
 
@@ -130,10 +105,9 @@ calls with zero failures.
 Scripts check the links and public work each applicant gave us. Then a model
 reads the application three separate times against the role's rubric and
 sorts it into one of three piles: research (a deeper look before any call),
-maybe, or likely pass. It costs about fifteen cents an application in model
-time<Depth inline min={4}>: three Opus 5.5 samples at about five cents each,
-and about $143 in reported cost for everything over the two days, public-work
-checks included</Depth>.
+maybe, or likely pass. A fresh scoring run costs about fifteen cents an
+application in model time<Depth inline min={4}>: three Opus 5.5 samples at
+about five cents each</Depth>.
 
 <PilesChart />
 
@@ -144,18 +118,9 @@ measurement.<Note id="2" /> Two of three have to agree before a signal counts.
 
 </Depth>
 
-<Depth min={4}>
-
-Every claim the model makes about an application has to quote it, word for
-word, in twelve words or fewer. Code checks each quote against the original.
-A claim without a real quote gets thrown out, so the model can't invent
-evidence for its own opinion.
-
-</Depth>
-
 What I read is one row per applicant: the pile, a strip of symbols, and a
-note that leads with the strongest evidence and names what to probe. Here's
-one, built from made-up details.
+note that leads with the strongest evidence and names what to probe. Here's a
+made-up one, in the same layout.
 
 <TriageRow />
 
@@ -170,16 +135,15 @@ not colors, because I can't reliably tell red from green.
 
 ## A hunch can't reject anyone
 
-One rule matters more than the speed. The AI sorts and flags, and that's all.
-It can't move anyone forward or turn anyone away, and its suspicion alone
-can't even put someone in the bottom pile. I go through the piles and make
-every call.
+The AI sorts and flags, and that's all. It can't move anyone forward or turn
+anyone away, and its suspicion alone can't even put someone in the bottom
+pile.<Depth inline max={1}> I go through the piles and make every call.</Depth>
 
 I learned the suspicion part from the model. The same night, before trusting
 it on new applicants, I had it score 91 earlier applicants whose backgrounds
 we'd already researched, so I could check its work. When the
-model alone decided something didn't add up, it was right about four fake
-applicants and wrong about three real people.
+model alone decided something didn't add up, it was right about four
+applicants our research had flagged as fake and wrong about three real people.
 
 <CalibrationChart />
 
@@ -188,20 +152,18 @@ applicants and wrong about three real people.
 So the model's suspicion can no longer put anyone in likely pass. That pile
 needs a problem a script checked, two clearly missed must-haves, or a craft
 score of 1, and it doesn't reject anyone either. A suspicion by itself gets a
-🔎, a small penalty in the sort and a question for the call.
+look-closer flag, a small penalty in the sort and a question for the call.
 
 </Depth>
 
 <Depth min={3}>
 
-The guard earns its keep. The model voted likely pass 55 times. Of the 28
-that went through, 21 have a problem a script checked, mostly answers too
-thin to judge, and 7 rest on clearly missed must-haves. The other 27 had
-nothing behind the vote, and the guard held them at maybe.
+The model voted likely pass 55 times. The guard held 27 at maybe because
+nothing backed the vote.
 
 <GuardChart />
 
-Ten applications addressed an AI reader directly. Nobody talked their way up.
+A handful addressed an AI reader directly. Nobody talked their way up.
 
 A sort is still a judgment about who gets read first. That's why a hunch only
 moves someone a few places, and why the bottom pile needs evidence.
@@ -218,11 +180,13 @@ The rest of the guardrails:
 
 - The code strips names, contact details, schools and cities before the model
   reads anything. A later review found gaps.
-- Any claim the model can't back with an exact quote is dropped.
+- Any claim the model can't back with an exact quote is dropped<Depth inline min={4}>:
+  twelve words or fewer, word for word, and code checks each one against the
+  original, so the model can't invent quotes</Depth>.
 - Anything in an application addressed to an AI is ignored by the scoring and
   quoted in the note for me to see.
-- Odd AI-related signals stay neutral until I learn what they mean.
-- Only a person changes a candidate's status, and the code enforces it.
+- Only a person changes a candidate's status, and the code checks every write
+  for it.
 
 <TriageLanesDiagram />
 
@@ -282,16 +246,25 @@ and counted what was still in there.
 
 <RedactionChart />
 
-A piece of the applicant's own name survived in 35% of the packets, and a
-"City, ST" line in 69%. Most name leaks weren't in the application at all.
+Most name leaks weren't in the application at all.
 They came from facts the scripts added afterward, like a portfolio domain
 built from a first and last name, which the redaction step had never covered.
 It found the opposite failure too: a rule for removing schools wiped five
 intros and one AI answer completely.
 
-The same count after the fix: a piece of the name in 6% of packets, mostly
-applicants writing their own name in an answer, plus name pieces that are just
-common words. No city lines at all.
+What's left after the fix is mostly applicants writing their own name in an
+answer, plus name pieces that are just common words.
+
+</Depth>
+
+<Depth min={3} max={3}>
+
+The fix didn't reach most of the scores, though. A cache bug kept the old
+reads for 505 applications, and those get re-read before I start reviewing.
+
+</Depth>
+
+<Depth min={4}>
 
 The fix didn't reach most of the scores, though. While I was writing this post,
 a reader agent checking my arithmetic noticed the run numbers didn't add up. The
@@ -301,6 +274,10 @@ reads taken on the leaky packets. Their piles and sort scores were recomputed
 under the new rules; the reads underneath weren't. The fix is to key the cache
 on the input itself and re-read those 505, under an hour of model time,
 before I start reviewing.
+
+</Depth>
+
+<Depth min={3}>
 
 None of this showed up in the builder's own tests, which checked that the code
 did what it was written to do. The reviewer counted what the model actually
@@ -331,10 +308,6 @@ plus those facts, and scores it against the role's rubric. The scoring model
 never touches the web and has no tools; a separate, narrower check opens the
 work each applicant linked.
 
-For the research pile, that narrower check ran 121 times.
-
-<WorkChecksChart />
-
 Each of the three samples is a fresh headless `claude -p` run: no tools, an
 empty working directory, no saved session, the rubric as the system prompt,
 and output forced to a JSON schema. The schema holds a verdict and a quote for
@@ -342,15 +315,11 @@ each must-have, a craft score, an AI-answer score, signals with quotes, a
 suggested lane for the product roles, a tier and a one-line note.
 
 The vote: craft and AI scores take the median of three, each must-have takes
-the majority, a signal needs two of three samples with verified quotes, and
-the tier is the plurality, with ties going to maybe. When samples disagree by
+the majority, and the tier is the plurality, with ties going to maybe. When samples disagree by
 two or more points, or one says research while another says likely pass, the
 row gets the median as well as a flag for a person. Across 812 applications,
-no row tripped that flag.
-
-<VotesChart />
-
-The 8% that split is what the extra two reads pay for.
+no row tripped that flag. The three reads agreed on the tier 92% of the time
+and split 2-1 on the rest.
 
 Every sample is cached on disk, which makes adding checks cheap: running a new
 set of public checks across all 812 cost $1.42 in model time, because only the
@@ -407,16 +376,6 @@ def write(row, fields):
     db.update(row, fields)
 ```
 
-The same runs as a table:
-
-| Run | Applications | Model calls | Wall clock | Reported cost |
-| --- | --- | --- | --- | --- |
-| Calibration, earlier applicants | 91 | 273 | ~14 min | $14.78 |
-| First night | 365 | 1,095 | ~41 min | $53.74 |
-| Overnight arrivals | 153 | 459 | ~20 min | $23.58 |
-| Three runs after the review, whole wave | 812 | 921 new, old reads reused for 505 | ~33 min, then ~48 min of rate-limited lookups | $45.29 |
-| Public-work checks | 121 | one agent each | a few minutes | $5.34 |
-
 </Depth>
 
 ## What's left for people
@@ -430,11 +389,10 @@ the 124 were the right 124 once I've made real decisions.
 
 <Depth min={3}>
 
-The first check wasn't encouraging. The calibration run compared the sort
-with the research agents' earlier verdicts on those 91 applicants, not with
-hiring outcomes, and it separated them only modestly better than a coin flip,
-an AUC of 0.63. The earlier form didn't ask the AI question, the strongest
-input now, so that's probably a floor. Every triage field is labeled
+The first check wasn't encouraging. The yardstick was the research agents'
+earlier verdicts on those 91 applicants, not hiring outcomes, and against it
+the sort did only modestly better than a coin flip, an AUC of 0.63. The
+earlier form didn't ask the AI question, the strongest input now. Every triage field is labeled
 uncalibrated until there are fifty decisions on this wave to measure against.
 
 </Depth>
@@ -497,7 +455,8 @@ faster.
 
 Tell one real story about AI getting something wrong and how you noticed.
 Link something you made, and check that the link works. Don't paste your
-LinkedIn where someone asked for your work; a third of this pile did.
+LinkedIn where someone asked for your work<Depth inline max={1}>; a third of
+this pile did</Depth>.
 
 </Callout>
 
