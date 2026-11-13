@@ -4,7 +4,7 @@ import readingTime from 'reading-time';
 import DepthControl from '../../components/post/DepthControl.astro';
 import DepthPrepaint from '../../components/post/DepthPrepaint.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { DEPTH_DEFAULT, DEPTH_LABELS, DEPTH_LEVELS, depthBodyAt, usesDepth } from '../../lib/depth';
+import { DEPTH_LABELS, DEPTH_LEVELS, DEPTH_STATIC, depthBodyAt, usesDepth } from '../../lib/depth';
 
 export async function getStaticPaths() {
   const posts = await getCollection('writing', ({ data }) => import.meta.env.DEV || !data.draft);
@@ -36,7 +36,7 @@ if (!isDepth && usesDepth(body)) {
   throw new Error(`writing/${post.id}: uses <Depth> but its frontmatter is missing \`depth: true\`.`);
 }
 const depthMinutes = isDepth ? DEPTH_LEVELS.map((level) => minutesFor(depthBodyAt(body, level))) : [];
-const minutes = isDepth ? depthMinutes[DEPTH_DEFAULT - 1] : minutesFor(body);
+const minutes = isDepth ? depthMinutes[DEPTH_STATIC - 1] : minutesFor(body);
 const readMin = `${minutes} min read`;
 
 const ogImage = `/og/${post.id}.png${post.data.ogImageVersion ? `?v=${post.data.ogImageVersion}` : ''}`;
@@ -72,7 +72,7 @@ const ogImage = `/og/${post.id}.png${post.data.ogImageVersion ? `?v=${post.data.
     <div
       class="body"
       data-depth-root={isDepth ? '' : undefined}
-      data-depth={isDepth ? DEPTH_DEFAULT : undefined}
+      data-depth={isDepth ? DEPTH_STATIC : undefined}
       data-depth-minutes={isDepth ? depthMinutes.join(' ') : undefined}
       data-depth-labels={isDepth ? DEPTH_LEVELS.map((level) => DEPTH_LABELS[level]).join('|') : undefined}
     >

@@ -8,7 +8,8 @@
  *
  * Both are native range inputs (1-5, step 1), so arrow keys, Home/End and
  * touch dragging come for free. Rendered `hidden`: no-JS readers never see a
- * control that can't work, and get the server-rendered level 3.
+ * control that can't work, and get the server-rendered level 3. With JS the
+ * prepaint script sets the reader's level (level 1 by default) before paint.
  */
 import { DEPTH_DEFAULT, DEPTH_LABELS } from '../../lib/depth';
 

@@ -4,7 +4,7 @@
  *
  * Rendered as the first child of the post body ([data-depth-root]), so it runs
  * after the header (readout + control) is parsed and before any content is.
- * Order: ?depth= (1-5, summary, deep-dive) > remembered choice > 3.
+ * Order: ?depth= (1-5, summary, deep-dive) > remembered choice > 1 (DEPTH_DEFAULT).
  * Mirrors resolveInitial() and paintUI() in src/scripts/depth-slider.ts -- keep
  * them in step. data-astro-rerun: ClientRouter re-runs it on every navigation.
  */
@@ -30,7 +30,7 @@
         level = 0;
       }
     }
-    level = level || 3;
+    level = level || 1;
     root.dataset.depth = String(level);
     const label = (root.dataset.depthLabels || '').split('|')[level - 1];
     const min = (root.dataset.depthMinutes || '').split(' ')[level - 1];
