@@ -2,12 +2,13 @@
 title: 'A wedding app in seventeen unattended hours'
 date: 2026-10-11
 description: 'Two friends wanted a QR code their wedding guests could scan to share photos, with no app and no sign-in. I wrote the plan, Claude Code agents built and reviewed it overnight, and the bug that got past all of them was two attributes in the wrong order.'
-draft: true
+draft: false
 ogTreatment: default
 pullQuote: 'The executor ran the whole test suite against production while testing the guard that existed to stop exactly that.'
 tags: ['ai-augmented-engineering', 'claude-code', 'craft']
 ---
 
+import Callout from '../../components/post/Callout.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Figure from '../../components/post/Figure.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
@@ -36,6 +37,18 @@ phone could show me.
   height={1003}
   caption="What a guest sees: the sign, one button, everyone's photos. QR code and address redacted. Every photo in this post is a generated test image except one, and that one is mine."
 />
+
+<Callout variant="aside" title="Since this was written">
+
+I used v1 on my phone the next day and wrote a page of feedback. A second run
+shipped it overnight in 12 hours 52 minutes, and not fully unattended: I
+changed the merge gate mid-run when it was taking too long. Some of what's
+below is gone now. The reactions became one heart, five tabs became three
+plus a menu, the map no longer asks before it pins a photo, and the couple
+prints their own QR cards, so the app's sign is retired. This post is the
+first run, as it happened.
+
+</Callout>
 
 ## Every decision moves before kickoff
 
