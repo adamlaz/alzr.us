@@ -29,10 +29,13 @@
  *    180 ms + 45 ms per extra stop crossed, cubic-bezier(0.16, 1, 0.3, 1).
  *  - Ticks take ink as the thumb reaches them (120 ms, delayed along the
  *    travel).
- *  - Detent on arrival: the thumb compresses to 0.82 and settles, 260 ms, no
+ *  - Detent on arrival: the thumb compresses to 0.9 and settles, 260 ms, no
  *    overshoot; the tick under it flashes past the thumb's edges, 420 ms.
- *  - Label: Fraunces opsz / SOFT / wght + tracking tween from wherever they
- *    are to the new level, 300 ms, same ease, so a drag reads as one morph.
+ *  - Label: Fraunces SOFT (100 at Business to 0 at Technical) with a narrow
+ *    wght and tracking shift, tweened from wherever they are to the new
+ *    level, 300 ms, same ease, so a drag reads as one morph. Optical size is
+ *    the browser's. WONK rests at 1 on Business only; it rides the same
+ *    tween, so its glyph swap lands while SOFT is moving.
  *  - Minutes: each changed digit rolls in its slot, up when the number grows,
  *    260 ms, tens 30 ms behind ones.
  *  Keyboard, end labels and both controls all run through the same path.
@@ -41,7 +44,7 @@
  *  - A cobalt hairline in the gutter beside each block that appeared: scaleY
  *    from the top 400 ms, hold 1200 ms, fade 600 ms. Document order, 70 ms
  *    apart, the last starting within 250 ms of the first. Near the viewport
- *    only. Inline clauses get the same ink as an underline drawn left to right.
+ *    only. Inline clauses get a faint cobalt wash drawn left to right.
  *  - Removals keep the quick collapse and get no mark.
  *
  * Discovery: on a reader's first depth post the header thumb breathes once
@@ -50,11 +53,11 @@
  *
  * Budget: transform + opacity for the thumb, fill, flash, ring, digits and
  * marks. Font-variation tweening touches one small label per control. The
- * underline animates background-size on one clause. Everything is skipped
+ * wash animates background-size on one clause. Everything is skipped
  * while the tab is hidden, and the pill's effects are skipped while it is.
  *
  * Reduced motion: thumb, fill, axes and digits switch at once; no detent, no
- * breath; marks and underlines appear by opacity (150 ms), hold, then fade.
+ * breath; marks and washes appear by opacity (150 ms), hold, then fade.
  */
 import {
   DEPTH_DEFAULT,
@@ -529,7 +532,7 @@ class DepthController {
   private instrument(prev: DepthLevel, next: DepthLevel): void {
     const motion = !reducedMotion() && !document.hidden;
     const steps = Math.abs(next - prev);
-    const travel = TRAVEL + TRAVEL_STEP * (steps - 1);
+    const travel = motion ? TRAVEL + TRAVEL_STEP * (steps - 1) : 0;
     const controls = [...document.querySelectorAll<HTMLElement>('[data-depth-instrument]')];
     const labels = motion ? controls.map((c) => c.querySelector<HTMLElement>('[data-depth-label]')) : [];
 
@@ -583,7 +586,7 @@ class DepthController {
           dot,
           [
             { transform: 'scale(1)', easing: 'cubic-bezier(0.3, 0, 0.7, 0.4)' },
-            { transform: 'scale(0.82)', offset: 0.3, easing: EASE_OUT },
+            { transform: 'scale(0.9)', offset: 0.3, easing: EASE_OUT },
             { transform: 'scale(1)' },
           ],
           { duration: DETENT, delay: arrive },
@@ -669,8 +672,8 @@ class DepthController {
   }
 
   /** Once the page has settled, show the reader what arrived since the level
-   *  they last saw settled: a hairline in the gutter per block, an underline
-   *  per inline clause. In or near the viewport only, in document order. */
+   *  they last saw settled: a hairline in the gutter per block, a wash per
+   *  inline clause. In or near the viewport only, in document order. */
   private flushMarks(): void {
     const from = this.markFrom;
     const now = this.level;
@@ -692,7 +695,7 @@ class DepthController {
         if (block && freshBlocks.has(block)) continue;
         const r = w.el.getBoundingClientRect();
         if (r.width === 0 || !near(r.top, r.bottom)) continue;
-        jobs.push({ top: r.top, run: (delay) => this.underline(w.el, delay) });
+        jobs.push({ top: r.top, run: (delay) => this.wash(w.el, delay) });
       } else {
         const els = flowBoxes(w.el);
         if (els.length === 0) continue;
@@ -749,15 +752,35 @@ class DepthController {
     );
   }
 
-  private underline(el: HTMLElement, delay: number): void {
-    const ink = getComputedStyle(el).getPropertyValue('--accent').trim();
-    if (!ink) return;
+  /** The clause's words, wrapped once so the wash starts after any leading
+   *  punctuation or space (": three samples" washes from "three"). */
+  private washTarget(el: HTMLElement): HTMLElement {
+    const existing = el.querySelector<HTMLElement>(':scope > .depth-wash');
+    if (existing) return existing;
+    const first = el.firstChild;
+    if (first instanceof Text) {
+      const lead = first.data.match(/^[\s:;,.\u2013\u2014-]+/)?.[0].length ?? 0;
+      if (lead > 0 && lead < first.data.length) first.splitText(lead);
+    }
+    const span = document.createElement('span');
+    span.className = 'depth-wash';
+    const skip = first instanceof Text && /^[\s:;,.\u2013\u2014-]+$/.test(first.data) ? first : null;
+    for (const node of [...el.childNodes]) if (node !== skip) span.append(node);
+    el.append(span);
+    return span;
+  }
+
+  private wash(clause: HTMLElement, delay: number): void {
+    const el = this.washTarget(clause);
+    const accent = getComputedStyle(el).getPropertyValue('--accent').trim();
+    if (!accent) return;
+    const ink = `color-mix(in oklch, ${accent} 14%, transparent)`;
     el.classList.add('depth--arrived');
     this.marks.add(el);
     const { frames, duration } = this.markFrames(
-      { backgroundSize: '100% 1.5px', '--depth-ink': ink },
-      { backgroundSize: '0% 1.5px', '--depth-ink': ink },
-      { backgroundSize: '100% 1.5px', '--depth-ink': 'transparent' },
+      { backgroundSize: '100% 100%', '--depth-ink': ink },
+      { backgroundSize: '0% 100%', '--depth-ink': ink },
+      { backgroundSize: '100% 100%', '--depth-ink': 'transparent' },
     );
     this.play(el, frames, { duration, delay, fill: 'backwards' }).finished.then(
       () => {

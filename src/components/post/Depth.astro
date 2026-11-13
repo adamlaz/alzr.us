@@ -59,17 +59,19 @@ const levels = DEPTH_LEVELS.filter((l) => l >= min && l <= max).join(' ');
     display: none;
   }
 
-  /* A clause that just arrived gets a thin cobalt underline, drawn through it
+  /* A clause that just arrived gets a faint cobalt wash, drawn through it
      left to right and then faded, so the eye can find it in a paragraph that
-     reflowed. The default box-decoration-break (slice) paints one background
-     across the clause's line fragments, so the line carries on from the end of
-     one row to the start of the next. The script animates the size (the draw)
-     and --depth-ink (the fade). */
-  .depth--inline.depth--arrived {
+     reflowed. The text stays ink: a cobalt underline is how this site draws a
+     link. The script wraps the clause's words (after any leading punctuation)
+     in .depth-wash; the default box-decoration-break (slice) paints one
+     background across its line fragments, so the wash carries on from the end
+     of one row to the start of the next. The script animates the size (the
+     draw) and --depth-ink (the fade). */
+  :global(.depth-wash.depth--arrived) {
     background-image: linear-gradient(var(--depth-ink), var(--depth-ink));
     background-repeat: no-repeat;
-    background-position: 0 100%;
-    background-size: 100% 1.5px;
+    background-size: 100% 100%;
+    border-radius: 2px;
   }
 
   /* Margin marks: after a level change the script draws a cobalt hairline in
@@ -83,8 +85,7 @@ const levels = DEPTH_LEVELS.filter((l) => l >= min && l <= max).join(' ');
   :global(.depth-mark) {
     position: absolute;
     left: calc(-1 * var(--space-xs));
-    width: 2px;
-    border-radius: 1px;
+    width: 1px;
     background: var(--accent);
     transform-origin: 50% 0;
     opacity: 0;
@@ -100,7 +101,7 @@ const levels = DEPTH_LEVELS.filter((l) => l >= min && l <= max).join(' ');
 </style>
 
 <style is:global>
-  /* Registered so the underline's color can fade (a gradient can't). */
+  /* Registered so the wash's color can fade (a gradient can't). */
   @property --depth-ink {
     syntax: '<color>';
     inherits: false;
