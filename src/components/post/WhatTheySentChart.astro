@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/what-they-sent-light.svg?raw';
+import darkSvg from '../../assets/diagrams/what-they-sent-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="A third of the pile linked LinkedIn where the work goes"
+  caption="Counted across the 769 distinct applications."
+>
+  Bar chart out of 769 applications. 250 put a LinkedIn profile where the form asked for their work. 51 left the AI question blank. 33 linked no work at all.
+</Chart>

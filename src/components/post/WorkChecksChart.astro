@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/work-checks-light.svg?raw';
+import darkSvg from '../../assets/diagrams/work-checks-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="What a look at the linked work found"
+  caption="The research pile only: 121 looks, four verdicts."
+>
+  A single bar split four ways, for 121 looks at linked work in the research pile. Strong: 33. OK: 52. Weak: 9. Not checkable: 27.
+</Chart>

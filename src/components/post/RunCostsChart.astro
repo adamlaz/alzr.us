@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/run-costs-light.svg?raw';
+import darkSvg from '../../assets/diagrams/run-costs-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Where the $143 went"
+  caption="Reported cost per run over two days. It's the CLI's estimate on a subscription, not an invoice."
+>
+  Bar chart of reported model cost per run. Calibration on 91 earlier applicants: 14 dollars 78. First night, 365 applications: 53 dollars 74. Overnight arrivals, 153: 23 dollars 58. Three runs after the review, all 812: 45 dollars 29. Public-work checks, 121: 5 dollars 34. About 143 dollars in all, with a 26-cent test, or about fifteen cents an application.
+</Chart>

@@ -1,0 +1,129 @@
+---
+/**
+ * <OverruleBoard> -- what the agents recommended against what I decided, one
+ * row per call. The recommendation is struck through where I went the other
+ * way; the one call they got right says so.
+ */
+const calls = [
+  {
+    agents: 'Pin the engineer to one system',
+    me: 'Productive across all of them. The lane depends on the person.',
+  },
+  { agents: 'Wait a week to post', me: 'Post as soon as the drafts were ready.' },
+  {
+    agents: 'Show the pay range',
+    me: 'Leave it off. Then, before anything went live, put it on.',
+    theirs: true,
+  },
+  { agents: 'Split the reading: someone else takes the product pile', me: 'I read every role.' },
+  { agents: 'Penalize odd AI-related signals', me: 'Show them, keep them neutral, learn what they mean.' },
+  {
+    agents: 'Cap nightly background research at four candidates',
+    me: 'No cap. My time is the scarce thing, not compute.',
+  },
+];
+---
+
+<div class="overrules" role="table" aria-label="What the agents recommended and what I decided">
+  <div class="row head" role="row">
+    <span class="eyebrow" role="columnheader">The agents recommended</span>
+    <span class="eyebrow" role="columnheader">I decided</span>
+  </div>
+  {
+    calls.map((call) => (
+      <div class:list={['row', { theirs: call.theirs }]} role="row">
+        <span class="agents" role="cell">
+          <span class="phone-label eyebrow" aria-hidden="true">
+            Agents
+          </span>
+          <span class="rec">{call.agents}</span>
+        </span>
+        <span class="me" role="cell">
+          <span class="phone-label eyebrow" aria-hidden="true">
+            Me
+          </span>
+          <span>{call.me}</span>
+          {call.theirs && <span class="tag">They were right</span>}
+        </span>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .overrules {
+    margin: var(--space-lg) 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: var(--space-md);
+    padding: var(--space-xs) 0;
+    border-bottom: 1px solid var(--rule);
+    line-height: 1.5;
+  }
+
+  .head {
+    padding: var(--space-2xs) 0;
+  }
+
+  .agents {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .rec {
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in oklch, var(--text-muted) 55%, transparent);
+    text-decoration-thickness: 1px;
+  }
+
+  .theirs .rec {
+    text-decoration: none;
+    color: var(--text-soft);
+  }
+
+  .me {
+    font-size: 0.98rem;
+    font-weight: 500;
+    color: var(--text);
+    padding-left: var(--space-sm);
+    border-left: 2px solid var(--accent);
+  }
+
+  .tag {
+    display: inline-block;
+    margin-left: var(--space-2xs);
+    padding: 0 0.5rem;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    font-weight: 400;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .phone-label {
+    display: none;
+  }
+
+  @media (max-width: 40rem) {
+    .head {
+      display: none;
+    }
+
+    .row {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xs);
+      padding: var(--space-sm) 0;
+    }
+
+    .phone-label {
+      display: block;
+      margin-bottom: 2px;
+    }
+  }
+</style>

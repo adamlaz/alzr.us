@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/arrivals-cumulative-light.svg?raw';
+import darkSvg from '../../assets/diagrams/arrivals-cumulative-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Twice the old record, in the same 32 hours"
+  caption="Running total of applications. The old record is a single posting from late July. The typical line is roughly our median posting."
+>
+  Line chart of applications received over the first 32 hours after posting. These four roles reach 816, with 92 arriving in the second hour alone. The busiest earlier 32 hours, one posting in late July, reached 382. A typical earlier posting reached 36.
+</Chart>

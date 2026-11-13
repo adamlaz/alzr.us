@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="132" viewBox="0 0 420 132">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#1c1d24">
+
+<text x="0" y="28" font-size="30" font-weight="500" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">745</text>
+<text x="60" y="18" font-size="15" font-weight="600">all three agreed</text>
+<text x="60" y="35" font-size="13" fill="#55565f">92% of 812</text>
+<rect x="0" y="50" width="382" height="26" rx="3" fill="#8a8a90"/>
+<rect x="385" y="50" width="33" height="26" rx="3" fill="#2f3eb0"/>
+<text x="418" y="112" font-size="30" font-weight="500" text-anchor="end" fill="#2f3eb0" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">67</text>
+<text x="376" y="102" font-size="15" font-weight="600" text-anchor="end">split two to one</text>
+<text x="376" y="119" font-size="13" text-anchor="end" fill="#55565f">no three-way splits</text>
+</g>
+</svg>

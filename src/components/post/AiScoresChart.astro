@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/ai-scores-light.svg?raw';
+import darkSvg from '../../assets/diagrams/ai-scores-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Full marks: 21 of 765"
+  caption="Scores on the AI question for the 765 applications scored so far."
+>
+  Bar chart of scores from 1 to 4 on the AI question. A score of 1: 151 applications, 20 percent. A score of 2: 387, 51 percent. A score of 3: 206, 27 percent. A score of 4, full marks: 21, 3 percent.
+</Chart>
