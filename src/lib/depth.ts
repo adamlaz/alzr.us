@@ -22,6 +22,15 @@ export const DEPTH_LABELS: Record<DepthLevel, string> = {
   5: 'Technical deep dive',
 };
 
+/** What a screen reader hears after a change, as a phrase that reads naturally. */
+export const DEPTH_ANNOUNCE: Record<DepthLevel, string> = {
+  1: 'Showing the summary',
+  2: 'Showing the overview',
+  3: 'Showing the full story',
+  4: "Showing what's under the hood",
+  5: 'Showing the technical deep dive',
+};
+
 /** localStorage key for the reader's remembered level (shared across posts). */
 export const DEPTH_STORAGE_KEY = 'depth';
 /** localStorage flag: the reader has met the slider, so its first-visit breath is spent. */

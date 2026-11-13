@@ -59,6 +59,7 @@
  * breath; marks and washes appear by opacity (150 ms), hold, then fade.
  */
 import {
+  DEPTH_ANNOUNCE,
   DEPTH_DEFAULT,
   DEPTH_LABELS,
   DEPTH_PARAM,
@@ -462,7 +463,7 @@ class DepthController {
     const live = document.querySelector('[data-depth-live]');
     const min = this.minutes[level - 1];
     const time = min ? `, ${min} min read` : '';
-    if (live) live.textContent = `Showing the ${DEPTH_LABELS[level].toLowerCase()} version${time}.`;
+    if (live) live.textContent = `${DEPTH_ANNOUNCE[level]}${time}.`;
   }
 
   /** The compact control appears once the header control scrolls away, and
