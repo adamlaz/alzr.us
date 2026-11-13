@@ -55,8 +55,15 @@ const ogImage = `/og/${post.id}.png${post.data.ogImageVersion ? `?v=${post.data.
     <header>
       <p class:list={['meta eyebrow', { 'meta--depth': isDepth }]}>
         <time datetime={post.data.date.toISOString()}>{formatted}</time>
-        <span class="dot" aria-hidden="true">·</span>
-        <span class="reading-time" data-depth-readout={isDepth ? '' : undefined}>{readMin}</span>
+        {/* Depth posts show level and minutes under the slider; repeating them here read as a stutter. */}
+        {
+          !isDepth && (
+            <>
+              <span class="dot" aria-hidden="true">·</span>
+              <span class="reading-time">{readMin}</span>
+            </>
+          )
+        }
       </p>
       <h1 data-kinetic transition:name={`post-title-${post.id}`}>{post.data.title}</h1>
       <p class="description">{post.data.description}</p>
