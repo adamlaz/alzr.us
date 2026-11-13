@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/redaction-light.svg?raw';
+import darkSvg from '../../assets/diagrams/redaction-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="What the redaction step let through"
+  caption="Counted on the saved packets, before the fix and after it. 505 scores still rest on reads of the before packets until the re-run."
+>
+  Paired bars showing the share of saved packets that still contained identifying text. A piece of the applicant's own name: 35 percent before the fix, 6 percent after. A City, ST line: 69 percent before, 0 percent after.
+</Chart>

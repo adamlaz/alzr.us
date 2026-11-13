@@ -1,0 +1,77 @@
+---
+/**
+ * <FlagLegend> -- the four symbols on a triage row. Symbols carry the meaning
+ * (never color), so the legend is the symbol, a short name, and one line.
+ */
+import FlagIcon from './FlagIcon.astro';
+
+const flags: { kind: 'good' | 'problem' | 'look' | 'info'; name: string; means: string }[] = [
+  { kind: 'good', name: 'Good sign', means: 'Checked by a script.' },
+  { kind: 'problem', name: 'Problem', means: 'Checked by a script.' },
+  { kind: 'look', name: 'Look closer', means: 'Never decides a pile on its own.' },
+  { kind: 'info', name: 'Worth knowing', means: 'For context. Changes nothing in the sort.' },
+];
+---
+
+<ul class="flag-legend">
+  {
+    flags.map((flag) => (
+      <li>
+        <span class="symbol">
+          <FlagIcon kind={flag.kind} />
+        </span>
+        <span class="text">
+          <strong>{flag.name}</strong>
+          {flag.means && <span>{flag.means}</span>}
+        </span>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .flag-legend {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 var(--space-lg);
+    margin: var(--space-lg) 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--rule);
+  }
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-xs);
+    margin: 0;
+    padding: var(--space-xs) 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .symbol {
+    flex: none;
+    width: 1.75rem;
+    font-size: 1.35rem;
+    line-height: 1.3;
+  }
+
+  .text {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--text-soft);
+  }
+
+  strong {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  @media (max-width: 40rem) {
+    .flag-legend {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

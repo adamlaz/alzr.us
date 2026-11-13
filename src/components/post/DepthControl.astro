@@ -53,6 +53,9 @@ const ariaLabel = 'Reading depth, from business to technical';
       <span class="end eyebrow" data-depth-set="5" aria-hidden="true">
         Technical
       </span>
+      <span class="now eyebrow" aria-hidden="true">
+        <span data-depth-label>{label}</span> · <span data-depth-min>{min} min</span>
+      </span>
       <p class="visually-hidden" aria-live="polite" data-depth-live />
     </div>
   ) : (
@@ -105,6 +108,17 @@ const ariaLabel = 'Reading depth, from business to technical';
   .depth-control--header {
     max-width: 26rem;
     margin-top: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .depth-control--header .track {
+    flex: 1 1 8rem;
+  }
+
+  /* What the slider is set to, on its own line under the track. */
+  .now {
+    flex: 0 0 100%;
+    color: var(--text-soft);
   }
 
   .end {

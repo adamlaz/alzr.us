@@ -21,6 +21,9 @@ const formatted = post.data.date.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
+  // Frontmatter dates parse as midnight UTC; format there so the byline
+  // doesn't slip a day in timezones west of it.
+  timeZone: 'UTC',
 });
 
 const body = post.body ?? '';
@@ -52,8 +55,15 @@ const ogImage = `/og/${post.id}.png${post.data.ogImageVersion ? `?v=${post.data.
     <header>
       <p class:list={['meta eyebrow', { 'meta--depth': isDepth }]}>
         <time datetime={post.data.date.toISOString()}>{formatted}</time>
-        <span class="dot" aria-hidden="true">·</span>
-        <span class="reading-time" data-depth-readout={isDepth ? '' : undefined}>{readMin}</span>
+        {/* Depth posts show level and minutes under the slider; repeating them here read as a stutter. */}
+        {
+          !isDepth && (
+            <>
+              <span class="dot" aria-hidden="true">·</span>
+              <span class="reading-time">{readMin}</span>
+            </>
+          )
+        }
       </p>
       <h1 data-kinetic transition:name={`post-title-${post.id}`}>{post.data.title}</h1>
       <p class="description">{post.data.description}</p>
@@ -232,6 +242,31 @@ const ogImage = `/og/${post.id}.png${post.data.ogImageVersion ? `?v=${post.data.
   :global(html[data-theme='dark']) .body :global(.astro-code),
   :global(html[data-theme='dark']) .body :global(.astro-code span) {
     color: var(--shiki-dark);
+  }
+
+  /* Markdown lists: the reset strips markers, so prose lists ran together as
+     plain lines. Restore them for prose only: component lists carry a class
+     or sit inside the footnotes, and keep their own styling. */
+  .body :global(:is(ul, ol):not([class]):not(.footnotes *)) {
+    margin: 0 0 var(--space-md);
+    padding-left: 1.4em;
+  }
+
+  .body :global(ul:not([class]):not(.footnotes *)) {
+    list-style: disc;
+  }
+
+  .body :global(ol:not([class]):not(.footnotes *)) {
+    list-style: decimal;
+  }
+
+  .body :global(:is(ul, ol):not([class]):not(.footnotes *) > li) {
+    margin: 0.3em 0;
+    padding-left: 0.15em;
+  }
+
+  .body :global(:is(ul, ol):not([class]):not(.footnotes *) > li::marker) {
+    color: var(--text-muted);
   }
 
   /* Markdown tables: hairline rules, mono eyebrow headers, scroll on mobile. */

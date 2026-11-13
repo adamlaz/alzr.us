@@ -12,6 +12,7 @@ const formatted = date.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
+  timeZone: 'UTC',
 });
 // Scope the whole-card link's accessible name to the title, so screen readers
 // don't read the date + full description as the link label on every card.

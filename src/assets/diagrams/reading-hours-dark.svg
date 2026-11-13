@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="338" viewBox="0 0 420 338">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#eceae4">
+
+
+<text x="0" y="14" font-size="15" font-weight="600">Reading all 816 by hand</text>
+<text x="0" y="32" font-size="14" fill="#b9b7b1">two to four minutes each</text>
+<rect x="0" y="44" width="400" height="26" rx="3" fill="#4a4a54"/>
+<rect x="0" y="44" width="200" height="26" rx="3" fill="#5c5c64"/>
+<text x="0" y="102" font-size="30" font-weight="500" fill="#eceae4" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">27 to 54 hours</text>
+<path d="M0 124 L418 124" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+
+<text x="0" y="154" font-size="15" font-weight="600">Reading the 124 research notes first</text>
+<text x="0" y="172" font-size="14" fill="#b9b7b1">a minute or two each</text>
+<rect x="0" y="184" width="29.6" height="26" rx="3" fill="#414b86"/>
+<rect x="0" y="184" width="14.8" height="26" rx="3" fill="#8fa1ef"/>
+<text x="0" y="242" font-size="30" font-weight="500" fill="#8fa1ef" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">2 to 4 hours</text>
+<path d="M0 264 L418 264" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<text x="0" y="294" font-size="15" font-weight="600">Then the 660 maybes, in order</text>
+<rect x="1" y="306" width="398" height="24" rx="3" fill="none" stroke="#b9b7b1" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="200" y="323" font-size="14" text-anchor="middle" fill="#b9b7b1">not yet estimated</text>
+</g>
+</svg>

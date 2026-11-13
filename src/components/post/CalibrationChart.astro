@@ -1,0 +1,13 @@
+---
+import lightSvg from '../../assets/diagrams/calibration-light.svg?raw';
+import darkSvg from '../../assets/diagrams/calibration-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="A hunch alone: right four times, wrong three"
+>
+  Seven circles. Four are filled: applicants our earlier research had flagged as fake, where the model's hunch was right. Three are hollow: real people, where the hunch was wrong. From a test on 91 earlier applicants.
+</Chart>

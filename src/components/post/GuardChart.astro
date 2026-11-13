@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/guard-light.svg?raw';
+import darkSvg from '../../assets/diagrams/guard-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="The guard overruled the model about half the time"
+  caption="Every likely-pass vote from the model, one square each."
+>
+  Unit chart of the 55 times the model voted likely pass. 28 went through with evidence behind each: 21 with a problem a script checked and 7 with two must-haves clearly missed. 27 had a vote and nothing behind it, and were held at maybe.
+</Chart>

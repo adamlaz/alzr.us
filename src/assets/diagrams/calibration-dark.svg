@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="122" viewBox="0 0 420 122">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#eceae4">
+
+<circle cx="24" cy="30" r="20" fill="#8fa1ef"/>
+<circle cx="76" cy="30" r="20" fill="#8fa1ef"/>
+<circle cx="128" cy="30" r="20" fill="#8fa1ef"/>
+<circle cx="180" cy="30" r="20" fill="#8fa1ef"/>
+<circle cx="254" cy="30" r="18.5" fill="none" stroke="#eceae4" stroke-width="3"/>
+<circle cx="306" cy="30" r="18.5" fill="none" stroke="#eceae4" stroke-width="3"/>
+<circle cx="358" cy="30" r="18.5" fill="none" stroke="#eceae4" stroke-width="3"/>
+<text x="4" y="84" font-size="30" font-weight="500" fill="#8fa1ef" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">4</text>
+<text x="26" y="76" font-size="15" font-weight="600">flagged as fake</text>
+<text x="26" y="94" font-size="13.5" fill="#b9b7b1">by our earlier research</text>
+<text x="234" y="84" font-size="30" font-weight="500" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">3</text>
+<text x="256" y="76" font-size="15" font-weight="600">real people</text>
+<text x="256" y="94" font-size="13.5" fill="#b9b7b1">the hunch was wrong</text>
+<text x="4" y="118" font-size="13.5" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">from a test on 91 earlier applicants</text>
+</g>
+</svg>

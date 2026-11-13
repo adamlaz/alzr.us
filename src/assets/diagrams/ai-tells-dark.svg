@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="300" viewBox="0 0 420 300">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#eceae4">
+
+<path d="M132 50 L132 262" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<path d="M318 50 L318 262" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<path d="M92 262 L358 262" fill="none" stroke="#5c5c64" stroke-width="1" stroke-linecap="round"/>
+<text x="132" y="18" font-size="15" font-weight="600" text-anchor="middle">Earlier postings</text>
+<text x="132" y="36" font-size="13.5" text-anchor="middle" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">2,630 intros</text>
+<text x="318" y="18" font-size="15" font-weight="600" text-anchor="middle">These four roles</text>
+<text x="318" y="36" font-size="13.5" text-anchor="middle" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">769 applications</text>
+<path d="M132 82.6 L318 156.4" fill="none" stroke="#8fa1ef" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="132" cy="82.6" r="5.5" fill="#08090c" stroke="#8fa1ef" stroke-width="2.5"/>
+<circle cx="318" cy="156.4" r="6" fill="#8fa1ef" stroke="#08090c" stroke-width="2"/>
+<text x="118" y="84.6" font-size="26" font-weight="500" text-anchor="end" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">29%</text>
+<text x="118" y="102.6" font-size="14" text-anchor="end" fill="#b9b7b1">stock phrases</text>
+<text x="332" y="165.4" font-size="30" font-weight="500" fill="#8fa1ef" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">17%</text>
+<path d="M132 175.1 L318 228.9" fill="none" stroke="#8fa1ef" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="132" cy="175.1" r="5.5" fill="#08090c" stroke="#8fa1ef" stroke-width="2.5"/>
+<circle cx="318" cy="228.9" r="6" fill="#8fa1ef" stroke="#08090c" stroke-width="2"/>
+<text x="118" y="177.1" font-size="26" font-weight="500" text-anchor="end" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">14%</text>
+<text x="118" y="195.1" font-size="14" text-anchor="end" fill="#b9b7b1">em dashes</text>
+<text x="332" y="237.9" font-size="30" font-weight="500" fill="#8fa1ef" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">5%</text>
+<text x="225" y="284" font-size="13.5" text-anchor="middle" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">share of intros with the tell</text>
+</g>
+</svg>
