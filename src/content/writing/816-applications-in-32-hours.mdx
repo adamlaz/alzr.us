@@ -31,7 +31,7 @@ import ReadingHoursChart from '../../components/post/ReadingHoursChart.astro';
 import WhatTheySentChart from '../../components/post/WhatTheySentChart.astro';
 
 Ninety-two applications landed in the second hour. We posted four roles one
-afternoon, and 32 hours later we had 816, about 770 of them distinct. My first
+afternoon, and 32 hours later there were 816, about 770 of them distinct. My first
 thought was that everyone else must be using AI to apply. My second was that
 I'd better step up my game.
 
@@ -73,7 +73,7 @@ applications, I needed a pass in front of them to decide who to read first.
 The form asks: *What did the AI get wrong, and how did you catch it?* Half of
 the 765 applications scored so far landed at 2 out of 4 -- some version of "AI
 makes mistakes, so I always review." Only 21 earned a 4 by naming a specific
-failure, explaining how they caught it, and linking something to show for it.
+failure, explaining how they caught it, and having something to show for it.
 
 <AiScoresChart />
 
@@ -81,7 +81,7 @@ failure, explaining how they caught it, and linking something to show for it.
 
 That question is the job: the AI got something wrong, and a person caught it.
 An assistant can invent that story and fake a file to match, but it can't walk
-me through the fix when I say "open it and show me" on the call. In the
+me through it when I say "open it and show me" on the call. In the
 interviews, a 1 on AI fluency ends a candidacy.
 
 </Depth>
@@ -128,8 +128,8 @@ call. Below is a made-up example.
 
 <Depth min={2}>
 
-The live row also carries a numeric sort score. Flags use distinct shapes
-rather than color alone because I can't reliably tell red from green.
+The real row also carries a number to sort by. The flags lead with symbols,
+not colors, because I can't reliably tell red from green.
 
 <FlagLegend />
 
@@ -161,7 +161,7 @@ adds a look-closer flag, a small sort penalty and a question for the call.
 <GuardChart />
 
 A handful of applicants addressed an AI
-reader directly in their answers. None of them talked their way into a higher
+reader directly. None of them talked their way into a higher
 pile.
 
 </Depth>
@@ -188,8 +188,8 @@ The other guardrails:
 
 ## Where I overruled the agents
 
-Agents drafted the job postings, the scoring rubric and the triage code,
-pushing for their own defaults along the way. I overruled them on six calls.
+Agents drafted the postings, the scoring rubric and the triage, and they
+recommended plenty along the way. I made six calls differently.
 
 <OverruleBoard />
 
@@ -197,18 +197,18 @@ pushing for their own defaults along the way. I overruled them on six calls.
 
 <Depth min={3}>
 
-The pay range is the one I got wrong. I initially left it off; an hour later,
-before the postings went live, the agents flagged that several states require a
-range on remote listings, so I put it on.
+The pay range is the one I got wrong. The agents recommended showing it and I
+said no. An hour later, well before anything was posted, they flagged that
+several states expect a range on remote postings, and I put it on.
 
 The AI-signal call is the one I'd defend hardest. The first draft treated
-unusual uses of AI in an application as integrity problems and penalized them in
-the sort. I told the agent to surface them without a penalty: "I don't know
+some unusual uses of AI in an application as integrity problems and penalized them in
+the sort. I told the agent to show them and keep them neutral: "I don't know
 what I want to do with that signal, but I would like to call it out so that as
 we go through more candidates, I can figure out if it's a positive or a
 negative signal." And: "At the very least, I think that's a signal that
 they're using or aware of AI." We're hiring people who use AI well; penalizing
-awareness of it would have buried strong applicants.
+awareness of it would have buried some strong applicants.
 
 </Depth>
 
@@ -235,7 +235,7 @@ values that thousands of unrelated applicants share, so strangers looked
 connected and dropped in the sort. One applicant who met four of five
 must-haves sat near the bottom partly because of it.
 
-The sharpest catch was in the step that strips names and places before scoring.
+The sharpest catch was in the step meant to hide names and places before scoring.
 Instead of taking the docs' word for it, the reviewer opened every saved model
 packet from that first night and counted what had actually gone into the prompt.
 
@@ -243,8 +243,8 @@ packet from that first night and counted what had actually gone into the prompt.
 
 Most of the leaked names weren't in the application text at all. They came from
 facts the scripts appended afterward, like a portfolio domain built from a
-first and last name, which the redaction step never ran on. The reviewer
-found the opposite bug too: an overly broad rule for stripping school names had
+first and last name, which the redaction step never covered. The reviewer
+found the opposite bug too: a rule for removing schools had
 wiped five intros and one AI answer blank.
 
 The 6% of name matches remaining after the fix are mostly applicants writing
@@ -256,7 +256,7 @@ words.
 <Depth min={3} max={3}>
 
 The fix didn't reach most of the live scores yet. A cache bug kept the pre-fix
-reads on 505 applications, so I'm re-running those before I start reviewing.
+reads on 505 applications, and those get re-read before I start reviewing.
 
 </Depth>
 
@@ -275,9 +275,9 @@ model time before I start reviewing.
 
 <Depth min={3}>
 
-None of these bugs tripped the builder agent's own tests, which only
-checked the cases the builder thought to write. Auditing the saved packets on
-disk caught what the tests missed.
+None of these bugs tripped the builder agent's own tests, which checked that
+the code did what it was written to do. The reviewer counted what the model
+actually received, and that only works because every packet gets saved.
 
 </Depth>
 
@@ -294,7 +294,7 @@ Four of the seven should-fix findings were silent failures:
   a decision.
 
 The second night surfaced one more false link of the same kind as the must-fix,
-tying two strangers together on a common field. I fixed the check and corrected
+tying two strangers together on a common field. Fixed, and I corrected
 both rows by hand.
 
 ## Inside the scoring run
@@ -322,7 +322,7 @@ reads agreed unanimously on the tier 92% of the time and split 2-1 on the rest.
 Caching every sample on disk makes adding deterministic checks cheap. Running a
 new set of public checks across all 812 applications cost $1.42 in model time
 because only the nine newest arrivals needed fresh model reads; the other 803
-just picked up the new findings as flags. That is the same cache that held onto
+just picked up the new findings as flags. It's the same cache that held onto
 the pre-fix reads for 505 rows.
 
 Because the machine had no API key configured, the runner calls `claude -p`
@@ -382,8 +382,8 @@ def write(row, fields):
 
 Instead of starting at the top of 816 raw applications, I start with 124
 research notes -- two to four hours of reading at a minute or two each, with
-the 660 maybes sorted behind them so the strongest are on top. That order is an
-estimate and a bet: I'll only know whether those 124 were the right 124 once
+the 660 maybes sorted behind them so the strongest are on top. That's an
+estimate, and a bet: I'll only know whether those 124 were the right 124 once
 I've made real decisions.
 
 <ReadingHoursChart />
@@ -424,7 +424,7 @@ The guide takes about ten minutes to read and sets a fixed pre-read order: the
 AI answer first, then the triage note, then the research. During the hour-long
 deep dive, the candidate spends fifteen minutes walking us through their work
 and later makes one small change live with their usual tools so we can watch
-how they work. Everyone scores independently before the group discusses. From
+how they work, not only what ships. Everyone scores independently before the group discusses. From
 the guide: "Someone who made the work can explain any piece of it. Someone who
 didn't, can't. You'll notice." Pay conversations stay with me.
 
