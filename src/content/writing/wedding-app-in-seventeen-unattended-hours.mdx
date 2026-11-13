@@ -1,0 +1,369 @@
+---
+title: 'A wedding app in seventeen unattended hours'
+date: 2026-10-11
+description: 'Two friends wanted a QR code their wedding guests could scan to share photos, with no app and no sign-in. I wrote the plan, Claude Code agents built and reviewed it overnight, and the bug that got past all of them was two attributes in the wrong order.'
+draft: false
+ogTreatment: default
+pullQuote: 'The executor ran the whole test suite against production while testing the guard that existed to stop exactly that.'
+tags: ['ai-augmented-engineering', 'claude-code', 'craft']
+---
+
+import Callout from '../../components/post/Callout.astro';
+import PullQuote from '../../components/post/PullQuote.astro';
+import Figure from '../../components/post/Figure.astro';
+import Footnotes from '../../components/post/Footnotes.astro';
+import Note from '../../components/post/Note.astro';
+import RunLoopDiagram from '../../components/post/RunLoopDiagram.astro';
+
+The brief came in as a text from the bride: "QR Code that guests can scan
+with their phones and easily upload photos from android or iPhone. No app no
+sign-in." Two close friends are getting married in Key West this December,
+I'm officiating, and I'm building the photo part.
+
+I typed the kickoff on a Saturday at 12:09 PM. At 5:21 the next morning the
+run closed itself out with the whole wedding-night app live in production: a
+printable sign, a one-button upload page built for one bar of signal, a
+shared gallery, timeline, feed, projector slideshow, venue map and an admin
+page. Fourteen pull requests merged in between. My part in those seventeen
+hours was plugging in my laptop when the orchestrator flagged the battery at
+38%, and typing "continue i approve." I didn't write any of the code. I
+wrote the plan, and then spent the next day finding out what only a real
+phone could show me.
+
+<Figure
+  src="/images/writing/wedding-app-in-seventeen-unattended-hours/guest-flow.webp"
+  alt="Three panels. A printed sign reading 'Please upload photos of the couple's special night. Scan to add your photos' with its QR code pixelated and the address line blacked out. A phone showing the couple's names, the same line and one coral button, 'Add photos & videos'. A phone showing the shared gallery: tabs for Photos, Timeline, Latest, Slideshow and Map over a grid of test images with heart and party reactions."
+  width={1800}
+  height={1003}
+  caption="What a guest sees: the sign, one button, everyone's photos. QR code and address redacted. Every photo in this post is a generated test image except one, and that one is mine."
+/>
+
+<Callout variant="aside" title="Since this was written">
+
+I used v1 on my phone the next day and wrote a page of feedback. A second run
+shipped it overnight in 12 hours 52 minutes, and not fully unattended: I
+changed the merge gate mid-run when it was taking too long. Some of what's
+below is gone now. The reactions became one heart, five tabs became three
+plus a menu, the map no longer asks before it pins a photo, and the couple
+prints their own QR cards, so the app's sign is retired. This post is the
+first run, as it happened.
+
+</Callout>
+
+## Every decision moves before kickoff
+
+Before any code, a deep-research run put 25 claims about storage, uploads and
+phone browsers to a vote of three independent checks across 21 sources. Four
+didn't survive. The finding that shaped the build: Vercel's free Blob tier
+doesn't bill you for going over its limits, it locks the store for 30
+days.<Note id="1" /> Seventeen one-minute iPhone videos fill the free
+gigabyte. A gallery that could go dark during cocktail hour, with the one
+person able to fix it busy officiating, ruled Blob out.
+
+So the phones upload straight to Cloudflare R2 on short-lived signed URLs,
+and no photo ever passes through a server function. Vercel caps a function
+request at 4.5 MB; a 1080p iPhone video runs about 60 MB a minute. iPhones
+have no background upload either, so the resilience has to live in the page:
+each phone makes a small gallery copy first, so the photo shows up for
+everyone within seconds, then sends the original in resumable parts and
+keeps trying as long as the page is open. The map hit its own browser limit.
+Both platforms mostly strip GPS before a web page sees the file,<Note id="2" />
+so pins come from an opt-in location prompt instead.
+
+The plan that came out of that ran 427 lines: thirteen work units,
+decisions marked as locked, a definition of done in three tiers (core is
+never traded for expected, expected never for stretch), a drop order for
+when time runs short, and the conditions under which an agent stops instead
+of improvising. It also pre-approved the scary parts in writing. "Merge =
+production deploy: approved." An unattended run can't ask a question,
+because nobody is there to answer it.
+
+So the questions got answered in a thirty-minute pre-flight. Everything that
+needed my accounts or my say-so happened there: a new Vercel team, a
+database project, two Cloudflare credentials, four empty storage buckets
+created ahead of time so the app's own key could be scoped to those four,
+and fifteen secrets in the macOS Keychain. Agents read the Keychain inside
+their own process and print names, never values. When the run started,
+nothing left on the path needed a human.
+
+## One unit, one worktree, one hostile reader
+
+The session I kicked off was an orchestrator, and it never edited a line of
+app code. For each unit it wrote a one-page brief and dispatched an executor
+into its own git worktree. The executor built the unit, tested it and opened
+a pull request. CI ran the unit tests and, from the fourth unit on, Playwright
+on emulated iPhones and Androids against a preview deploy. The plan set
+review depth per unit: anything touching access, data, uploads, admin or
+privacy got a second agent, carrying none of the executor's context, whose
+only job was finding what was wrong; scaffolding, the map, docs and the
+design pass got a read from the orchestrator. Nothing merged without green
+checks on the final commit and a recorded verdict. Every merge was a
+production deploy, so the orchestrator then checked the live site and wrote
+a row to a markdown ledger in my notes vault. By 5:21 AM the ledger was at
+row 54.
+
+<RunLoopDiagram />
+
+Sonnet built most of the units. Opus built the uploader, the hardest unit,
+and did every adversarial review.
+
+## What the reviewers caught
+
+Each reviewer got the plan's failure costs along with the code. A lost or
+duplicated guest upload: high. An admin-only field visible to a guest: high.
+The site down on the wedding night, 5 to 9 PM: critical. Someone reaching
+the gallery without the password: low. Every finding had to say whether it
+was worth closing at this scale. That one line kept a wedding app from
+turning into a security product. The reviewers still sent all of these back
+before merge:
+
+1. **An admin page that rendered for a guest** at `/%2561dmin`, a
+   double-encoded path the gate decoded one way and the router another. The
+   same round found admin actions reachable through a query parameter on any
+   route.
+2. **Upload URLs that didn't sign the content type**, so a phone could have
+   put an HTML file on the media domain.
+3. **A video with one failed chunk finishing 61st of 61**, stuck behind a
+   stream of newer photos. The uploader already had a property test running
+   1,000 random upload schedules, and it passed, because its simulated clock
+   never let time go by. Run at 15 seconds a step, it found two more. By the
+   follow-up, a mutation check broke the scheduler 28 different ways on
+   purpose, and the tests caught all 28.
+4. **A slideshow that froze forever if it started with one photo**, which
+   is what a projector shows if someone switches it on right after the
+   first guest uploads.
+
+Three units needed a third round (the admin gate, the data layer and the
+uploader), and the reason was the same each time: the fix introduced the
+next bug. The admin-route fix re-implemented the framework's action-name
+parsing and got one path wrong. The fix that told phones about removed
+photos leaked the ids of photos they had never been shown. The uploader's
+first fix sorted healthy files first, which is how that video ended up 61st. So re-reviews were held to
+the same standard as the first round, and the admin gate's final proof was
+a differential harness: 124 hostile requests against the built function,
+zero admin actions run. Pointed at the commit before the fix, the same
+harness ran admin actions 14 times. That second number is how I knew the
+harness could see the bug at all.
+
+## The guard that ran the thing it guarded
+
+The admin unit also built the only door to production tests: a wrapper that
+runs one tagged smoke test against the live site with the real access key
+and admin passphrase. The brief said the executor must not run anything
+against production. It ran `npm run e2e:prod` anyway, to check whether its
+own guard refused. The guard had a bug: Playwright's `--grep` filter doesn't
+apply to a project's dependencies. The whole suite ran against production
+for 58 seconds, 47 tests passed and 17 failed. Test photos landed on the
+live site, and most of them deleted themselves. Twelve admin tests signed in
+and failed at a placeholder before any admin action ran.
+
+The executor reported it unprompted, which is the part I'd keep. The
+orchestrator searched 43 task outputs and 22 session transcripts for seven
+secret values and found none, so nothing needed rotating. The final cleanup cleared the test uploads. Then the reviewer
+found the rebuilt guard was still bypassable: a trailing `--retries` with no
+value swallowed the `--no-deps` flag the fix had forced on. The version that
+shipped takes one word, `smoke` or `cleanup`, maps it to a fixed argument
+list, asks Playwright to list what that list would run, and refuses unless
+every test carries the mode's tag. There's no passthrough left to get wrong.
+
+I'd learned this once already this summer, from a teammate: an instruction
+isn't a boundary, and removing the capability is.<Note id="3" /> The
+executor contract now says it anyway: never run anything against production
+with credentials, "not even to prove a guard refuses." By my own rule that
+line is not the fix. Every agent on this Mac can still read the production
+key out of the Keychain, and moving that key out of their reach is the real
+fix. I haven't done it yet.
+
+## A line budget that said no
+
+The plan capped app code at 5,600 lines, as a hard stop rather than a nudge.
+By the memories unit (a surprise for the couple, more below), the
+wedding-night features had used all but 260 of them, and memories needed
+about 680. The executor measured, refused to ship a partial version because
+the privacy gate and the screens don't come apart, deleted its empty branch
+and reported BLOCKED. The orchestrator logged one line and moved on to the
+next unit. The budget did its job: "this is getting big" became a decision
+with my name on it, waiting for me in the morning. I raised the cap to
+10,000 ("we can always optimize/refactor later") and memories was live by
+8:06 AM.
+
+The couple hears that memories exists, and nothing about what's in it. Before the
+wedding, friends and family share a photo, video or voice note about the
+two of them with a line of story. Every one waits for my approval, and
+nobody sees any of them, the couple included, until the rehearsal dinner.
+The gate lives on the server, and the review checked it with two simulated
+phones across every view and poll: no memory ids and no story text crossed
+from one phone to the other before the reveal.
+
+<Figure
+  src="/images/writing/wedding-app-in-seventeen-unattended-hours/memories.webp"
+  alt="Three phone screens. The memories form, asking for a photo, video or voice note of the couple with a line about it, with a prompt picker and a text box. The memories wall titled 'Their story, 5 memories so far,' showing one test photo in a film-strip frame with the caption 'The first photo of them together. We did not know yet.' stamped 2014, Casey. A dark screen reading 'Opens Friday night.' in hand-lettered type."
+  width={1262}
+  height={638}
+  caption="The memories form, the wall, and the slideshow before the reveal. The stories are test data an agent wrote; the real ones stay hidden until Friday night."
+/>
+
+## Then I used it
+
+Twenty-one hours after kickoff every unit in the plan was live, and I
+finally used the thing like a guest, on my laptop and my phone. Browsing
+felt clunky and the reactions were awkward. I asked for one pass with one
+constraint, in these words: "do NOT make anything more complicated or
+over-engineered." The guests include grandparents. That pass brought in a
+full-screen viewer with swipe, reactions that answer instantly on one row, a
+header that shrank from about 220 pixels to 56, and a tab bar along the
+bottom. It passed all 90 end-to-end tests.
+
+<Figure
+  src="/images/writing/wedding-app-in-seventeen-unattended-hours/ux1-gallery.webp"
+  alt="Two phone screenshots of the gallery. Left, before: the couple's names, a row of small text links that wraps onto a second line, a full-width add button and a filter row above the photo grid. Right, after: the names and a coral Add button on one line, an Everyone and Mine filter, the grid, and a bottom tab bar with Photos, Timeline, Latest, Slideshow and Map."
+  width={1726}
+  height={1400}
+  caption="The first pass, in Playwright's emulated iPhone: the header before and after."
+/>
+
+<Figure
+  src="/images/writing/wedding-app-in-seventeen-unattended-hours/ux1-reactions.webp"
+  alt="Two phone screenshots of one photo. Left, before: the photo with two rows of emoji reaction buttons below it, then Download and Share buttons and a details list. Right, after: the photo full screen with one row of reactions, a plus button, and Share, Download, Info and Delete along the bottom."
+  width={1726}
+  height={1400}
+  caption="Reactions before and after the first pass."
+/>
+
+Then I opened the new build on my iPhone, in Chrome, and the tab bar sat
+stacked on top of Chrome's own toolbar. Playwright's phone emulation sets the
+screen size, user agent and touch input, but it has no browser
+bars,<Note id="4" /> so a bar pinned to the bottom of the page looked fine in
+Playwright.
+
+<PullQuote>
+  Ninety tests passed on a phone with no browser bars. Mine has them.
+</PullQuote>
+
+So the second pass changed where it looked before it changed anything else:
+the iOS Simulator's real Safari on two iPhone sizes, plus a WebKit window
+393 by 660, the slice of screen Chrome leaves you, since Chrome won't
+install on the Simulator. The landscape test images went portrait, because
+that's what phones take. Then it took things away. Nothing is pinned to the
+bottom of the page anymore (one fixed element before, none after), the tabs
+sit up top and scroll away, the photo fills the screen until you tap it, and
+the row of reaction buttons became one React button that opens a tray of
+six. In the Chrome-shaped window the lowest control clears the toolbar by 16
+pixels. That's the number I'll check on a real phone in November.
+
+<Figure
+  src="/images/writing/wedding-app-in-seventeen-unattended-hours/ux2-tab-bar.webp"
+  alt="Two iPhone Simulator screenshots in real Safari. Left: the gallery with the app's tab bar sitting directly on top of Safari's address bar at the bottom of the screen. Right: the same gallery with the tabs moved up under the header and nothing at the bottom but Safari's own bar."
+  width={1344}
+  height={1400}
+  caption="The same build in the Simulator's real Safari: the bottom tab bar stacked on the browser's bar (left), and the second pass with the tabs up top (right). Addresses blurred."
+/>
+
+<Figure
+  src="/images/writing/wedding-app-in-seventeen-unattended-hours/ux2-viewer.webp"
+  alt="Three iPhone Simulator screenshots of a sunset test photo. Left, before: a row of small reaction buttons with counts crowded above Share, Download and Info. Middle, after: two reaction pills and a React button, with a tray of six large emoji and a More button open above them. Right, after: the same photo with every control hidden, filling the screen."
+  width={1800}
+  height={1233}
+  caption="The viewer before the second pass, the React tray, and the photo with its controls tapped away. The orange address bar is Safari's tint while automation drives it."
+/>
+
+## The blue question mark
+
+That evening I sent the session a screenshot: "I see some blue question
+marks in the middle of some of the images when looking on my iphone." The
+copies on the server were fine. Cloudflare's edge answered CORS requests
+correctly. A fresh Simulator showed zero broken images. It only happened the
+second time a phone looked at a photo.
+
+<Figure
+  src="/images/writing/wedding-app-in-seventeen-unattended-hours/blue-question-mark.webp"
+  alt="Two panels. Left: my own photo of a drink on a restaurant table, soft because only the thumbnail loaded, with a small blue question-mark box in the middle that I circled in purple, above React, Share, Download, Info and Delete. Right: an iPhone Simulator showing a sharp beach test photo in the same viewer."
+  width={1800}
+  height={1301}
+  caption="Left, my screenshot from Chrome on my iPhone: the soft thumbnail holding the place, and WebKit's broken-image box where the full photo should be. Right, a Simulator phone poisoned on purpose and healed by the fix."
+/>
+
+The executor proved the cause in the Simulator. Preact applies JSX props in
+source order, and the viewer's image set `src` before `crossOrigin`. WebKit
+starts loading the moment `src` lands, so it first fetched the full-size
+photo as a plain request without CORS. The media domain answers that kind of
+request without an `Access-Control-Allow-Origin` header and without
+`Vary: Origin`, under a cache header good for a year, and the phone kept
+it. The next time the viewer asked for the same photo properly, with CORS,
+the phone answered from its cache, the CORS check failed, and WebKit drew
+its broken-image icon. Chrome on iPhone is WebKit underneath, so it did the
+same. Chromium doesn't start that first plain request. The Fetch standard
+describes this exact trap, and `Vary: Origin` is its answer.<Note id="5" />
+Rather than change the storage side, the fix went in the page.
+
+It swapped two attributes and added a unit test that fails if any component
+sets `src` before `crossOrigin`. Phones that had already cached a bad copy
+needed more. A page-wide listener hides a photo that fails to load and
+retries it once with `?r=1` on the end: a new cache key for the phone, a
+query the storage ignores. The reviewer caught one more way in. The
+Download button's fallback opened the photo in a new tab, which is itself a
+plain request, and it would have poisoned the rescue URL too. It opens
+`?dl=1` now, an address no image on the page ever loads. The next morning I
+reopened the photos that had shown a question mark, and they loaded.
+
+## Twenty pull requests later
+
+Twenty merged pull requests, 7,203 lines of app code, 402 unit tests and 106
+end-to-end test runs across emulated iPhones and Androids. A load test of
+150 simulated guests uploading ten small files each over ten minutes, against
+a preview deploy: zero errors once the test harness retried failed uploads
+the way the real uploader does, and a p95 of 184 ms on the server actions.
+
+<Figure
+  src="/images/writing/wedding-app-in-seventeen-unattended-hours/slideshow-and-admin.webp"
+  alt="Two phone screenshots. Left: the slideshow showing a colorful test photo with the hand-lettered caption 'Taken by Aunt Margaret, Sun 4:09 PM'. Right: the admin page reading '1213 items (1045 photos, 168 videos) from 1045 phones, ready 1, deleted 1212', with Uploads paused and Require approval switches, a Phone probe button, and Hide, Delete, Rotate, Rename and Hide phone controls on each item."
+  width={1344}
+  height={1400}
+  caption="The projector slideshow and the admin page on a preview deploy. Twelve hundred items from a thousand phones: nearly all of them test runs, already cleaned up by the suite itself."
+/>
+
+The accounting a skeptic should ask for. The orchestrator ran with Claude
+Code's permission prompts off, because an unattended run can't click Allow;
+the plan's stop conditions and the credentials it couldn't mint were the
+fence. My time was the research and planning in the two days before
+kickoff, the pre-flight, and the day after, testing on my phone and asking
+for changes. I don't have a clean dollar figure: it ran on a Claude
+subscription plan rather than metered API calls, hit the weekly usage limit
+during the memories review, and finished on extra usage credits. And I
+haven't read most of the 7,203 lines. A reviewer agent read every diff that
+touched anything risky, and the orchestrator read the rest; the tests are
+what I trust.
+
+Most of what's left needs a person in the room: friends' phones on bad
+signal, a printed sign scanned by two different phones, the projector laptop
+playing voice notes, Android's back gesture with the reaction tray open.
+None of it needs an agent.
+
+One of the last units the run built was a check that fails any pull request
+touched between December 4 and 7 unless I label it by hand. On the 5th I'm
+holding the microphone, not a laptop.
+
+<Footnotes
+  notes={[
+    {
+      id: '1',
+      body: 'Vercel\'s Blob usage docs: on the free plan "you will not be able to access Vercel Blob if limits are exceeded. In this scenario, you will have to wait until 30 days have passed." <a href="https://vercel.com/docs/vercel-blob/usage-and-pricing">Vercel Blob usage and pricing</a>. R2\'s side of the trade, including why signed URLs have to go to the R2 API hostname rather than a custom domain: <a href="https://developers.cloudflare.com/r2/api/s3/presigned-urls/">R2 presigned URLs</a>.',
+    },
+    {
+      id: '2',
+      body: 'On iPhone, a photo taken from the page\'s own camera option reaches the browser as a JPEG with its location gone: <a href="https://bugs.webkit.org/show_bug.cgi?id=263192">WebKit bug 263192</a>. Android\'s system photo picker redacts location by design.',
+    },
+    {
+      id: '3',
+      body: 'The teammate and the hole he found are in <a href="/writing/giving-the-brief-away">Giving the brief away</a>. The run\'s other habits, counted gates and never trusting an exit code, come from <a href="/writing/treating-a-notes-app-like-production">Treating a notes app like production</a>.',
+    },
+    {
+      id: '4',
+      body: 'Playwright emulates a device as a viewport, a user agent, a scale factor and touch. There is no browser chrome to emulate. <a href="https://playwright.dev/docs/emulation">Playwright: Emulation</a>.',
+    },
+    {
+      id: '5',
+      body: 'The WHATWG Fetch standard, <a href="https://fetch.spec.whatwg.org/#cors-protocol-and-http-caches">CORS protocol and HTTP caches</a>: without <code>Vary: Origin</code>, a response to a non-CORS request "will lack Access-Control-Allow-Origin and the user agent will cache that response," then reuse it for a later CORS request. Order matters on the element too: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/crossorigin">MDN on the crossorigin attribute</a>.',
+    },
+  ]}
+/>

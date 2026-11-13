@@ -1,0 +1,22 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/run-loop-light.svg?raw';
+import darkSvg from '../../assets/diagrams/run-loop-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={460}
+  caption="The loop that ran all night: one unit at a time, nothing merged without green checks and a recorded verdict, and a STOP that parks the work instead of improvising."
+>
+  The plan and pre-flight come first, with every decision made up front. The
+  orchestrator writes one brief per unit. An executor works in its own git
+  worktree and opens a pull request. CI runs on the final commit. A review
+  follows: a hostile agent with fresh context for risky units, or the
+  orchestrator's own read for the rest. REVISE sends it back to the
+  executor, APPROVE lets it merge, and a merge is a production deploy. The orchestrator checks the live
+  site, a row goes into the run ledger, and the next unit starts.
+  If an executor hits a STOP condition, it writes a BLOCKED line and waits
+  for me instead.
+</Diagram>
