@@ -1,11 +1,11 @@
 ---
 title: '816 applications in 32 hours'
 date: 2026-11-12
-description: "Four roles, 816 applications. I assumed everyone was applying with AI. Then I checked."
+description: 'Four roles, 816 applications. I assumed everyone was applying with AI. Then I checked.'
 draft: false
 depth: true
 ogTreatment: default
-pullQuote: 'Only 21 of the 765 applications scored so far got full marks for a specific story about AI getting something wrong, with how they caught it and something to show for it.'
+pullQuote: 'Out of 765 applications scored so far, 21 got full marks on the AI question: one specific failure, how they caught it, and something to show for it.'
 tags: ['ai-augmented-engineering', 'hiring', 'claude-code']
 ---
 
@@ -31,79 +31,81 @@ import ReadingHoursChart from '../../components/post/ReadingHoursChart.astro';
 import WhatTheySentChart from '../../components/post/WhatTheySentChart.astro';
 
 Ninety-two applications landed in the second hour. We posted four roles one
-afternoon, and 32 hours later there were 816, about 770 of them distinct. My first thought was that everyone else must be
-using AI to apply. My second was that I'd better step up my game.
+afternoon, and 32 hours later we had 816, about 770 of them distinct. My first
+thought was that everyone else must be using AI to apply. My second was that
+I'd better step up my game.
 
 <ArrivalsChart />
 
-Then I checked. The pace was real: the engineering role alone beat our busiest
-earlier posting, and all four together drew about twenty times what a typical
-posting gets in its first day and a half. The AI tells went the other way.
+The volume was real: the engineering role alone beat our busiest earlier
+posting, and all four together drew about twenty times what a typical posting
+gets in its first day and a half. When I checked the text for AI tells, though,
+the numbers went the other way.
 
 <AiTellsChart />
 
 <Depth min={2}>
 
-Median intro length didn't move: 71 words before, 72 now. No two strangers
-share even a fifth of their six-word phrases. Applicants who visibly used AI, by
-saying so or by addressing an AI reader, came to about 1%.
+Median intro length barely moved, from 71 words on earlier postings to 72 now.
+No two strangers share even a fifth of their six-word phrases. About 1% of
+applicants visibly used AI, either by saying so or by addressing an AI reader.
 
 </Depth>
 
-You can't see AI in the text anymore. The form was already built for that: it
-asks for something we can check.
+You can't spot AI in the application text anymore. We built the form around
+that from the start by asking for something we can verify.
 
 <Depth min={2}>
 
-The roles span engineering, design and product, and all four ask for the same
-kind of person: someone who has done one craft well and loved it, and who uses
-AI to cover the other two. The single-hat role is fading.
+The four roles span engineering, design and product, and each one asks for the
+same profile: someone who has done one craft well and loved it, and who uses AI
+to cover the other two. The single-hat role is fading.
 
-I've written about the two hiring stages that come after this one: background
-research with parallel Claude Code agents, and the interview that follows
-it.<Note id="1" /> Both started from a pile I could read myself. This is the
-stage before either, sorting who I look at first, when the pile arrives faster
-than anyone can read it.
+My earlier posts covered the two hiring stages that come after this one:
+background research with parallel Claude Code agents and the interview that
+follows.<Note id="1" /> Both started from a pile I could read myself. At 816
+applications, I needed a pass in front of them to decide who to read first.
 
 </Depth>
 
-## What did the AI get wrong?
+## Asking what the AI got wrong
 
-The form asks: *What did the AI get wrong, and how did you catch it?* Only 21 of the 765 applications scored so far got full
-marks: a specific story, how they caught it, and something to show for it.
-Half scored a 2 out of 4, some version of "AI makes mistakes, so I always
-review."
+The form asks: *What did the AI get wrong, and how did you catch it?* Half of
+the 765 applications scored so far landed at 2 out of 4 -- some version of "AI
+makes mistakes, so I always review." Only 21 earned a 4 by naming a specific
+failure, explaining how they caught it, and linking something to show for it.
 
 <AiScoresChart />
 
 <Depth min={2}>
 
-The question is the job in one sentence: the AI was wrong, and the person
-noticed. An assistant can invent that story, and it can fake a file too. It
-can't walk me through it when I say "open it and show me" on the call. In the
+That question is the job: the AI got something wrong, and a person caught it.
+An assistant can invent that story and fake a file to match, but it can't walk
+me through the fix when I say "open it and show me" on the call. In the
 interviews, a 1 on AI fluency ends a candidacy.
 
 </Depth>
 
 ## Fifteen cents an application
 
-Reading all 816 the old way would have cost 27 to 54 hours: two to four
-minutes each for a resume, three short answers and a link, before a single
-phone call. So the night the roles went live, I had agents build a first pass.
+Reading all 816 by hand would have taken 27 to 54 hours: two to four minutes
+each for a resume, three short answers and a link, before a single phone call.
+So the night the roles went live, I had agents build a first pass.
 
 <Depth min={3}>
 
 <BuildNightTimeline />
 
-The first thing the agents found was that the nightly research job had gone
-blind: the role labels in the candidate database had changed, and the job no
-longer recognized two of the four. That first scoring run was 1,080 model
-calls with zero failures.
+Before building anything new, the agents found that our existing nightly
+research job had gone blind: the role labels in the candidate database had
+changed, so the job no longer recognized two of the four roles. After fixing
+that and building the triage pass, the first scoring run made 1,080 model calls
+with zero failures.
 
 </Depth>
 
-Scripts check the links and public work each applicant gave us. Then a model
-reads the application three separate times against the role's rubric and
+Scripts check the links and public work each applicant sent. Then a model
+reads each application three separate times against the role's rubric and
 sorts it into one of three piles: research (a deeper look before any call),
 maybe, or likely pass. A fresh scoring run costs about fifteen cents an
 application in model time<Depth inline min={4}>: three Opus 5.5 samples at
@@ -113,21 +115,21 @@ about five cents each</Depth>.
 
 <Depth min={2}>
 
-Three reads and a vote, because one model read is a noisy
-measurement.<Note id="2" /> Two of three have to agree before a signal counts.
+We run three reads and take a vote because a single model pass is
+noisy.<Note id="2" /> Two of the three have to agree before a signal counts.
 
 </Depth>
 
-What I read is one row per applicant: the pile, a strip of symbols, and a
-note that leads with the strongest evidence and names what to probe. Here's a
-made-up one, in the same layout.
+I read one row per applicant: the pile, a strip of flags, a short note leading
+with the strongest evidence and what to probe, and a first question for the
+call. Below is a made-up example.
 
 <TriageRow />
 
 <Depth min={2}>
 
-The real row also carries a number to sort by. The flags lead with symbols,
-not colors, because I can't reliably tell red from green.
+The live row also carries a numeric sort score. Flags use distinct shapes
+rather than color alone because I can't reliably tell red from green.
 
 <FlagLegend />
 
@@ -135,24 +137,22 @@ not colors, because I can't reliably tell red from green.
 
 ## A hunch can't reject anyone
 
-The AI sorts and flags, and that's all. It can't move anyone forward or turn
-anyone away, and its suspicion alone can't even put someone in the bottom
-pile.<Depth inline max={1}> I go through the piles and make every call.</Depth>
+The AI only sorts and flags. It can't advance or reject anyone, and a model's
+suspicion alone can't even put an applicant in the bottom pile.<Depth inline max={1}> I go through the piles and make every call.</Depth>
 
-I learned the suspicion part from the model. The same night, before trusting
-it on new applicants, I had it score 91 earlier applicants whose backgrounds
-we'd already researched, so I could check its work. When the
-model alone decided something didn't add up, it was right about four
-applicants our research had flagged as fake and wrong about three real people.
+That rule came from testing the model against our own past work. The same
+night, before running it on the new wave, I had it score 91 earlier applicants
+whose backgrounds we had already researched. Seven times, the model decided on
+its own that an application didn't add up -- catching four applicants our
+research had flagged as fake, and misflagging three who were real.
 
 <CalibrationChart />
 
 <Depth min={2}>
 
-So the model's suspicion can no longer put anyone in likely pass. That pile
-needs a problem a script checked, two clearly missed must-haves, or a craft
-score of 1. A suspicion by itself gets a
-look-closer flag, a small penalty in the sort and a question for the call.
+Putting someone in likely pass requires a problem a script verified, two
+clearly missed must-haves, or a craft score of 1. A model suspicion on its own
+adds a look-closer flag, a small sort penalty and a question for the call.
 
 </Depth>
 
@@ -160,7 +160,9 @@ look-closer flag, a small penalty in the sort and a question for the call.
 
 <GuardChart />
 
-A handful addressed an AI reader directly. Nobody talked their way up.
+A handful of applicants addressed an AI
+reader directly in their answers. None of them talked their way into a higher
+pile.
 
 </Depth>
 
@@ -170,24 +172,24 @@ A handful addressed an AI reader directly. Nobody talked their way up.
   One flag means look closer. It never means reject.
 </PullQuote>
 
-The rest of the guardrails:
+The other guardrails:
 
 - The code strips names, contact details, schools and cities before the model
-  reads anything. A later review found gaps.
-- Any claim the model can't back with an exact quote is dropped<Depth inline min={4}>:
-  twelve words or fewer, word for word, and code checks each one against the
-  original, so the model can't invent quotes</Depth>.
-- Anything in an application addressed to an AI is ignored by the scoring and
-  quoted in the note for me to see.
-- Only a person changes a candidate's status, and the code checks every write
-  for it.
+  reads anything, though a review the next day found gaps.
+- The script drops any claim the model can't back with an exact quote<Depth inline min={4}>:
+  twelve words or fewer, matched word for word against the source so the model
+  can't invent quotes</Depth>.
+- Scoring ignores instructions addressed to an AI and quotes them in the note
+  for me to see.
+- Only a person can change a candidate's status, and the write path checks
+  every update to enforce it.
 
 <TriageLanesDiagram />
 
 ## Where I overruled the agents
 
-Agents drafted the postings, the scoring rubric and the triage, and they
-recommended plenty along the way. I made six calls differently.
+Agents drafted the job postings, the scoring rubric and the triage code,
+pushing for their own defaults along the way. I overruled them on six calls.
 
 <OverruleBoard />
 
@@ -195,26 +197,26 @@ recommended plenty along the way. I made six calls differently.
 
 <Depth min={3}>
 
-The pay range is the one I got wrong. The agents recommended showing it and I
-said no. An hour later, well before anything was posted, they flagged that
-several states expect a range on remote postings, and I put it on.
+The pay range is the one I got wrong. I initially left it off; an hour later,
+before the postings went live, the agents flagged that several states require a
+range on remote listings, so I put it on.
 
-The AI-signal call is the one I'd defend hardest. The first version treated
-some unusual uses of AI in an application as integrity problems, and they cost
-rank. I said to show them and stay neutral: "I don't know what I want to do
-with that signal, but I would like to call it out so that as we go through
-more candidates, I can figure out if it's a positive or a negative signal." And:
-"At the very least, I think that's a signal that they're using or aware of
-AI." These roles exist to hire people who use AI well, and a penalty on
-awareness of AI would have sunk some strong applicants.
+The AI-signal call is the one I'd defend hardest. The first draft treated
+unusual uses of AI in an application as integrity problems and penalized them in
+the sort. I told the agent to surface them without a penalty: "I don't know
+what I want to do with that signal, but I would like to call it out so that as
+we go through more candidates, I can figure out if it's a positive or a
+negative signal." And: "At the very least, I think that's a signal that
+they're using or aware of AI." We're hiring people who use AI well; penalizing
+awareness of it would have buried strong applicants.
 
 </Depth>
 
 <Depth min={4}>
 
-The agent's own read of that call, when asked: "I was optimizing to catch
-cheaters with a signal that hadn't been shown to mean anything. He wanted to
-measure it first."
+When I asked the agent afterward to assess that call, it wrote: "I was
+optimizing to catch cheaters with a signal that hadn't been shown to mean
+anything. He wanted to measure it first."
 
 </Depth>
 
@@ -223,115 +225,119 @@ measure it first."
 ## A second model checked the first one's work
 
 The next day I had a different model, Fable 5.2, review the whole pipeline
-cold. It read the code, the saved run artifacts and the live rows, read-only,
-with no context from the session that built it. It came back with one
-must-fix and seven should-fix findings, and several were already live on real
-rows.
+cold. It read the code, the saved run artifacts and the live rows in read-only
+mode, with no context from the session that built the system. It came back with
+one must-fix and seven should-fix findings, several of them already affecting
+live rows.
 
-The must-fix was a check for related applications. It was matching on things
-thousands of unrelated applicants share, so strangers looked related and lost
-rank. One applicant who met four of five must-haves sat near the bottom partly
-because of it.
+The must-fix was a check meant to link related applications. It matched on
+values that thousands of unrelated applicants share, so strangers looked
+connected and dropped in the sort. One applicant who met four of five
+must-haves sat near the bottom partly because of it.
 
-The best catch was in the step meant to hide names and places before scoring.
-The reviewer didn't take the docs' word for it. Every run saves the exact
-packet the model saw, so it opened every saved packet from that first night
-and counted what was still in there.
+The sharpest catch was in the step that strips names and places before scoring.
+Instead of taking the docs' word for it, the reviewer opened every saved model
+packet from that first night and counted what had actually gone into the prompt.
 
 <RedactionChart />
 
-Most name leaks weren't in the application at all.
-They came from facts the scripts added afterward, like a portfolio domain
-built from a first and last name, which the redaction step had never covered.
-It found the opposite failure too: a rule for removing schools wiped five
-intros and one AI answer completely.
+Most of the leaked names weren't in the application text at all. They came from
+facts the scripts appended afterward, like a portfolio domain built from a
+first and last name, which the redaction step never ran on. The reviewer
+found the opposite bug too: an overly broad rule for stripping school names had
+wiped five intros and one AI answer blank.
 
-What's left after the fix is mostly applicants writing their own name in an
-answer, plus name pieces that are just common words.
+The 6% of name matches remaining after the fix are mostly applicants writing
+their own name inside an answer, or name parts that collide with common English
+words.
 
 </Depth>
 
 <Depth min={3} max={3}>
 
-The fix didn't reach most of the scores, though. A cache bug kept the old
-reads for 505 applications, and those get re-read before I start reviewing.
+The fix didn't reach most of the live scores yet. A cache bug kept the pre-fix
+reads on 505 applications, so I'm re-running those before I start reviewing.
 
 </Depth>
 
 <Depth min={4}>
 
-The fix didn't reach most of the scores, though. While I was writing this post,
-a reader agent checking my arithmetic noticed the run numbers didn't add up. The
-sample cache was keyed on the application, not on what the model actually
-read, so the re-score after the fix reused the old reads for 505 applications,
-reads taken on the leaky packets. Their piles and sort scores were recomputed
-under the new rules; the reads underneath weren't. The fix is to key the cache
-on the input itself and re-read those 505, under an hour of model time,
-before I start reviewing.
+The fix didn't reach most of the live scores yet. While I was drafting this
+post, a reader agent checking my arithmetic noticed the run totals didn't add
+up. The agents had keyed the sample cache on the application ID instead of the redacted
+packet, so the re-run after the redaction fix reused cached reads from the
+leaky packets on 505 applications. It recomputed their piles and sort order
+under the new rules while leaving the old model reads underneath. Keying the
+cache on the packet itself and re-reading those 505 takes under an hour of
+model time before I start reviewing.
 
 </Depth>
 
 <Depth min={3}>
 
-None of this showed up in the builder's own tests, which checked that the code
-did what it was written to do. The reviewer counted what the model actually
-received, and that only works because every packet gets saved.
+None of these bugs tripped the builder agent's own tests, which only
+checked the cases the builder thought to write. Auditing the saved packets on
+disk caught what the tests missed.
 
 </Depth>
 
 <Depth min={4}>
 
-Four of the seven should-fixes failed silently:
+Four of the seven should-fix findings were silent failures:
 
 - A failed lookup counted as a missing link, so one expired token would have
   flagged every applicant.
-- A capitalized `Https://` read as a dead link.
-- The nightly run only compared each night's arrivals with each other, never
-  with the whole pile.
-- Hiding duplicates could hide the row I'd already decided on.
+- A capitalized `Https://` registered as a dead link.
+- The nightly job only compared each night's arrivals against each other
+  instead of against the full pile.
+- Hiding duplicate applications could hide the row where I had already recorded
+  a decision.
 
-The second night turned up one more of the same kind as the must-fix: two
-strangers looked linked over something thousands of people share. Fixed, and
-I corrected both rows by hand.
+The second night surfaced one more false link of the same kind as the must-fix,
+tying two strangers together on a common field. I fixed the check and corrected
+both rows by hand.
 
-## Two layers, three reads, one vote
+## Inside the scoring run
 
-A deterministic layer runs the checks and writes each result down as a fact a
-person could verify. A model layer reads a redacted packet, the application
-plus those facts, and scores it against the role's rubric. The scoring model
-never touches the web and has no tools; a separate, narrower check opens the
-work each applicant linked.
+The pipeline separates deterministic checks from model reads so the scoring
+model never touches the web or holds any tools. Scripts verify links and record
+each result as a plain fact a person can check; a separate, narrower check
+opens the work each applicant linked. The scoring model only sees the redacted
+packet: the application text plus those recorded facts.
 
-Each of the three samples is a fresh headless `claude -p` run: no tools, an
-empty working directory, no saved session, the rubric as the system prompt,
-and output forced to a JSON schema. The schema holds a verdict and a quote for
-each must-have, a craft score, an AI-answer score, signals with quotes, a
-suggested lane for the product roles, a tier and a one-line note.
+Each of the three reads is a fresh headless `claude -p` call with no tools, an
+empty working directory, no saved session, the role's rubric as the system
+prompt, and output constrained to a JSON schema. The schema requires a verdict
+and verbatim quote for each must-have, a craft score, an AI-answer score,
+quoted signals, a suggested lane for the product roles, a tier and a one-line
+note.
 
-The vote: craft and AI scores take the median of three, each must-have takes
-the majority, and the tier is the plurality, with ties going to maybe. When samples disagree by
-two or more points, or one says research while another says likely pass, the
-row gets the median as well as a flag for a person. Across 812 applications,
-no row tripped that flag. The three reads agreed on the tier 92% of the time
-and split 2-1 on the rest.
+To combine the three reads, craft and AI scores take the median, each must-have
+takes the majority, and the tier takes the plurality, with ties going to maybe.
+If two reads ever disagree by two or more points, or one votes research while
+another votes likely pass, the row keeps the median and adds a flag for me to
+inspect. Across 812 applications, no row triggered that split flag; the three
+reads agreed unanimously on the tier 92% of the time and split 2-1 on the rest.
 
-Every sample is cached on disk, which makes adding checks cheap: running a new
-set of public checks across all 812 cost $1.42 in model time, because only the
-nine newest applications needed model reads. The other 803 got the new
-findings as flags. It's the same cache that kept the leaky reads for 505.
+Caching every sample on disk makes adding deterministic checks cheap. Running a
+new set of public checks across all 812 applications cost $1.42 in model time
+because only the nine newest arrivals needed fresh model reads; the other 803
+just picked up the new findings as flags. That is the same cache that held onto
+the pre-fix reads for 505 rows.
 
-It runs on headless `claude -p` against a subscription instead of the Batch
-API, six at a time, because there was no API key on the machine. That costs
-about twice what Batch would (fifteen cents an application against roughly
-eight), and in exchange I can watch every run synchronously, at about nine
-applications a minute. About 2,500 model calls for this wave over two days,
-zero failures.
+Because the machine had no API key configured, the runner calls `claude -p`
+against a subscription six at a time instead of using the Batch API. That costs
+about twice what Batch would (fifteen cents an application instead of roughly
+eight), in exchange for watching runs finish live at about nine applications a
+minute. Across two days, the wave ran about 2,500 model calls with zero
+failures.
 
 <RunCostsChart />
 
-There's no bias audit yet. Redaction targets names, schools and cities, not
-employers, graduation years or how someone writes. The model is told none of
-that can affect a score, which is an instruction, not a guarantee.
+We haven't run a bias audit yet. Redaction targets names, schools and cities;
+employers, graduation years and writing style stay in the packet. The prompt
+tells the model never to let name, origin, age, gender, location or school
+affect a score, which is an instruction, not a guarantee.
 
 </Depth>
 
@@ -372,36 +378,38 @@ def write(row, fields):
 
 </Depth>
 
-## What's left for people
+## Reading the 124 first
 
-The first pass turns that reading into the 124 research notes, at a minute or
-two each: two to four hours. The 660 maybes come after, sorted so the
-strongest are on top. That's an estimate, and a bet: I'll only know whether
-the 124 were the right 124 once I've made real decisions.
+Instead of starting at the top of 816 raw applications, I start with 124
+research notes -- two to four hours of reading at a minute or two each, with
+the 660 maybes sorted behind them so the strongest are on top. That order is an
+estimate and a bet: I'll only know whether those 124 were the right 124 once
+I've made real decisions.
 
 <ReadingHoursChart />
 
 <Depth min={3}>
 
-The first check wasn't encouraging. The yardstick was the research agents'
-earlier verdicts on those 91 applicants, not hiring outcomes, and against it
-the sort did only modestly better than a coin flip, an AUC of 0.63. The
-earlier form didn't ask the AI question, the strongest input now, so this wave
-may sort differently. Every triage field is labeled
-uncalibrated until there are fifty decisions on this wave to measure against.
+The first calibration check wasn't encouraging. Measured against the research
+agents' earlier verdicts on those 91 past applicants rather than hiring
+outcomes, the sort did only modestly better than a coin flip, at an AUC of
+0.63. The earlier form didn't ask the AI question, the strongest input now, so
+this wave may sort differently. We label every triage field uncalibrated until we
+have fifty human decisions on this wave to measure against.
 
 </Depth>
 
 <Depth min={4}>
 
-The sort also can't see its own misses. Decisions only happen on people I read, so
-nothing measures the bottom of the maybe pile unless I sample it on purpose.
+The sort also can't see its own misses. Decisions only happen on applications I
+read, so nothing measures the bottom of the maybe pile unless I sample it on
+purpose.
 
 </Depth>
 
-The first pass also changes who gets to help. The research and the notes exist before
-anyone talks to a candidate, so teammates can run the deeper interviews right
-after my first call instead of waiting on me.
+Having the research and triage notes ready before anyone talks to a candidate
+also lets teammates run the deeper interviews right after my first call instead
+of waiting on me.
 
 <Depth min={2}>
 
@@ -412,24 +420,23 @@ questions written for that candidate, and a short guide times the hour.
 
 <Depth min={3}>
 
-The guide takes about ten minutes to read. The pre-read goes in a fixed order:
-the AI answer first, then the triage note, then the research. The hour-long
-deep dive is planned to the minute. The candidate walks us through their work
-for fifteen of those minutes, and later makes one small change live with their
-usual tools. We're watching how they work, not only what ships. Everyone
-scores alone before anyone discusses. From the guide: "Someone who made the
-work can explain any piece of it. Someone who didn't, can't. You'll notice."
-Pay conversations stay with me.
+The guide takes about ten minutes to read and sets a fixed pre-read order: the
+AI answer first, then the triage note, then the research. During the hour-long
+deep dive, the candidate spends fifteen minutes walking us through their work
+and later makes one small change live with their usual tools so we can watch
+how they work. Everyone scores independently before the group discusses. From
+the guide: "Someone who made the work can explain any piece of it. Someone who
+didn't, can't. You'll notice." Pay conversations stay with me.
 
 </Depth>
 
 <Depth min={4}>
 
-There's also a table of questions we never ask, with innocent-sounding
-examples like "What year did you graduate?", and a section on what to do if
-something seems off: ask them to open their own work and change something
-small, never confront, and never treat an accent, a name, a time zone or a
-quiet online presence as a sign of anything.
+The guide also includes a table of questions we never ask, with
+innocent-sounding examples like "What year did you graduate?", and what to do
+if something feels off: ask them to open their own work and change something
+small, never confront, and never treat an accent, a name, a time zone or a quiet online
+presence as a sign of anything.
 
 </Depth>
 
@@ -439,8 +446,8 @@ The work sample mirrors the roles: three to five hours across a week, one
 piece in the applicant's own craft and one outside it. Structured interviews
 and work samples have predicted job performance better than most methods for
 decades, and a 2022 re-analysis that brought most of the numbers down still
-put structured interviews on top.<Note id="3" /> AI just gets you to them
-faster.
+put structured interviews on top.<Note id="3" /> Triage just gets us to those
+conversations faster.
 
 <WhatTheySentChart />
 
@@ -450,7 +457,7 @@ faster.
 
 Tell one real story about AI getting something wrong and how you noticed.
 Link something you made, and check that the link works. Don't paste your
-LinkedIn where someone asked for your work<Depth inline max={1}>; a third of
+LinkedIn where the form asks for your work<Depth inline max={1}>; a third of
 this pile did</Depth>.
 
 </Callout>
@@ -464,7 +471,7 @@ one of those calls is mine.
   notes={[
     {
       id: '1',
-      body: 'Part one, <a href="/writing/parallel-agents-for-hiring-research">Running candidate background research with parallel Claude Code agents</a>, decides who is real. Part two, <a href="/writing/the-interview-after-the-research">The interview after the research</a>, is how to spend the 30 minutes once you know.',
+      body: 'Part one, <a href="/writing/parallel-agents-for-hiring-research">Running candidate background research with parallel Claude Code agents</a>, covers verifying who is real. Part two, <a href="/writing/the-interview-after-the-research">The interview after the research</a>, is how to spend the 30 minutes once you know.',
     },
     {
       id: '2',
