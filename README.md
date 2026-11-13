@@ -88,7 +88,8 @@ Shared text <Depth inline min={4}>with a technical clause</Depth> keeps going.
 - Don't nest `<Depth>` elements.
 - Content outside any `<Depth>` shows at every level. Write that shared spine so it reads well at both ends.
 - Keep `<Note>` (and `<Footnotes>`) out of `<Depth>`. Footnote numbers are set by hand, so a hidden note leaves a gap in the sequence and a Notes entry whose reference isn't on the page.
-- Reading time is computed per level at build. The meta line reads "Balanced · 6 min read" and updates as the reader drags.
+- Reading time is computed per level at build. The readout under the slider shows the level and its minutes, and updates as the reader drags.
+- After a change, each block the new level added gets a cobalt hairline in the left gutter for a moment, and each new inline clause a brief underline. Keep a `<Depth>` block to content that sits in the text column, so the mark lands beside it. The motion plan (timings, reduced-motion path) is at the top of `src/scripts/depth-slider.ts`.
 - Links can pin a level: `?depth=1` to `?depth=5`, `?depth=business`, `?depth=technical`. The reader's last choice is remembered across posts; a URL param wins over it.
 - Without JS, readers get level 3 and no slider. The RSS feed carries descriptions only, so it's unaffected.
 - Using `<Depth>` in a post without `depth: true` fails the build.

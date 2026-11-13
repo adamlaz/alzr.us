@@ -24,6 +24,8 @@ export const DEPTH_LABELS: Record<DepthLevel, string> = {
 
 /** localStorage key for the reader's remembered level (shared across posts). */
 export const DEPTH_STORAGE_KEY = 'depth';
+/** localStorage flag: the reader has met the slider, so its first-visit breath is spent. */
+export const DEPTH_SEEN_KEY = 'depth-seen';
 /** URL search param that pins a level for a shared link. */
 export const DEPTH_PARAM = 'depth';
 

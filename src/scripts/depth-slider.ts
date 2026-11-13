@@ -19,11 +19,48 @@
  * Lifecycle: binds on load and astro:page-load, tears down on astro:before-swap.
  * Everything per-page hangs off one AbortController, so nothing leaks across
  * ClientRouter navigations.
+ *
+ * ── Motion plan ("Ink & ruler") ──
+ *
+ * Focal moment: a depth change. Nothing else on the control moves on its own.
+ *
+ * Feedback (the instrument; CSS keyed off data-level, WAAPI for the detent):
+ *  - Thumb glides to the stop and the ink fill follows it: translate / scale,
+ *    180 ms + 45 ms per extra stop crossed, cubic-bezier(0.16, 1, 0.3, 1).
+ *  - Ticks take ink as the thumb reaches them (120 ms, delayed along the
+ *    travel).
+ *  - Detent on arrival: the thumb compresses to 0.82 and settles, 260 ms, no
+ *    overshoot; the tick under it flashes past the thumb's edges, 420 ms.
+ *  - Label: Fraunces opsz / SOFT / wght + tracking tween from wherever they
+ *    are to the new level, 300 ms, same ease, so a drag reads as one morph.
+ *  - Minutes: each changed digit rolls in its slot, up when the number grows,
+ *    260 ms, tens 30 ms behind ones.
+ *  Keyboard, end labels and both controls all run through the same path.
+ *
+ * Continuity (what the level added; drawn once the page has settled):
+ *  - A cobalt hairline in the gutter beside each block that appeared: scaleY
+ *    from the top 400 ms, hold 1200 ms, fade 600 ms. Document order, 70 ms
+ *    apart, the last starting within 250 ms of the first. Near the viewport
+ *    only. Inline clauses get the same ink as an underline drawn left to right.
+ *  - Removals keep the quick collapse and get no mark.
+ *
+ * Discovery: on a reader's first depth post the header thumb breathes once
+ * (swell to 1.3 and back plus one expanding ring, 2200 ms, ease-in-out), after
+ * 1400 ms in view and idle. A stored flag, or any use of the slider, spends it.
+ *
+ * Budget: transform + opacity for the thumb, fill, flash, ring, digits and
+ * marks. Font-variation tweening touches one small label per control. The
+ * underline animates background-size on one clause. Everything is skipped
+ * while the tab is hidden, and the pill's effects are skipped while it is.
+ *
+ * Reduced motion: thumb, fill, axes and digits switch at once; no detent, no
+ * breath; marks and underlines appear by opacity (150 ms), hold, then fade.
  */
 import {
   DEPTH_DEFAULT,
   DEPTH_LABELS,
   DEPTH_PARAM,
+  DEPTH_SEEN_KEY,
   DEPTH_STORAGE_KEY,
   type DepthLevel,
   depthReadout,
@@ -36,6 +73,25 @@ const EASE_SIZE = 'cubic-bezier(0.4, 0, 0.2, 1)';
 const EASE_FADE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
 const SETTLE_MS = 350; // URL + storage + announcement after the slider rests
 const HOLD = 'data-depth-hold';
+
+// The instrument and the marks (see the motion plan above).
+const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const TRAVEL = 180; // ms, thumb + ink to the next stop
+const TRAVEL_STEP = 45; // ms more per extra stop crossed
+const DETENT = 260;
+const FLASH = 420;
+const MORPH = 300;
+const ROLL = 260;
+const ROLL_LAG = 30; // ms each digit trails the one to its right
+const MARK_DRAW = 400;
+const MARK_HOLD = 1200;
+const MARK_FADE = 600;
+const MARK_APPEAR = 150; // reduced motion: opacity in, no draw
+const MARK_STAGGER = 70;
+const MARK_SPREAD = 250; // the last mark starts within this of the first
+const BREATH = 2200;
+const BREATH_IDLE = 1400;
+const NBSP = '\u00a0';
 
 const SIZE_PROPS = [
   'height',
@@ -82,6 +138,22 @@ function writeStored(level: DepthLevel): void {
   }
 }
 
+function hasMetSlider(): boolean {
+  try {
+    return localStorage.getItem(DEPTH_SEEN_KEY) !== null || localStorage.getItem(DEPTH_STORAGE_KEY) !== null;
+  } catch {
+    return true; // can't remember the breath, so don't repeat it on every visit
+  }
+}
+
+function markSliderMet(): void {
+  try {
+    localStorage.setItem(DEPTH_SEEN_KEY, '1');
+  } catch {
+    // Nothing to remember it in.
+  }
+}
+
 function resolveInitial(): DepthLevel {
   return parseDepth(new URLSearchParams(location.search).get(DEPTH_PARAM)) ?? readStored() ?? DEPTH_DEFAULT;
 }
@@ -91,8 +163,44 @@ function readMinutes(root: HTMLElement): number[] {
   return mins.length === 5 && mins.every((n) => n > 0) ? mins : [];
 }
 
-/** Sync every control + readout to `level`. Safe to call before binding. */
-function paintUI(level: DepthLevel, minutes: number[]): void {
+/** Set the minutes on an odometer readout. `dir` rolls each changed digit:
+ *  1 up (the number grew), -1 down, 0 no motion. A digit already rolling is
+ *  cut over and restarted, so fast changes never stack. */
+function setMinutes(el: Element, min: number, dir: number): void {
+  const slots = el.querySelectorAll<HTMLElement>('[data-depth-slot]');
+  const padded = String(min).padStart(slots.length, NBSP);
+  slots.forEach((slot, i) => {
+    const [cur, ghost] = slot.children;
+    if (!(cur instanceof HTMLElement) || !(ghost instanceof HTMLElement)) return;
+    const ch = padded[i];
+    const old = cur.textContent ?? '';
+    if (old === ch) return;
+    for (const a of [...cur.getAnimations(), ...ghost.getAnimations()]) a.cancel();
+    cur.textContent = ch;
+    ghost.textContent = '';
+    if (!dir) return;
+    ghost.textContent = old;
+    const timing: KeyframeAnimationOptions = {
+      duration: ROLL,
+      delay: (slots.length - 1 - i) * ROLL_LAG,
+      easing: EASE_OUT,
+      fill: 'both',
+    };
+    cur.animate([{ transform: `translateY(${dir * 100}%)` }, { transform: 'translateY(0)' }], timing);
+    const out = ghost.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${dir * -100}%)` }], timing);
+    out.finished.then(
+      () => {
+        ghost.textContent = '';
+        out.cancel();
+      },
+      () => {},
+    );
+  });
+}
+
+/** Sync every control + readout to `level`. Safe to call before binding.
+ *  `roll` is the odometer direction; 0 paints without motion. */
+function paintUI(level: DepthLevel, minutes: number[], roll = 0): void {
   const min = minutes[level - 1];
   const label = DEPTH_LABELS[level];
   const valuetext = min ? `${label}, ${min} min read` : label;
@@ -100,10 +208,12 @@ function paintUI(level: DepthLevel, minutes: number[]): void {
     if (input.value !== String(level)) input.value = String(level);
     input.setAttribute('aria-valuetext', valuetext);
   }
+  // Thumb, ink, passed ticks and the label's axes all key off data-level.
+  for (const el of document.querySelectorAll<HTMLElement>('[data-depth-instrument]')) el.dataset.level = String(level);
   if (!min) return;
   for (const el of document.querySelectorAll('[data-depth-readout]')) el.textContent = depthReadout(level, min);
   for (const el of document.querySelectorAll('[data-depth-label]')) el.textContent = label;
-  for (const el of document.querySelectorAll('[data-depth-min]')) el.textContent = `${min} min`;
+  for (const el of document.querySelectorAll('[data-depth-min]')) setMinutes(el, min, roll);
 }
 
 /** Apply the resolved level with no motion: first paint and incoming swaps. */
@@ -220,11 +330,20 @@ class DepthController {
   private pending: DepthLevel | null = null;
   private settleTimer = 0;
   private observer: IntersectionObserver | null = null;
+  private readonly fx = new Set<Animation>(); // instrument, marks, breath
+  private readonly morphs = new Map<Element, Animation>();
+  private readonly marks = new Set<HTMLElement>();
+  private markFrom: DepthLevel; // the level the reader last saw settled
+  private headerInView = false;
+  private breathTimer = 0;
+  private breath: Animation[] = [];
+  private met = hasMetSlider();
 
   constructor(root: HTMLElement) {
     this.root = root;
     this.minutes = readMinutes(root);
     this.level = prepaint(root);
+    this.markFrom = this.level;
     this.wrappers = [...root.querySelectorAll<HTMLElement>('.depth')].map((el) => {
       const inline = el.classList.contains('depth--inline');
       return {
@@ -248,7 +367,21 @@ class DepthController {
     cancelAnimationFrame(this.release);
     cancelAnimationFrame(this.frame);
     clearTimeout(this.settleTimer);
+    clearTimeout(this.breathTimer);
     this.settleAll();
+    this.clearMarks();
+    for (const a of [...this.fx]) a.cancel();
+    this.fx.clear();
+    this.morphs.clear();
+    for (const el of document.querySelectorAll<HTMLElement>('[data-depth-instrument]')) {
+      el.style.removeProperty('--travel');
+      for (const tick of el.querySelectorAll<HTMLElement>('[data-depth-tick]'))
+        tick.style.removeProperty('--tick-delay');
+      for (const slot of el.querySelectorAll('[data-depth-slot]')) {
+        for (const a of slot.getAnimations({ subtree: true })) a.cancel();
+        if (slot.children[1]) slot.children[1].textContent = '';
+      }
+    }
     this.quiet = false;
     document.documentElement.style.removeProperty('overflow-anchor');
     delete this.root.dataset.depthBound;
@@ -280,11 +413,25 @@ class DepthController {
     };
     window.addEventListener('scroll', swallow, { capture: true, signal });
     window.addEventListener('scrollend', swallow, { capture: true, signal });
+    // Nothing plays to a hidden tab: drop the marks and the breath, and let
+    // the breath re-arm when the reader comes back.
+    document.addEventListener(
+      'visibilitychange',
+      () => {
+        if (document.hidden) {
+          this.clearMarks();
+          this.stopBreath();
+        }
+        this.armBreath();
+      },
+      { signal },
+    );
   }
 
   /** Coalesce input events to one level change per frame. */
   private request(n: number): void {
     if (!isDepthLevel(n)) return;
+    this.meet();
     this.pending = n;
     if (this.frame) return;
     this.frame = requestAnimationFrame(() => {
@@ -343,6 +490,7 @@ class DepthController {
       requestAnimationFrame(() => {
         ticking = false;
         const y = window.scrollY;
+        this.armBreath(); // scrolling isn't idle: start the wait again
         if (Math.abs(y - lastY) < 8) return;
         readingDown = y > lastY;
         lastY = y;
@@ -352,8 +500,11 @@ class DepthController {
     window.addEventListener('scroll', onScroll, { passive: true, signal: this.ac.signal });
     this.observer = new IntersectionObserver((entries) => {
       for (const e of entries) {
-        if (e.target === header) headerAbove = !e.isIntersecting && e.boundingClientRect.top < 0;
-        else atEnd = e.isIntersecting || e.boundingClientRect.top < 0;
+        if (e.target === header) {
+          headerAbove = !e.isIntersecting && e.boundingClientRect.top < 0;
+          this.headerInView = e.isIntersecting;
+          this.armBreath();
+        } else atEnd = e.isIntersecting || e.boundingClientRect.top < 0;
       }
       update();
     });
@@ -362,12 +513,268 @@ class DepthController {
     pill.addEventListener('focusout', () => requestAnimationFrame(update), { signal: this.ac.signal });
   }
 
+  // ── The instrument: thumb, ink, ticks, detent, label, minutes ──
+
+  /** Run a one-off effect and forget it when it ends. */
+  private play(el: Element, frames: Keyframe[], timing: KeyframeAnimationOptions): Animation {
+    const a = el.animate(frames, timing);
+    this.fx.add(a);
+    const done = () => this.fx.delete(a);
+    a.finished.then(done, done);
+    return a;
+  }
+
+  /** Move both controls from `prev` to `next`. Dragging, arrow keys and the
+   *  end labels all land here, so they get the same feedback. */
+  private instrument(prev: DepthLevel, next: DepthLevel): void {
+    const motion = !reducedMotion() && !document.hidden;
+    const steps = Math.abs(next - prev);
+    const travel = TRAVEL + TRAVEL_STEP * (steps - 1);
+    const controls = [...document.querySelectorAll<HTMLElement>('[data-depth-instrument]')];
+    const labels = motion ? controls.map((c) => c.querySelector<HTMLElement>('[data-depth-label]')) : [];
+
+    // READ: where each label's axes are right now (possibly mid-morph).
+    const from = labels.map((el) => {
+      if (!el) return null;
+      const cs = getComputedStyle(el);
+      return { fontVariationSettings: cs.fontVariationSettings, letterSpacing: cs.letterSpacing };
+    });
+
+    // WRITE: retarget. Each tick between the two stops changes as the thumb
+    // reaches it; going up the near tick goes first, going down the far one.
+    const lo = Math.min(prev, next) - 1;
+    for (const c of controls) {
+      c.style.setProperty('--travel', `${travel}ms`);
+      c.querySelectorAll<HTMLElement>('[data-depth-tick]').forEach((tick, i) => {
+        const order = next > prev ? i - lo : lo + steps - i;
+        const crossed = i > lo && i <= lo + steps;
+        tick.style.setProperty(
+          '--tick-delay',
+          motion && crossed ? `${Math.round((travel * 0.6 * order) / steps)}ms` : '0ms',
+        );
+      });
+    }
+    for (const el of labels) if (el) this.morphs.get(el)?.cancel();
+    paintUI(next, this.minutes, motion ? Math.sign(next - prev) : 0);
+    if (!motion) return;
+
+    // READ the new axes, then tween to them.
+    const to = labels.map((el) => {
+      if (!el) return null;
+      const cs = getComputedStyle(el);
+      return { fontVariationSettings: cs.fontVariationSettings, letterSpacing: cs.letterSpacing };
+    });
+    labels.forEach((el, i) => {
+      const a = from[i];
+      const b = to[i];
+      if (!el || !a || !b) return;
+      this.morphs.set(el, this.play(el, [a, b], { duration: MORPH, easing: EASE_OUT }));
+    });
+
+    // Detent, timed to the thumb's arrival. A hidden pill gets none.
+    const arrive = travel * 0.5;
+    for (const c of controls) {
+      if (c.dataset.shown === 'false') continue;
+      const dot = c.querySelector('[data-depth-dot]');
+      const flash = c.querySelector('[data-depth-flash]');
+      for (const el of [dot, flash]) for (const a of el?.getAnimations() ?? []) a.cancel();
+      if (dot) {
+        this.play(
+          dot,
+          [
+            { transform: 'scale(1)', easing: 'cubic-bezier(0.3, 0, 0.7, 0.4)' },
+            { transform: 'scale(0.82)', offset: 0.3, easing: EASE_OUT },
+            { transform: 'scale(1)' },
+          ],
+          { duration: DETENT, delay: arrive },
+        );
+      }
+      if (flash) {
+        this.play(
+          flash,
+          [
+            { opacity: 1, transform: 'scaleY(0.4)', easing: EASE_OUT },
+            { opacity: 1, transform: 'scaleY(1)', offset: 0.35, easing: 'ease-in' },
+            { opacity: 0, transform: 'scaleY(1)' },
+          ],
+          { duration: FLASH, delay: arrive },
+        );
+      }
+    }
+  }
+
+  // ── First-visit breath ──
+
+  /** The reader has used the slider (or watched it breathe): never again. */
+  private meet(): void {
+    if (this.met) return;
+    this.met = true;
+    clearTimeout(this.breathTimer);
+    this.stopBreath();
+    markSliderMet();
+  }
+
+  private stopBreath(): void {
+    for (const a of this.breath) a.cancel();
+    this.breath = [];
+  }
+
+  /** (Re)start the idle wait. The breath plays only with the header control
+   *  in view, the tab visible and nothing having happened for a moment. */
+  private armBreath(): void {
+    clearTimeout(this.breathTimer);
+    if (this.met || this.breath.length > 0 || !this.headerInView || document.hidden || reducedMotion()) return;
+    this.breathTimer = window.setTimeout(() => this.breathe(), BREATH_IDLE);
+  }
+
+  private breathe(): void {
+    if (this.met || !this.headerInView || document.hidden || reducedMotion()) return;
+    const header = document.querySelector('[data-depth-control]');
+    const dot = header?.querySelector('[data-depth-dot]');
+    const ring = header?.querySelector('[data-depth-ring]');
+    if (!dot || !ring) return;
+    const timing = { duration: BREATH, easing: 'ease-in-out' };
+    this.breath = [
+      this.play(
+        dot,
+        [{ transform: 'scale(1)' }, { transform: 'scale(1.3)', offset: 0.42 }, { transform: 'scale(1)' }],
+        timing,
+      ),
+      this.play(
+        ring,
+        [
+          { opacity: 0, transform: 'scale(0.3)' },
+          { opacity: 0.8, transform: 'scale(0.5)', offset: 0.25 },
+          { opacity: 0, transform: 'scale(1)' },
+        ],
+        { duration: BREATH * 0.85, delay: BREATH * 0.15, easing: 'ease-out' },
+      ),
+    ];
+    // Spent once it has played through; a hidden tab cancels it and it waits.
+    Promise.all(this.breath.map((a) => a.finished)).then(
+      () => this.meet(),
+      () => {},
+    );
+  }
+
+  // ── Marks: what the level just added ──
+
+  private clearMarks(): void {
+    for (const el of this.marks) {
+      for (const a of el.getAnimations()) a.cancel();
+      if (el.classList.contains('depth-mark')) el.remove();
+      else el.classList.remove('depth--arrived');
+    }
+    this.marks.clear();
+  }
+
+  /** Once the page has settled, show the reader what arrived since the level
+   *  they last saw settled: a hairline in the gutter per block, an underline
+   *  per inline clause. In or near the viewport only, in document order. */
+  private flushMarks(): void {
+    const from = this.markFrom;
+    const now = this.level;
+    this.markFrom = now;
+    if (from === now || document.hidden) return;
+    const fresh = this.wrappers.filter((w) => w.levels.has(now) && !w.levels.has(from));
+    if (fresh.length === 0) return;
+    const freshBlocks = new Set<Element>(fresh.filter((w) => !w.inline).map((w) => w.el));
+    const vh = window.innerHeight;
+    const near = (top: number, bottom: number) => bottom > -0.25 * vh && top < 1.25 * vh;
+    const rootTop = this.root.getBoundingClientRect().top;
+
+    // READ every rect first, then write.
+    const jobs: { top: number; run: (delay: number) => void }[] = [];
+    for (const w of fresh) {
+      if (w.inline) {
+        // A clause inside a block that is itself new is covered by its mark.
+        const block = w.el.closest('.depth--block');
+        if (block && freshBlocks.has(block)) continue;
+        const r = w.el.getBoundingClientRect();
+        if (r.width === 0 || !near(r.top, r.bottom)) continue;
+        jobs.push({ top: r.top, run: (delay) => this.underline(w.el, delay) });
+      } else {
+        const els = flowBoxes(w.el);
+        if (els.length === 0) continue;
+        const top = els[0].getBoundingClientRect().top;
+        const bottom = els[els.length - 1].getBoundingClientRect().bottom;
+        if (bottom - top < 1 || !near(top, bottom)) continue;
+        jobs.push({ top, run: (delay) => this.mark(top - rootTop, bottom - top, delay) });
+      }
+    }
+    jobs.sort((a, b) => a.top - b.top);
+    const step = jobs.length > 1 ? Math.min(MARK_STAGGER, MARK_SPREAD / (jobs.length - 1)) : 0;
+    jobs.forEach((job, i) => {
+      job.run(i * step);
+    });
+  }
+
+  /** Draw (or, under reduced motion, show), hold, fade. Offsets are fractions
+   *  of the whole run. */
+  private markFrames(drawn: Keyframe, undrawn: Keyframe, faded: Keyframe): { frames: Keyframe[]; duration: number } {
+    const reduce = reducedMotion();
+    const lead = reduce ? MARK_APPEAR : MARK_DRAW;
+    const duration = lead + MARK_HOLD + MARK_FADE;
+    const start = reduce ? faded : undrawn;
+    return {
+      duration,
+      frames: [
+        { ...start, easing: reduce ? 'ease-out' : EASE_OUT },
+        { ...drawn, offset: lead / duration },
+        { ...drawn, offset: (lead + MARK_HOLD) / duration, easing: 'ease-in-out' },
+        { ...faded },
+      ],
+    };
+  }
+
+  private mark(top: number, height: number, delay: number): void {
+    const el = document.createElement('span');
+    el.className = 'depth-mark';
+    el.setAttribute('aria-hidden', 'true');
+    el.style.top = `${top}px`;
+    el.style.height = `${height}px`;
+    this.root.append(el);
+    this.marks.add(el);
+    const { frames, duration } = this.markFrames(
+      { opacity: 1, transform: 'scaleY(1)' },
+      { opacity: 1, transform: 'scaleY(0)' },
+      { opacity: 0, transform: 'scaleY(1)' },
+    );
+    this.play(el, frames, { duration, delay, fill: 'backwards' }).finished.then(
+      () => {
+        el.remove();
+        this.marks.delete(el);
+      },
+      () => {},
+    );
+  }
+
+  private underline(el: HTMLElement, delay: number): void {
+    const ink = getComputedStyle(el).getPropertyValue('--accent').trim();
+    if (!ink) return;
+    el.classList.add('depth--arrived');
+    this.marks.add(el);
+    const { frames, duration } = this.markFrames(
+      { backgroundSize: '100% 1.5px', '--depth-ink': ink },
+      { backgroundSize: '0% 1.5px', '--depth-ink': ink },
+      { backgroundSize: '100% 1.5px', '--depth-ink': 'transparent' },
+    );
+    this.play(el, frames, { duration, delay, fill: 'backwards' }).finished.then(
+      () => {
+        el.classList.remove('depth--arrived');
+        this.marks.delete(el);
+      },
+      () => {},
+    );
+  }
+
   // ── Level changes ──
 
   private apply(next: DepthLevel): void {
     const prev = this.level;
     this.level = next;
-    paintUI(next, this.minutes);
+    this.instrument(prev, next);
+    this.clearMarks();
 
     const changing = this.wrappers.filter((w) => w.levels.has(prev) !== w.levels.has(next));
     if (changing.length === 0) {
@@ -396,6 +803,7 @@ class DepthController {
       this.lastAnchor = this.anchor;
       this.anchor = null;
       this.releaseScroll();
+      this.flushMarks();
       return;
     }
 
@@ -450,7 +858,6 @@ class DepthController {
       const start = inlineFrom.get(w.el) ?? 0;
       if (w.levels.has(next)) {
         const a = this.fade(w.el, start, 1);
-        if (start === 0) this.wash(w.el);
         this.whenDone(w, [a], () => this.clear(w.el));
       } else {
         // Fade the clause out in place, then let the paragraph close the gap.
@@ -529,14 +936,6 @@ class DepthController {
       el,
       el.animate([{ opacity: from }, { opacity: to }], { duration: dur, delay, easing: EASE_FADE, fill: 'both' }),
     );
-  }
-
-  /** A brief cobalt wash so the eye finds a clause that just arrived. */
-  private wash(el: HTMLElement): void {
-    el.classList.remove('depth--arrived');
-    void el.offsetWidth; // restart the CSS animation
-    el.classList.add('depth--arrived');
-    el.addEventListener('animationend', () => el.classList.remove('depth--arrived'), { once: true });
   }
 
   private track(el: Element, a: Animation): Animation {
@@ -654,6 +1053,7 @@ class DepthController {
       this.anchor = null;
       document.documentElement.style.removeProperty('overflow-anchor');
       this.releaseScroll();
+      this.flushMarks();
     };
     this.loop = requestAnimationFrame(tick);
   }
