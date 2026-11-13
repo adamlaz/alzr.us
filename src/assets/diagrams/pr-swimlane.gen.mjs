@@ -6,7 +6,7 @@
 import { writeFileSync } from 'node:fs';
 import { dark, light } from './_palette.mjs';
 
-// Days index 0..30 = Day 1 .. Day 31 (Mon 9/22 .. Wed 10/22, merge dates in ET, from the GitHub API).
+// Days index 0..30 = Day 1 .. Day 31 (Tue 9/22 .. Wed 10/22, merge dates in ET, from the GitHub API).
 // dy nudges a marker off the lane line where consecutive days would overlap.
 const pmMerged = [
   { offset: 7, n: 1 },

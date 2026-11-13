@@ -1,6 +1,6 @@
 ---
 title: "Review the contracts, not the pixels"
-date: 2026-10-26
+date: 2026-10-30
 description: "How a one-page agent build brief, mock-backed adapters, and required CI let our product manager own a plant-floor inspection station while I worked on the seams."
 draft: false
 ogTreatment: default
@@ -30,9 +30,9 @@ We built that station in four days, and it launched while I was out of the offic
 
 Our product manager wrote the requirements doc ten days before anyone touched the UI. We spent those ten days deciding which service owned each piece of state: where a box's tape list comes from, where digitized files live, where verdicts are saved so stations share history, and what triggers a recapture.
 
-Once those boundaries were settled, I wrote the build plan and an "Agent Build Brief" on Sunday night. Monday morning, one of our engineers handed it to a coding agent, and the v1 front-end pull request opened before 10 AM -- 41 files running end to end on local fixtures.
+Once those boundaries were settled, I wrote the build plan and an "Agent Build Brief" on Monday night. Tuesday morning, one of our engineers handed it to a coding agent, and the v1 front-end pull request opened before 10 AM -- 41 files running end to end on local fixtures.
 
-Monday and Tuesday I added CI gates (format, unit tests, build, and browser tests) and wired the real adapters and back-end endpoints. Wednesday morning, a family emergency put me on a plane. The station still went live on Thursday without me in the building and entered daily floor use on Monday.
+Tuesday and Wednesday I added CI gates (format, unit tests, build, and browser tests) and wired the real adapters and back-end endpoints. Then a family emergency put me on a plane. The station still went live on Friday without me in the building and entered daily floor use the next Monday.
 
 <Figure
   caption="The keyboard flow in mock mode on the redesigned branch: scan sample order 1001, press Enter to start, jump across the video with A/S/D/F, press V to pass the first tape, then press W, 3 (Blue screen), and Enter to fail the second."
@@ -85,13 +85,13 @@ When the v1 pull request opened Monday morning, the PM didn't need a staging dep
 - Autoplay between tapes so an eleven-tape box didn't take eleven `Space` presses.
 - Keeping `Unsure` (later `Could not inspect`): *"I'm fine leaving it for now and seeing if I find a good use for it in the first couple weeks."*
 
-We cut rack number and the recapture checkbox, added autoplay, and merged v1. Thursday it was on the floor.
+We cut rack number and the recapture checkbox, added autoplay, and merged v1. Friday it was on the floor.
 
 ## Floor loops in a single afternoon
 
-Once the station was in daily use on Monday, the PM started shipping code with Claude Code. His first pull request landed that day: a read-only QA review page where a lead could inspect failed orders, symptoms, and notes against the mock reader. I approved it with two commits on top.
+Once the station was in daily use on Monday, the PM started shipping code with Claude Code. His first pull request opened that day: a read-only QA review page where a lead could inspect failed orders, symptoms, and notes against the mock reader. I approved it with two commits on top.
 
-The next day, he sat with inspectors and filed eight issues from real boxes: autoplay that sometimes stalled, a tape timer and pause, a one-screen layout, an order field that clears for the next scan, recent orders on the home screen, a clearer result screen, left-hand shortcuts, and each tape's format. The format needed a new field from the order service; the other seven closed in a single pull request four and a half hours later, merged four minutes after opening:
+On Wednesday, he filed eight issues from inspecting real orders: autoplay that sometimes stalled, a tape timer and pause, a one-screen layout, an order field that clears for the next scan, recent orders on the home screen, a clearer result screen, left-hand shortcuts, and each tape's format. The format needed a new field from the order service; the other seven closed in a single pull request four and a half hours later, merged four minutes after opening:
 
 > Merging this myself since it's just UI changes on the station.
 
@@ -138,7 +138,7 @@ Across weeks two and three, our schedules barely overlapped. I was in and out th
 
 When the PM got back in week four, he shipped 11 pull requests in eight days without a catch-up meeting -- digitizer notes, recapture slip printing with our engineer, an interactive training lab, and floor polish.
 
-In the first month, 46 of the PM's 47 commits carried a Claude co-author trailer. He self-merged 14 of his 19 pull requests in a median of five minutes. The other five touched a contract with the back end; I pushed commits onto each one and merged them myself. In all, I merged 15 of my own, approved 3 of his, and pushed 19 commits onto 6 of his branches.
+In the first month, 46 of the PM's 47 commits carried a Claude co-author trailer. He self-merged 14 of his 19 pull requests in a median of five minutes. The other five touched a contract with the back end; I pushed commits onto each one and merged them myself. In all, 15 of my own pull requests merged; I approved 3 of his and pushed 19 commits onto 6 of his branches.
 
 <PrSwimlaneDiagram />
 
@@ -154,10 +154,10 @@ My day-one rule -- *"Do not build a design system, do not pull in a component li
   beforeSrc="/images/writing/review-the-contracts-not-the-pixels/09-tape-playing.before.png"
   afterSrc="/images/writing/review-the-contracts-not-the-pixels/09-tape-playing.after.png"
   beforeAlt="Before redesign: the old inspection station tape screen with 148 words, 34 controls, repeated Not inspected labels, tracked uppercase headers, an open note textarea, and a duplicate shortcut legend."
-  afterAlt="After redesign: the redesigned tape screen with 8 UI words, video filling over 60% of the screen, an arrow glyph and Esc keycap in the header, equal 2x2 verdict tiles, a collapsed Note (N) button, and large transport keycaps."
+  afterAlt="After redesign: the redesigned tape screen with 8 UI words, the video frame filling over 60% of the screen, an arrow glyph and Esc keycap in the header, equal 2x2 verdict tiles, a collapsed Note (N) button, and large transport keycaps."
   beforeLabel="Before (148 words)"
   afterLabel="After (8 words)"
-  caption="Drag the slider or toggle Before / After (click Zoom for full screen): the tape screen dropped from 148 UI words and 34 controls to 8 words, with the video taking over 60% of the screen."
+  caption="Drag the slider or toggle Before / After (click Zoom for full screen): the tape screen dropped from 148 UI words and 34 controls to 8 words, with the video frame taking over 60% of the screen."
 />
 
 That Sunday -- one day, 29 commits, 212 files -- I reversed the day-one rule. We built a 14-piece station kit adapted from our app's design system (shadcn-based, with React-free variant recipes so server-rendered pages never load React) and a component gallery showing every piece in every state. We moved the station, QA review, and training onto the kit, deleted the legacy CSS, and enforced four rules in browser tests:
