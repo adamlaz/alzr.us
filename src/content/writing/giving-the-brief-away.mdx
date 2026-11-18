@@ -21,7 +21,7 @@ of my confident sentence was true. He was productive with it the next day.
 He also found a hole I had built, proved my fix for it wrong, and was right
 about the reason.
 
-## What packaging actually meant
+## What packaging meant
 
 The workflow had two halves, and neither one traveled. The runbook, the
 conventions, the catalog of tells lived in my personal notes vault; the
@@ -50,7 +50,7 @@ permissions, a blank env template.
 ## Five ways it broke before anyone else touched it
 
 Every one of these failures happened while the only user was still me. None
-of them is really about hiring.
+of them is about hiring.
 
 1. **An untrusted workspace silently voids the project permission file.**
    Clone the repo, skip the trust dialog, and every shell call the agent
@@ -58,7 +58,7 @@ of them is really about hiring.
    get nothing but the bill. The agent flails, the budget drains, nothing
    gets produced, and no error says why. Silent and expensive is the worst
    combination, so setup now names the dialog and a preflight check refuses
-   to spend money until the workspace can actually work.
+   to spend money until the workspace can work.
 2. **Trusting exit codes.** The first unattended run took 1.6 minutes, cost
    about a dollar, exited zero, created nothing, and logged itself as a
    success. The driver now decides success by querying for the page it was
@@ -74,16 +74,17 @@ of them is really about hiring.
    with the same name stalled a run that the row id would have sailed
    through. The id now flows from lookup to publish and the name is display
    only.
-5. **No unattended-mode rule.** The agent hit genuine ambiguity, reasoned
-   about it correctly, and asked me what to do -- in a nightly run with
+5. **No unattended-mode rule.** The agent hit real ambiguity, reasoned
+   about it correctly, and asked me what to do, in a nightly run with
    nobody awake to answer. Correct judgment, wrong ending. The brief now
    says it plainly: non-interactive runs never ask. Take the documented
    default or emit one BLOCKED line and stop.
 
 Then the sixth, the one that wasn't mechanical. The first real nightly run
 swept the entire candidate database and spent its whole budget researching
-applications far outside scope. The actual ask was one funnel stage. Worse: my own runbook had already ruled that scope out, in writing,
-precisely so research wouldn't fire on untriaged arrivals. I re-introduced
+applications far outside scope. The actual ask was one funnel stage. Worse:
+my own runbook had already ruled that scope out, in writing, precisely so
+research wouldn't fire on untriaged arrivals. I re-introduced
 the exact thing a past decision existed to prevent. Scope bugs cost more
 than crashes and take longer to notice, because nothing fails.
 
@@ -102,7 +103,7 @@ cross-checking an employment claim against public records, and it correctly
 discarded a coincidental username match as a different person. Sonnet is
 now the tracked default.
 
-The honest caveat rides along in the repo: that was one run each, on
+The caveat rides along in the repo: that was one run each, on
 different candidates. "No loss observed" is not "proven equivalent." It's
 the difference between a field note and a benchmark, and pretending
 otherwise is how a config default hardens into a false belief.
@@ -110,10 +111,11 @@ otherwise is how a config default hardens into a false belief.
 ## Then someone else ran it
 
 A teammate started using the kit the day after it shipped, and within a day
-he'd opened the repo's first pull request -- for a hole I had built. The
+he'd opened the repo's first pull request, for a hole I had built. The
 research subagent had shell access, and the project settings pre-approved
 the publish script. Those two facts, together, let the subagent publish
-without the citation check that downgrades unsourced claims. It did exactly that three times in one of his batch runs.
+without the citation check that downgrades unsourced claims. It did exactly
+that three times in one of his batch runs.
 
 Nobody decided the subagent should have shell access. It had it because I
 never took it away, and the default is everything. I had already met the
@@ -132,8 +134,8 @@ citation check.<Note id="2" />
 </Callout>
 
 The second thing he did impressed me more. He removed the shell access,
-tested in the same session, and watched the agent use the shell anyway --
-so he flagged his own fix as unverified, with a theory: tool grants
+tested in the same session, and watched the agent use the shell anyway.
+So he flagged his own fix as unverified, with a theory: tool grants
 resolve at session start, so an in-session test of a permission change
 proves nothing. He was right. A fresh session the next day confirmed the
 capability was gone, and his in-session test had been a false negative.
@@ -156,7 +158,7 @@ of it had ever needed to be: I was the environment, and the environment
 never has to explain itself until it's gone.
 
 A workflow that works and a workflow that travels are separated by the set
-of things you don't know you know -- and every one of mine was invisible
+of things you don't know you know, and every one of mine was invisible
 until someone else needed it. The brief was never the whole artifact. It
 was the half I could see.<Note id="3" />
 

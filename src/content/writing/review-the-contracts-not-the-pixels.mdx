@@ -30,7 +30,7 @@ We built that station in four days, and it launched while I was out of the offic
 
 Our product manager wrote the requirements doc ten days before anyone touched the UI. We spent those ten days deciding which service owned each piece of state: where a box's tape list comes from, where digitized files live, where verdicts are saved so stations share history, and what triggers a recapture.
 
-Once those boundaries were settled, I wrote the build plan and an "Agent Build Brief" on Monday night. Tuesday morning, one of our engineers handed it to a coding agent, and the v1 front-end pull request opened before 10 AM -- 41 files running end to end on local fixtures.
+Once those boundaries were settled, I wrote the build plan and an "Agent Build Brief" on Monday night. Tuesday morning, one of our engineers handed it to a coding agent, and the v1 front-end pull request opened before 10 AM: 41 files running end to end on local fixtures.
 
 Tuesday and Wednesday I added CI gates (format, unit tests, build, and browser tests) and wired the real adapters and back-end endpoints. Then a family emergency put me on a plane. The station still went live on Friday without me in the building and entered daily floor use the next Monday.
 
@@ -72,13 +72,13 @@ Then it set six rules:
 5. **No database, no auth.** Locked floor network; the inspection API is the durable record.
 6. **Do not build a design system, do not pull in a component library.** On day one, we didn't know which controls would survive real boxes.
 
-The brief ended with acceptance checks the agent had to run itself in mock mode -- scanning sample order `1001`, grading both tapes, and checking that a failed tape blocks the order-passed notification.
+The brief ended with acceptance checks the agent had to run itself in mock mode: scanning sample order `1001`, grading both tapes, and checking that a failed tape blocks the order-passed notification.
 
-Building v1 also caught a bug in my brief. I had used the playback URL as the file's ID in the saved record. While wiring the media adapter, the engineer and the agent noticed that production issues expiring signed URLs. Reopening an order an hour later -- or comparing a recapture against Round 1 -- would see a different string for the same file. They split the contract into a permanent storage reference and a temporary playback link.
+Building v1 also caught a bug in my brief. I had used the playback URL as the file's ID in the saved record. While wiring the media adapter, the engineer and the agent noticed that production issues expiring signed URLs. Reopening an order an hour later, or comparing a recapture against Round 1, would see a different string for the same file. They split the contract into a permanent storage reference and a temporary playback link.
 
 ## Reviewing the app without a staging deploy
 
-When the v1 pull request opened Monday morning, the PM didn't need a staging deploy. Because it ran on mocks, he reviewed the flow in pull-request comments against what an inspector actually knows at the desk:
+When the v1 pull request opened Monday morning, the PM didn't need a staging deploy. Because it ran on mocks, he reviewed the flow in pull-request comments against what an inspector knows at the desk:
 
 - *"There's a field for rack number, but how could I know that at this stage?"*
 - *"I'm not reviewing the tapes, just the files. QA will diagnose whether it's the tape or the capture."* (cutting my recapture checkbox).
@@ -121,9 +121,9 @@ The next day, he opened a large QA-review pull request. Looking at the diff, I w
 
 ## Out of the office on both sides
 
-Once I was on that plane, I was told I didn't need to work at all. For the station's UI, I really didn't -- the PM was shipping floor fixes in minutes without me.
+Once I was on that plane, I was told I didn't need to work at all. For the station's UI, I really didn't. The PM was shipping floor fixes in minutes without me.
 
-I needed the distraction, and building like this is fun. A couple of years ago, checking in for an hour from out of town meant answering messages or sitting in a meeting. You couldn't actually build something in the margins of a hard week and then shut your laptop. With coding agents and a repo that runs on local mocks, I could open my laptop when I wanted a break, wire a contract or tighten a test suite in an hour, and close it again without holding anyone up.
+I needed the distraction, and building like this is fun. A couple of years ago, checking in for an hour from out of town meant answering messages or sitting in a meeting. You couldn't build something in the margins of a hard week and then shut your laptop. With coding agents and a repo that runs on local mocks, I could open my laptop when I wanted a break, wire a contract or tighten a test suite in an hour, and close it again without holding anyone up.
 
 Back-end work ran the same way. Right after building the QA review page on mocks, the PM filed an issue with the exact read endpoint his page needed. The issue was the contract. When I had a quiet window, I picked it up with an agent, shipped the endpoint the next day, and shipped watched-ranges the day after.
 
@@ -136,7 +136,7 @@ Across weeks two and three, our schedules barely overlapped. I was in and out th
 5. **Keyboard shortcuts defined in one file**, so the UI and the key listener can't drift apart.
 6. **A split README**, with separate docs for engineers, whoever installs a station, and whoever runs one.
 
-When the PM got back in week four, he shipped 11 pull requests in eight days without a catch-up meeting -- digitizer notes, recapture slip printing with our engineer, an interactive training lab, and floor polish.
+When the PM got back in week four, he shipped 11 pull requests in eight days without a catch-up meeting: digitizer notes, recapture slip printing with our engineer, an interactive training lab, and floor polish.
 
 In the first month, 46 of the PM's 47 commits carried a Claude co-author trailer. He self-merged 14 of his 19 pull requests in a median of five minutes. The other five touched a contract with the back end; I pushed commits onto each one and merged them myself. In all, 15 of my own pull requests merged; I approved 3 of his and pushed 19 commits onto 6 of his branches.
 
@@ -165,7 +165,7 @@ That Sunday -- one day, 29 commits, 212 files -- I reversed the day-one rule. We
 - **A 15-word target per state, with each state locked to its exact count.** Every state asks one question and shows only its answers.<Note id="1" /> A browser helper counts visible words and fails the build if a state goes over its budget; the two states over 15, a re-scanned order and a recapture tape, say why in the test file. On the tape screen, the back arrow and `Esc` lost their text labels, the note box folded behind `Note (N)`, and the duplicate shortcut footer was deleted.
 - **Video takes at least 60% of the screen (55% after the floor fixes below), with nothing smaller than 20 px.** Small text is hard to read at arm's length.<Note id="2" /> Browser tests check the video area and call `getComputedStyle()` to ban type under 20 px and tracked all-caps labels.
 - **`Pass` and `Fail` get equal weight, with one keycap per control.** Rare defects get missed more often when most tapes pass,<Note id="3" /> and a huge green `Pass` button would make passing the reflex. All four verdicts sit in an even 2x2 grid with custom icons. Key presses flash for `120 ms` and saves play a short tone per outcome.
-- **No `"Are you sure?"` dialogs, and barcode scans can't trigger shortcuts.** Confirm dialogs just teach people to double-tap `Enter`, so saves happen immediately and `Z` undoes the last tape. A barcode scanner types its whole code a few milliseconds per character, then `Enter`; a timing guard treats four or more keys under `30 ms` apart as a scan and puts back whatever they touched, symptoms `1` through `8` included.
+- **No `"Are you sure?"` dialogs, and barcode scans can't trigger shortcuts.** Confirm dialogs teach people to double-tap `Enter`, so saves happen immediately and `Z` undoes the last tape. A barcode scanner types its whole code a few milliseconds per character, then `Enter`; a timing guard treats four or more keys under `30 ms` apart as a scan and puts back whatever they touched, symptoms `1` through `8` included.
 
 <BeforeAfter
   beforeSrc="/images/writing/review-the-contracts-not-the-pixels/10-tape-fail-symptom-picked.before.png"
@@ -219,7 +219,7 @@ He left one call for me. The video rule said 60% of the screen, but a 4:3 tape i
 
 <GuardrailStackDiagram />
 
-I don't want to approve button labels. I want to own the seams where a bad merge corrupts production data, and let everything else self-merge on green CI. Inside those seams, our product manager owns the station -- down to a line he merged onto the home screen in week four, right above the barcode input:
+I don't want to approve button labels. I want to own the seams where a bad merge corrupts production data, and let everything else self-merge on green CI. Inside those seams, our product manager owns the station, down to a line he merged onto the home screen in week four, right above the barcode input:
 
 > Every tape here is a family's memory. Your job is to make sure we send them the best quality possible.
 

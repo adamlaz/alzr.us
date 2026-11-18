@@ -31,9 +31,9 @@ regex I run before anything ships.
 
 Em dashes (`—`) are the most reliable formatting-level AI tell in written
 English. They feel natural to a system that has never typed one but has
-read a billion of them. Every editorial style guide ever published has
-been ingested with em dashes in place. Every literary novel. Every New
-Yorker piece. To a model, the em dash *is* what writing looks like.
+read a billion of them. The editorial style guides, the literary novels
+and the New Yorker pieces were all ingested with em dashes in place. To a
+model, the em dash *is* what writing looks like.
 
 Native human writers, especially engineers writing fast in chat windows
 and pull-request descriptions, reach for either a tight dash (`word-`)
@@ -84,10 +84,9 @@ sentence underneath it to get specific:
 | Align on next steps | Decide who owns the migration by Friday |
 | A robust, scalable solution | Handles 10K events a minute on three nodes |
 
-The list isn't a banned-word list. It's a *flag list*. I don't tell the
-assistant "don't use these." I share the list and ask it to highlight any that
-appear, because every highlight is a place it reached for corporate abstraction
-instead of specificity. Forbidding words pushes the model to find synonyms,
+I don't tell the assistant "don't use these." I share the list and ask it
+to flag any that appear, because every flag is a place it reached for
+corporate abstraction instead of specificity. Forbidding words pushes the model to find synonyms,
 which produces laundered slop. Flagging them asks for sharper sentences.
 
 ## The four tests
@@ -112,13 +111,13 @@ I run the Attribution Test by scrolling to a random paragraph and reading
 it as if a stranger wrote it. If the paragraph could be on any
 consultant's Medium account, it fails. If it names a tool, a number, a
 proper noun, or a specific anecdote that nobody else would have written
-in exactly that shape, it passes. The test is fast. It catches most
-drift in five minutes.
+in exactly that shape, it passes. It catches most drift in five
+minutes.
 
 ## Artifact, not instruction
 
-The move that matters: I stopped writing style guides for AI assistants
-and started curating their reading material.
+I stopped writing style guides for AI assistants and started curating
+their reading material.
 
 <InstructionArtifactDiagram />
 
@@ -128,8 +127,8 @@ with an assistant, I drop the closest two or three examples into the
 prompt context. The pattern transfers. I never describe the labels.
 
 The same posture works for code review. Three of my own past reviews beat
-any prose description of what good code review looks like. The asset
-isn't a guide. The asset is the folder.
+any prose description of what good code review looks like. The asset is
+the folder.
 
 For voice specifically, I keep one file at `~/.config/writing-voice.md` and
 pull it into every Claude Code session with a one-line include:
@@ -140,8 +139,8 @@ pull it into every Claude Code session with a one-line include:
 ```
 
 Cursor and the SDK clients reach the same file through their own global
-configs. It loads as artifact, not instructions, the same way a human writer
-absorbs a style by reading the writer, not by being told the writer's
+configs. It loads as artifact, the same way a human writer absorbs a style
+by reading the writer rather than being told the writer's
 rules.<Note id="2" />
 
 The em-dash signal has a half-life. It works in 2024-2026. By 2028 the
