@@ -1,0 +1,26 @@
+---
+import darkSvg from '../../assets/diagrams/contracts-ports-dark.svg?raw';
+import lightSvg from '../../assets/diagrams/contracts-ports-light.svg?raw';
+import Diagram from './Diagram.astro';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={680}
+  caption="The station's five ports. One setting picks the whole column: every port is a mock, or every port is real, never a mix."
+>
+  A three-column table of the inspection station's five ports, each with its
+  mock and its real adapter. Order lookup asks which tapes are in a box: the
+  mock answers from three sample orders plus orders generated per test, the
+  real adapter makes one GET to the order service per scan. Media locator asks
+  where each file is: the mock serves bundled test clips and keeps capture
+  versions in a JSON file, the real adapter calls the media service to locate
+  once per order and refresh per file. Inspection sink saves a result: the mock
+  appends to a file and refuses what production refuses, the real adapter
+  posts to the inspection API, which deduplicates by event ID. Inspection
+  reader asks what any station has saved: the mock reads the same file back,
+  the real adapter reads the inspection API back by order. Notify
+  sink posts the order summary: the mock appends to a log file, the real
+  adapter posts one Slack message per finished round.
+</Diagram>

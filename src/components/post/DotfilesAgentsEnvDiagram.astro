@@ -1,0 +1,19 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/dotfiles-agents-env-light.svg?raw';
+import darkSvg from '../../assets/diagrams/dotfiles-agents-env-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={400}
+  caption="One rendered file feeds two environments, and the check has to read each one."
+>
+  The repo holds a template of 1Password references. Running op inject renders
+  it into a local env file that exists on this Mac only: plaintext, mode 600,
+  not in git. Terminal sessions get the values when shell startup reads the
+  file. Desktop apps get them when a LaunchAgent sets each value in the GUI
+  launch environment. The installer's check reads both: its own process
+  environment and the GUI launch environment.
+</Diagram>

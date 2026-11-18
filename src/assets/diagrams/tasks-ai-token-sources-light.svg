@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="233" viewBox="0 0 420 233">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#1c1d24">
+
+<text x="0" y="30" font-size="30" font-weight="500" fill="#2f3eb0" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">13</text>
+<text x="275.6" y="30" font-size="30" font-weight="500" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">2</text>
+<text x="318" y="30" font-size="30" font-weight="500" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">4</text>
+<rect x="0" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="21.2" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="42.4" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="63.6" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="84.8" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="106" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="127.2" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="148.4" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="169.6" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="190.8" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="212" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="233.2" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="254.4" y="44" width="17" height="17" rx="2" fill="#2f3eb0"/>
+<rect x="275.6" y="44" width="17" height="17" rx="2" fill="#8a8a90"/>
+<rect x="296.8" y="44" width="17" height="17" rx="2" fill="#8a8a90"/>
+<rect x="319" y="45" width="15" height="15" rx="2" fill="none" stroke="#1c1d24" stroke-width="1.8"/>
+<rect x="340.2" y="45" width="15" height="15" rx="2" fill="none" stroke="#1c1d24" stroke-width="1.8"/>
+<rect x="361.4" y="45" width="15" height="15" rx="2" fill="none" stroke="#1c1d24" stroke-width="1.8"/>
+<rect x="382.6" y="45" width="15" height="15" rx="2" fill="none" stroke="#1c1d24" stroke-width="1.8"/>
+<rect x="0" y="91" width="12" height="12" rx="2" fill="#2f3eb0"/>
+<text x="20" y="102" font-size="14" font-weight="600">13 from the app’s synced tokens</text>
+<text x="20" y="120" font-size="13.5" fill="#55565f">frame, toolbar, omnibox, new tab page, text and icons</text>
+<rect x="0" y="141" width="12" height="12" rx="2" fill="#8a8a90"/>
+<text x="20" y="152" font-size="14" font-weight="600">2 from the Figma accent file</text>
+<text x="20" y="170" font-size="13.5" fill="#55565f">new-tab links, button background</text>
+<rect x="1" y="192" width="10" height="10" rx="2" fill="none" stroke="#1c1d24" stroke-width="1.8"/>
+<text x="20" y="202" font-size="14" font-weight="600">4 typed by hand</text>
+<text x="20" y="220" font-size="13.5" fill="#55565f">inactive frame, two incognito frames, inactive-tab text</text>
+</g>
+</svg>

@@ -3,22 +3,30 @@ title: 'Dotfiles for my AI agents'
 date: 2026-09-15T12:00:00Z
 description: 'Three coding agents, one private config repo, and a cleanup that broke normal startup. The useful work was deciding which files I own and which files the tools still need to write.'
 draft: false
+depth: true
 ogTreatment: agent-config
 pullQuote: 'I want to review a settings change without first figuring out which copy matters.'
 tags: ['ai-augmented-engineering', 'developer-tools', 'automation']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import AgentConfigDiagram from '../../components/post/AgentConfigDiagram.astro';
 import SafeRollbackDiagram from '../../components/post/SafeRollbackDiagram.astro';
+import DotfilesAgentsSyncDiagram from '../../components/post/DotfilesAgentsSyncDiagram.astro';
+import DotfilesAgentsEnvDiagram from '../../components/post/DotfilesAgentsEnvDiagram.astro';
+import DotfilesAgentsTestsChart from '../../components/post/DotfilesAgentsTestsChart.astro';
 
 I tried to put my coding agents' configuration in one place and broke Codex.
 
 I wanted one place to maintain my instructions without taking over files the
 tools needed to change. My settings lived beside session history, credentials,
-and permission choices the applications wrote as I worked.
+and permission choices the applications wrote as I worked.<Depth inline max={1}> I use three
+agents: Claude Code, Codex, and opencode.</Depth>
+
+<Depth min={2}>
 
 ## Three tools had accumulated three histories
 
@@ -26,6 +34,10 @@ I use Claude Code, Codex, and opencode, the last one connected to a local
 model through LM Studio. Each had its own instructions, skills, settings,
 and connections to services such as databases and notes apps. Those service
 connections use Model Context Protocol, or MCP.
+
+</Depth>
+
+<Depth min={3}>
 
 I had added instructions during individual tasks, registered a server at the
 wrong scope, and left config behind for tools I no longer opened. Finding
@@ -36,9 +48,23 @@ one example. The assistants needed the same guide, and my vault scripts
 depended on its path. But I didn't need an agent reading the whole thing to
 debug a database query.
 
+</Depth>
+
+<Depth min={4}>
+
+The wrong-scope registrations were two duplicate servers at Claude's local
+scope, one registered in my home directory and one inside a project. One piece
+of leftover config was an MCP file for an editor I had stopped using. We backed
+it up to a directory only my account can open and removed it after I approved.
+
+</Depth>
+
 ## A repo for the parts I mean to maintain
 
-The shared files now live in a private git repo at `~/.agents`:
+The shared files now live in a private git repo at `~/.agents`<Depth inline max={1}>, with an
+installer that links them into place.</Depth><Depth inline min={2}>:</Depth>
+
+<Depth min={2}>
 
 ```text
 ~/.agents/
@@ -52,49 +78,207 @@ The shared files now live in a private git repo at `~/.agents`:
   install.sh      install, inspect, adopt, and restore
 ```
 
-Most connections to the tools are file-level symlinks. A settings file can
+</Depth>
+
+Most connections to the tools are file-level symlinks<Depth inline max={1}>, shortcuts that
+point back to one real file</Depth>. A settings file can
 point into the repo while the sessions, credentials, caches, and databases
 beside it stay where the application expects them. GNU Stow has supported
 this general approach to dotfiles for years.<Note id="1" />
 
 <AgentConfigDiagram />
 
-To change a rule in the writing guide, I now edit
-`~/.agents/skills/writing-voice/writing-voice.md`. Codex and opencode discover
+<Depth min={4}>
+
+At the time of the cleanup the installer linked ten fixed paths, plus one link
+per skill directory into Claude's skills folder. Codex and opencode scan the
+shared store themselves, so they get no skill links. The first run on this Mac
+recorded 24 links, and nine of them replaced a path that already existed. Each
+link is relative. The installer creates it under a temporary name beside the
+target, then renames it over the target in one step.
+
+Instructions reach each tool by a different route. Claude's instruction file is
+a link to a one-line file that imports the shared `AGENTS.md`. opencode's
+config lists the shared file under `instructions`. Codex reads an override file
+that the installer renders from the shared instructions plus a short Codex-only
+appendix, and the check fails when that render is stale.
+
+A link also carries writes back. Changing the theme in Claude Code's settings
+screen changed that one key in the repo's copy, and restoring it returned the
+file byte for byte. Nothing commits automatically. The check flags any uncommitted file older than
+seven days.
+
+</Depth>
+
+<Depth min={5}>
+
+The link table from the installer at the time of the cleanup, reformatted, with
+the LaunchAgent's label replaced:
+
+```python
+# (path in the repo, path under $HOME)
+paths = [
+    ('claude/CLAUDE.md',                      '.claude/CLAUDE.md'),
+    ('claude/settings.json',                  '.claude/settings.json'),
+    ('claude/commands',                       '.claude/commands'),
+    ('claude/hooks',                          '.claude/hooks'),
+    ('codex/AGENTS.override.md',              '.codex/AGENTS.override.md'),
+    ('codex/shared.config.toml',              '.codex/shared.config.toml'),
+    ('codex/rules/shared.rules',              '.codex/rules/shared.rules'),
+    ('opencode/opencode.json',                '.config/opencode/opencode.json'),
+    ('skills/writing-voice/writing-voice.md', '.config/writing-voice.md'),
+    ('launchd/<label>.plist',                 'Library/LaunchAgents/<label>.plist'),
+]
+pairs = [(REPO/a, HOME/b) for a, b in paths]
+pairs += [(skill, HOME/'.claude/skills'/skill.name)
+          for skill in sorted((REPO/'skills').iterdir()) if skill.is_dir()]
+```
+
+`~/.codex/config.toml` is absent from that table on purpose. Codex rewrites it,
+so the installer syncs settings into it and never links it.
+
+</Depth>
+
+To change a rule in <Depth inline max={2}>my writing guide</Depth><Depth inline min={3}>the writing guide</Depth>, I now edit
+`~/.agents/skills/writing-voice/writing-voice.md`.<Depth inline max={2}> The guide is one of the
+repo's skills.</Depth><Depth inline min={3}> Codex and opencode discover
 that skill in the shared store; Claude reads it through a symlink. Nine
 vault scripts reach the same file through the old path,
-`~/.config/writing-voice.md`, which is also a symlink. I can review one diff
+`~/.config/writing-voice.md`, which is also a symlink.</Depth> I can review one diff
 without hunting for copies to update.
 
 The skill's short description tells an agent when to load the guide. The
-longer instructions stay out of unrelated tasks.<Note id="2" /> Two other
+longer instructions stay out of unrelated tasks.<Note id="2" /><Depth inline min={3}> Two other
 skills in the store belong to the terminal app that hosts my sessions. That
-app rewrites them, so I leave them gitignored.
+app rewrites them, so I leave them gitignored.</Depth>
+
+<Depth min={4}>
+
+The always-loaded `AGENTS.md` is 622 bytes. It says when to load the voice
+skill and when voice is off, and it sets my commit and dash rules. The guide it
+points to was 571 lines when I moved it into the store. After pruning, the
+store held 26 skill directories.
+
+Claude's skills folder may hold links and nothing else. The check fails on a
+real directory there, and `--adopt` moves a stray one into the store and links
+it back.
+
+</Depth>
+
+<Depth min={3}>
 
 I still maintain separate config formats for each tool. The MCP definitions
 need hand translation, and the checks compare server names rather than
 proving that every setting means the same thing in all three tools.
+
+</Depth>
+
+<Depth min={4}>
+
+One JSON file in the repo defines seven servers. I render the Codex TOML and
+the opencode JSON from it by hand. The three tools don't agree on how to write
+my home directory either: Claude's definition uses `${HOME}`, opencode's uses
+`{env:HOME}`, and the Codex file has absolute paths I'd have to edit on another
+Mac. The name check lowercases each tool's server names and compares sets. It
+sets aside four servers Codex manages for itself, and it counts three services
+Claude already reaches through its web connectors as covered, so I don't define
+them twice.
+
+</Depth>
+
+<Depth min={2}>
 
 ## The session history was part of the migration
 
 Before changing the Claude registrations, I had 41 Claude sessions to close
 and needed a way to resume them.
 
+</Depth>
+
+<Depth min={3}>
+
 We recorded session IDs and working directories, backed up the transcripts,
 and saved resume commands. We also checked that a copy of a saved
 conversation would resume. I waited until the sessions were closed before
 changing Claude's machine-local registrations.
 
+</Depth>
+
+<Depth min={4}>
+
+The snapshot at 10:49 that night listed 41 sessions: 38 idle and three still
+working. The plan was to let busy sessions finish before closing them. Along
+with the transcripts, the snapshot copied 1,308 companion files and the
+terminal app's saved layouts into a directory only my account can read. Each
+session got a numbered resume command, and the resume helper refuses a session
+ID that is already running. Closing left 41 receipts, one per session.
+
+The script that re-registers Claude's servers has a guard of the same kind. It
+exits unless `pgrep -x claude` finds no process. A resumed conversation can
+also keep the system prompt it recorded until it compacts, so I verified the
+new configuration in fresh sessions and treated a successful resume as proof of
+the transcript only.
+
+</Depth>
+
 The installer refuses to replace a real file that differs from the repo
-copy. I can adopt the local change, which backs it up and imports it, or
-leave the conflict for review. A tool may have changed that file during a
-session.
+copy.<Depth inline min={2}> I can adopt the local change, which backs it up and imports it, or
+leave the conflict for review.</Depth> A tool may have changed that file during a
+session.<Depth inline max={1}> Uninstall follows the same rule: it restores a backup only if the
+file still matches what the installer wrote.</Depth>
 
 <PullQuote>
   The repo copy doesn't get to win by default.
 </PullQuote>
 
+<Depth min={4}>
+
+The comparison is a SHA-256 fingerprint, taken recursively for directories. On
+a conflict the installer prints a unified diff of the two files, replaces any
+line that looks credential-bearing with a redaction notice, and exits before
+changing anything. `--adopt` copies the repo's version into a backup first and
+then copies the local file over it, so the adoption arrives as a git diff I
+still have to review.
+
+Every run that changes something writes a receipt: a timestamped directory
+readable only by my account, holding numbered copies of whatever was replaced
+and a manifest listing each change in order.
+
+</Depth>
+
+<Depth min={5}>
+
+One manifest row for the Codex config, with the home path shortened. A link
+row has the same fields without the digest:
+
+```json
+{
+  "target": "~/.codex/config.toml",
+  "source": null,
+  "backup": "0003",
+  "kind": "codex-config",
+  "installed_sha256": "<SHA-256 of the file the sync wrote>"
+}
+```
+
+At the time of the cleanup `kind` took three values: `link`, `repo-adopt` for a
+repo file that was overwritten by an adoption or a render, and `codex-config`.
+`backup` is null when nothing existed at the target before.
+
+</Depth>
+
 ## The test covered the wrong way of starting Codex
+
+<Depth max={1}>
+
+The original plan kept Codex's shared settings in a separate file, selected by
+one line in its main config. That line stopped Codex from starting. We had
+tested a different way of launching it and assumed the usual way would work
+too. We removed the line and merged the settings into the main config.
+
+</Depth>
+
+<Depth min={2}>
 
 The original Codex plan put shared model settings and MCP definitions in a
 separate file and added this to the base config:
@@ -108,9 +292,47 @@ tested `codex --profile shared`, which worked, then assumed that selecting
 the profile in the base config would work too. I found the mistake when I
 tried to start Codex the usual way.
 
+</Depth>
+
+<Depth min={4}>
+
+Codex exited with ``legacy `profile = "shared"` config is no longer
+supported``. The base config is the one layer the CLI, the desktop app, and
+plugin hosts all read, so the shared settings had to live there. At the time
+that meant four root settings and seven server tables.
+
+</Depth>
+
+<Depth min={2}>
+
 We removed the selector and merged the shared settings into the base config.
 The installer now adds missing values from the shared file while Codex is
 closed. It refuses a differing value and preserves the app's other settings.
+
+</Depth>
+
+<Depth min={4}>
+
+The repair commit is timestamped 1:26 AM. It deleted a 90-line one-off helper
+script and added 167 lines to the installer and a 193-line test file.
+
+The sync splices text and never re-serializes the file: missing root settings
+go on top, missing server tables go at the bottom, and the lines Codex wrote
+stay as they were. Before writing, the installer parses the result and requires
+it to equal the old config plus exactly the missing settings. It re-reads the
+file to confirm nothing changed it mid-run, then looks for a Codex process a
+second time. The new text goes into a temporary file with the original's
+permissions and is renamed into place.
+
+<DotfilesAgentsSyncDiagram />
+
+The process check reads executable names from `ps` and matches two of them, the
+CLI and its app server. A leftover `profile` or `profiles` key blocks the sync
+and fails the check.
+
+</Depth>
+
+<Depth min={3}>
 
 Then Codex wrote a per-tool approval preference under the PostHog server
 while we were checking the connection. The new drift detector reported a
@@ -120,22 +342,186 @@ The connection hadn't changed. We fixed the comparison to check the managed
 connection fields and preserve the tool's approval table, then added a
 regression test for that case.
 
+</Depth>
+
+<Depth min={4}>
+
+The fix is a two-line filter. Before comparing a server's table, the detector
+drops the local `tools` key unless the shared file declares one for that
+server. A second test covers the other direction: a changed URL beside a local
+approval still has to block.
+
+</Depth>
+
+<Depth min={5}>
+
+The case from the test fixture. The detector compares the first table. Codex
+wrote the second one, and the sync leaves it alone:
+
+```toml
+[mcp_servers.example]
+url = "https://example.invalid/mcp"
+bearer_token_env_var = "EXAMPLE_API_KEY"
+
+[mcp_servers.example.tools.query]
+approval_mode = "approve"
+```
+
+The drift check and the sync, as pseudocode of the real logic:
+
+```python
+def drift(shared, local):
+    missing, blocked = [], []
+    for key in ("profile", "profiles"):
+        if key in local:
+            blocked.append(f"legacy {key}")           # Codex 0.154+ won't load it
+    for key, value in shared.root_settings():
+        if key not in local:
+            missing.append(key)
+        elif local[key] != value:
+            blocked.append(f"{key} differs")          # values are never printed
+    for name, table in shared.server_tables():
+        have = local.server(name)
+        if have is not None and "tools" not in table:
+            have = without(have, "tools")             # approvals stay machine-local
+        if have is None:
+            missing.append(name)
+        elif have != table:
+            blocked.append(f"[{name}] differs")
+    return missing, blocked                           # anything blocked: refuse
+
+
+def sync(missing):
+    original = read_bytes(CONFIG)
+    text = root_lines(missing) + original + tables(missing)    # splice only
+    if parse(text) != parse(original) + missing:
+        raise Refuse("sync would alter unrelated settings")
+    if is_symlink(CONFIG) or read_bytes(CONFIG) != original:
+        raise Refuse("config changed during sync")
+    if codex_running():
+        raise Refuse("close Codex first")
+    tmp = create_exclusive(CONFIG + ".tmp")
+    write(tmp, text)
+    chmod(tmp, mode_of(CONFIG))
+    atomic_rename(tmp, CONFIG)
+    return sha256(text)                               # saved in the receipt
+```
+
+</Depth>
+
 ## The terminal was only one of the clients
 
 I replaced credential literals in the shared config with environment-variable
 references. The repo holds a template with 1Password references;
-`op inject` fills it with the values and writes a local env file.<Note id="3" />
+`op inject` fills it with the values and writes a local env file.<Note id="3" /><Depth inline min={2}>
 That file is plaintext. I keep it out of git and restrict access to my user
-account: mode 600 on the file, 700 on its directory.
+account: mode 600 on the file, 700 on its directory.</Depth>
+
+<Depth max={1}>
+
+The desktop apps needed those values too, and a passing config check hadn't
+told me whether they had them.
+
+</Depth>
+
+<Depth min={2}>
 
 A shell export didn't complete the job. VS Code and ChatGPT needed the
 values in the GUI launch environment too, so a LaunchAgent loads them with
 `launchctl setenv`.
 
+</Depth>
+
+<Depth min={4}>
+
+<DotfilesAgentsEnvDiagram />
+
+The LaunchAgent runs one short script when it loads. The script reads the env
+file and calls `launchctl setenv` for each variable. It exits with an error if
+a value is empty or still starts with `op://`, which would mean the template
+was never filled in.
+
+For Claude Code the reference sits in the user-scope server registration.
+`claude mcp get` prints the placeholder back, which shows only what is stored,
+so the test was a real tool call from a fresh session. I don't wrap an agent in
+`op run` to avoid the plaintext file, because its output masking can damage MCP
+messages.
+
+</Depth>
+
+<Depth min={3}>
+
 We verified the GUI values, resumed work, and later found them empty. I
 don't know what reset them. We reloaded the loader and checked the values
 against the saved file. Service calls succeeded; I checked the apps again
 the next morning.
+
+</Depth>
+
+<Depth min={4}>
+
+The LaunchAgent has no schedule and no keep-alive. It sets the values once,
+when it loads, and if something clears them later nothing puts them back until
+I kick it again. So the check reads each variable two ways, from its own
+process and with `launchctl getenv`, and reports the two misses separately. An
+app that launched before the loader ran keeps its old environment until I
+relaunch it.
+
+A pre-commit hook scans staged files for known token prefixes and blocks the
+commit without printing the match. The check runs the same pattern over twelve
+tool config paths in my home directory and over the repo's config folders.
+Three days after the cleanup I widened the pattern to two cloud providers' key
+formats, anchored to the full key length so prose that names a prefix doesn't
+trip it.
+
+</Depth>
+
+<Depth min={5}>
+
+The template is one line per credential, a reference with no value:
+
+```sh
+export EXAMPLE_API_KEY="op://<vault>/<item>/credential"
+```
+
+The loader script, with the variable names changed and the job's name removed
+from its messages:
+
+```sh
+#!/usr/bin/env bash
+set -euo pipefail
+set +x
+secrets_file="$HOME/.config/agents/secrets.env"
+if [[ ! -r "$secrets_file" ]]; then
+  printf '%s\n' 'secrets.env is missing; inject credentials, then kickstart the job' >&2
+  exit 0
+fi
+source "$secrets_file"
+for name in EXAMPLE_API_KEY OTHER_API_KEY; do
+  value="${!name:-}"
+  if [[ -z "$value" || "$value" == op://* ]]; then
+    printf 'missing rendered value for %s\n' "$name" >&2
+    exit 1
+  fi
+  launchctl setenv "$name" "$value"
+done
+```
+
+Its property list has three keys: a label, the command, and `RunAtLoad`.
+Rendering the file and reloading the values:
+
+```sh
+mkdir -p ~/.config/agents
+chmod 700 ~/.config/agents
+(umask 077; op inject -i ~/.agents/secrets/secrets.env.tpl -o ~/.config/agents/secrets.env)
+chmod 600 ~/.config/agents/secrets.env
+launchctl kickstart -k "gui/$(id -u)/<label>"
+launchctl getenv EXAMPLE_API_KEY
+```
+
+</Depth>
+
+<Depth min={2}>
 
 A server appearing in a config check hadn't told me whether I could use it
 from the app where I worked.
@@ -146,8 +532,16 @@ Reviewing the repaired installer turned up another problem: uninstall could
 copy the old Codex config back over a file the app had changed since
 installation.
 
+</Depth>
+
+<Depth min={3}>
+
 A regression test reproduced it: add a setting after installation, run
 uninstall, lose the setting. Restoring the backup erased the later edit.
+
+</Depth>
+
+<Depth min={2}>
 
 The installer now saves a digest, a fingerprint of the installed file's
 contents, alongside the backup. Before restoring, it checks that the
@@ -156,9 +550,85 @@ rollback. It also refuses to restore Codex config while Codex is running.
 
 <SafeRollbackDiagram />
 
+</Depth>
+
+<Depth min={4}>
+
+Uninstall runs a preflight before it touches anything. It walks every receipt
+from newest to oldest and replays the restores in memory, so each receipt's
+digest has to match the bytes the newer receipt would put back. If the whole
+chain holds, it unloads the LaunchAgent and starts copying. The test for a
+later edit asserts that the file is untouched, that the receipt isn't marked
+as uninstalled, and that no external command ran.
+
+A receipt whose backup file has gone missing refuses too. Linked paths follow a
+simpler rule: uninstall removes a link only if it still points at the repo's
+file, then puts back whatever was there before. Files I adopted into the repo
+stay in the repo.
+
+</Depth>
+
+<Depth min={5}>
+
+The restore, as pseudocode of the real logic:
+
+```python
+def restore_data(row, current_bytes):
+    digest = row.get("installed_sha256")
+    if not digest or sha256(current_bytes) != digest:
+        raise Refuse("independently changed or unverified")
+    if not is_file(row.backup):
+        raise Refuse("missing backup")
+    return read_bytes(row.backup)
+
+
+def preflight(receipts):                       # newest first, nothing written
+    version = {}
+    for receipt in receipts:
+        if receipt.marked_uninstalled:
+            continue
+        for row in reversed(receipt.rows):
+            if row.kind != "codex-config":
+                continue
+            if row.target not in version:
+                version[row.target] = read_bytes(row.target)   # must be a real file
+            version[row.target] = restore_data(row, version[row.target])
+    if version and codex_running():
+        raise Refuse("close Codex first")
+
+
+def uninstall(receipts):
+    preflight(receipts)                        # refuse before any side effect
+    unload_launch_agent()
+    for receipt in receipts:
+        if receipt.marked_uninstalled:
+            continue
+        for row in reversed(receipt.rows):
+            if row.kind == "repo-adopt":
+                continue                       # keep adopted repo edits
+            if row.kind == "codex-config":
+                restore_data(row, read_bytes(row.target))      # checked again
+                copy(row.backup, row.target)
+            else:
+                if exists(row.target):
+                    if not is_link_to(row.target, row.source):
+                        raise Refuse("independently changed")
+                    unlink(row.target)
+                put_back(row.backup)           # if there was one
+        mark_uninstalled(receipt)
+```
+
+</Depth>
+
+<Depth min={2}>
+
 That is the same ownership rule I use for automated writes in my
 [Obsidian vault](/writing/treating-a-notes-app-like-production): a writer
 has to notice when somebody else has changed the thing it intends to replace.
+
+</Depth>
+
+<Depth min={3}>
 
 ## A check I can run before work
 
@@ -175,10 +645,60 @@ credential literals, and environment delivery. Eleven regression tests cover
 the Codex sync and rollback behavior. Changes to settings still need a
 human review and an intentional commit.
 
+</Depth>
+
+<Depth min={4}>
+
+Where it can, the check asks each tool for its own view: `codex mcp list
+--json` and `claude mcp list`, each with a 60-second timeout, so a hung CLI
+fails the check. The parser for Claude's output counts only lines with a status
+delimiter. An earlier version read a diagnostic `Location:` line as a server.
+The check also confirms that the pre-commit hook is active and the LaunchAgent
+is loaded. A dry run on an installed machine prints `nothing to do`.
+
+The eleven tests load the installer as a module, point its paths at a temporary
+directory, and stub the process check, so none of them touches my real config.
+
+<DotfilesAgentsTestsChart />
+
+Since I published this, the repo has taken on two more command-line agents.
+Both rewrite their own JSON settings, so the installer gained a JSON merge that
+follows the Codex rule: add the keys that are missing, refuse when a key is
+already set to another value, and never overwrite. The test directory now holds
+72 tests in five files.
+
+</Depth>
+
+<Depth min={5}>
+
+The five modes, as the installer's own documentation describes them:
+
+```text
+install.sh              render the override, link identical or missing targets,
+                        sync missing Codex settings, enable the hook, load the
+                        LaunchAgent; refuse differing files or settings
+install.sh --dry-run    print what would change and touch nothing
+install.sh --check      verify links, Codex settings, skill ownership, MCP names,
+                        credential literals, env delivery, rendered instructions,
+                        and the age of uncommitted changes
+install.sh --adopt      back up and import differing local files, then link them
+install.sh --uninstall  restore from the receipts; refuse a Codex rollback over
+                        later edits, a missing digest, or a running Codex
+```
+
+`install.sh` itself is four lines of bash that hand off to a Python script,
+which needs Python 3.11 or newer for its TOML parser.
+
+</Depth>
+
+<Depth min={3}>
+
 If you use one agent and rarely change its setup, this may be more machinery
 than you need. An existing dotfiles manager may handle the file links just
 fine. The custom parts here came from files with multiple writers, local
 permissions that needed to survive, and sessions I wanted to resume.
+
+</Depth>
 
 By Tuesday morning, I'd checked the apps and `install.sh --check` passed.
 Four unrelated settings and skill files were still modified by other work.

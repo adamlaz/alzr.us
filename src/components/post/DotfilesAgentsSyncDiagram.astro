@@ -1,0 +1,20 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/dotfiles-agents-sync-light.svg?raw';
+import darkSvg from '../../assets/diagrams/dotfiles-agents-sync-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={400}
+  caption="Any failed check stops the sync before the config file is touched."
+>
+  The Codex config sync runs five checks in order before one write. One: compare
+  the shared settings with the local config and refuse a differing value. Two:
+  refuse if a Codex process is running. Three: parse the new text and refuse if
+  anything other than the missing settings changed. Four: re-read the file on
+  disk and refuse if it changed mid-run. Five: check for a Codex process again
+  and refuse if one has started. Then swap in the new file and save its digest
+  in the receipt.
+</Diagram>

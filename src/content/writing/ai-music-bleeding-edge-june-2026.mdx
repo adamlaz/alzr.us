@@ -3,23 +3,35 @@ title: 'What I learned trying to swap one name in a festival anthem'
 date: 2026-06-13
 description: "Keep an EDM festival anthem exactly as it is and change one word, the name shouted over the drop, to a friend's. Pure AI, no recording. In June 2026, with models that write whole songs and clone voices on demand, this should be a one-evening job. It was not."
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: "Bleeding edge isn't the same as ready. The toolchain can do most of this. It just can't do the one specific thing I wanted."
 tags: ['ai-augmented-engineering', 'ai-audio', 'music-generation']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import Callout from '../../components/post/Callout.astro';
 import Audio from '../../components/post/Audio.astro';
 import SpliceDiagram from '../../components/post/SpliceDiagram.astro';
+import AiMusicChantWindows from '../../components/post/AiMusicChantWindows.astro';
 
 A friend's name needed to land in the chorus of an EDM festival anthem. You
 know the format: a Dutch big-room track built around an F1 driver's name,
 shouted over the drop. The job was to keep the record exactly as it is and
 change one word, the name, to my friend's. Pure AI. No recording myself, no
 hiring a singer.
+
+<Depth max={1}>
+
+It's June 2026. Music models write whole songs from a prompt and voice
+cloning is a commodity, so this looked like one evening's work. It wasn't.
+
+</Depth>
+
+<Depth min={2}>
 
 It's June 2026. Music models write entire songs from a text prompt. Voice
 cloning is a commodity. Swapping one name in an existing chorus is a strictly
@@ -36,12 +48,18 @@ last clause is the trap. Most of what shipped in 2026 generates new songs from
 scratch. I didn't want a new song. I wanted this song, minus one name, plus
 another.
 
+</Depth>
+
+<Depth min={3}>
+
 For the record, this was a one-off for one friend, not a track I'd release.
 The clips below are short excerpts, here so you can hear the failures instead
 of taking my word for them. The one name you can clearly make out, in the
 spliced take, is a stand-in, not my friend's. Cutting a full release over a
 commercial master is a rights problem I get to skip, because the release was
 never the point. The technical problem is the one I cared about.
+
+</Depth>
 
 <Audio
   src="/audio/ai-music-june-2026/source-anthem.mp3"
@@ -53,6 +71,15 @@ The market splits cleanly on this one task.<Note id="1" /> Most of the 2026
 headline models are the wrong tool: they write a whole new track, and I already
 have a track.
 
+<Depth max={2}>
+
+One open-source model is built for exactly this job: YingMusic takes a clip
+of the melody plus the edited lyrics and sings the line again.
+
+</Depth>
+
+<Depth min={3}>
+
 | Tool | What it is | Does this task? |
 |---|---|---|
 | LeVo, SongGeneration, ACE-Step | Open-weights song generators | No. They write new songs from a prompt. Brilliant, irrelevant. |
@@ -60,9 +87,28 @@ have a track.
 | Lyria 3 Pro (Vertex) | Commercial prompt-to-song | Generates, but over-refuses proper nouns in vocals. More below. |
 | YingMusic | Open-source diffusion melody-editor | The one built for exactly this: a melody clip plus edited lyrics, no manual alignment. |
 
+</Depth>
+
+<Depth min={2}>
+
 YingMusic came out of an academic lab and a games company in March 2026, around
 seven hundred million parameters, clean 44.1 kHz stereo, no syllable-aligning by
 hand. On paper it is the tool. Six months ago it did not exist.
+
+</Depth>
+
+<Depth min={4}>
+
+My notes from before the first run already had the risk written down as an
+open question: how would it handle pitched, processed EDM vocals, when what
+it trained on was cleaner solo singing? The repo's README adds a constraint
+of its own. Everything the model hears has to be a bare vocal, with no
+accompaniment, so a finished record has to be pulled apart before the model
+can touch it.
+
+</Depth>
+
+<Depth min={3}>
 
 ## The part the demo videos skip
 
@@ -96,6 +142,59 @@ That's the part the demo videos skip. Forty-five minutes of yak-shaving stood
 between "git clone" and the first sound, and in my experience that's the rule
 at the bleeding edge.
 
+</Depth>
+
+<Depth min={4}>
+
+The first two patches are still sitting in the checkout as an uncommitted
+diff. The espeak one never went into the repo. It's an environment default at
+the top of my own run script, pointing at Homebrew's espeak-ng 1.52.0. The
+environment is Python 3.10 with PyTorch 2.6.0, and the first run downloads
+about 2.7 GB of model weights plus a 913 MB checkpoint for the vocal
+separator the repo bundles, a Mel-band RoFormer. The clone is stamped 8:04 pm
+and the first pair of separated stems 8:36.
+
+espeak is in that list because the model never sees letters. English lyrics
+go through espeak into IPA phonemes, the same alphabet the model uses for
+Chinese, and the model is conditioned on those. Whatever I typed for the
+name, the model got the phonemes espeak chose for it.
+
+</Depth>
+
+<Depth min={5}>
+
+The tracked diff against upstream with the hunk headers trimmed, then the
+line from my run script:
+
+```diff
+--- a/infer_api.py
++++ b/infer_api.py
+ def get_device():
+-    return "cuda:0" if torch.cuda.is_available() else "cpu"
++    if torch.cuda.is_available():
++        return "cuda:0"
++    if torch.backends.mps.is_available():
++        return "mps"
++    return "cpu"
+--- a/requirements.txt
++++ b/requirements.txt
+-bitsandbytes==0.48.1
++bitsandbytes==0.48.1; sys_platform != "darwin"  # CUDA-only; skipped on macOS
+```
+
+```python
+# top of the run script, before anything imports phonemizer
+os.environ.setdefault(
+    'PHONEMIZER_ESPEAK_LIBRARY',
+    '/opt/homebrew/Cellar/espeak-ng/1.52.0/lib/libespeak-ng.1.dylib',
+)
+```
+
+The repo loads the model once and moves the whole thing to whatever
+`get_device()` returns, so that one function is the entire port.
+
+</Depth>
+
 ## The failure that actually matters
 
 YingMusic ran. It produced clean audio: the melody intact, the timbre
@@ -107,6 +206,15 @@ merged into a vowel-shaped blur.
   src="/audio/ai-music-june-2026/yingmusic-baseline.mp3"
   caption="YingMusic, default settings. Melody and timbre intact. The name dissolves into a vowel."/>
 
+<Depth max={1}>
+
+I ran fourteen variants: stronger guidance, more steps, new seeds, phonetic
+respellings, plain English names. Every single one came out mushy.
+
+</Depth>
+
+<Depth min={2}>
+
 So I did what you do and probed it. Fourteen variants. I swept the guidance
 strength from 3 to 9 and the diffusion steps from 32 to 96. I changed seeds. I
 respelled the name phonetically with the stress marked. I swapped in
@@ -114,13 +222,25 @@ deliberately plain English names from 3 to 5 syllables, to rule out the
 target name simply being awkward in the mouth. Every single one came out
 mushy.
 
+</Depth>
+
+<Depth min={3}>
+
 <Audio
   src="/audio/ai-music-june-2026/yingmusic-cfg9.mp3"
   caption="Guidance pushed to 9, one of fourteen variants. Same smear, every time."/>
 
+</Depth>
+
+<Depth min={2}>
+
 <PullQuote>
   It nailed everything but the one piece of detail that was the entire job.
 </PullQuote>
+
+</Depth>
+
+<Depth min={3}>
 
 My read of the failure, and it's a read, not a proof: YingMusic was trained on
 clean, sustained singing, and a festival chant is shouted, heavily processed,
@@ -131,7 +251,115 @@ I won't pretend I know which it is. The failure was identical across all
 fourteen runs: the melody and timbre came out right and the consonants came
 out wrong.
 
+</Depth>
+
+<Depth min={4}>
+
+### What the fourteen variants changed
+
+Everything ran on a 30-second cut of the first chorus. The cut was separated
+once into a vocal stem and an instrumental stem, and both were cached. Every
+run then used that one vocal stem twice, as the voice to imitate and as the
+melody to follow, and its output was mixed back over the cached instrumental.
+
+The lyrics go in as two lines of phrases separated by pipes: the words on the
+recording, and the words I wanted. Mine were eight phrases each, the hook
+syllables alternating with the name, and the only difference between the two
+lines was the name.
+
+The baseline and the first three variants survive only as filenames: the
+defaults, which are guidance 3 and 32 steps, then guidance 5, guidance 5 with
+a phonetic spelling, and guidance 7. The other eleven are still in the script
+I kept, with their settings.
+
+| What changed | Guidance | Steps | Seed |
+|---|---|---|---|
+| Second word of the name swapped for a real English word that sounds close | 5 | 64 | 7 |
+| Name respelled with the stressed syllable in capitals | 5 | 64 | 7 |
+| Name respelled the way an English speaker would sound it out | 5 | 64 | 13 |
+| Name unchanged, new vocal 1.5 times louder in the mix | 5 | 64 | 7 |
+| Name unchanged, new vocal 1.2 times louder | 9 | 96 | 99 |
+| A plain four-syllable name, the same count as the original | 5, then 7 | 64 | 7, then 11 |
+| A plain five-syllable name | 5, then 7 | 64 | 7, then 11 |
+| A plain three-syllable name | 5, then 7 | 64 | 7, then 11 |
+
+The louder-vocal run was aimed at a different suspect. If the smear was the
+original shout leaking through the instrumental stem, a new vocal half again
+as loud should have covered it. It came out as mushy as the rest.
+
+The table also shows how loose the sweep was. The guidance-9 clip above moved
+four things at once (guidance, steps, seed and mix level), and every
+guidance-7 name run changed its seed along with the guidance. Three inputs
+never moved in any of the eleven: the 30-second cut, the separated stem, and
+the line of reference lyrics. So when I say I didn't isolate the cause, this
+is how far short of it I stopped.
+
+</Depth>
+
+<Depth min={5}>
+
+The call each variant made, from the script, with the lyric strings
+shortened and the names taken out:
+
+```python
+REF_TEXT = "<hook>|<original name>|<hook>|<original name>|..."  # 8 phrases
+
+def run_variant(name, target_text, cfg, nfe, seed, vocal_gain=1.0):
+    final_out = f'{OUT_DIR}/chorus1_{name}.wav'
+    if os.path.exists(final_out):          # re-runs skip finished variants
+        return final_out
+
+    model = get_model()                    # lazy singleton, loaded once
+    audio_tensor, sr = model(
+        ref_audio_path=VOCAL_STEM,         # timbre: the separated vocal
+        melody_audio_path=VOCAL_STEM,      # melody: the same file
+        ref_text=REF_TEXT.strip(),
+        target_text=target_text.strip(),
+        lrc_align_mode='sentence_level',
+        sil_len_to_end=0.5,
+        t_shift=0.5,
+        nfe_step=nfe,
+        cfg_strength=cfg,
+        seed=seed,
+    )
+
+    tmp = tempfile.mkdtemp()
+    vocal_out = os.path.join(tmp, 'v.wav')
+    torchaudio.save(vocal_out, audio_tensor.to('cpu'), sample_rate=sr)
+    mix(vocal_out, INST_STEM, final_out, vocal_gain=vocal_gain)
+    return final_out
+
+VARIANTS = [
+    # name, target_text, cfg, nfe, seed, vocal_gain
+    ('v5_<real word>',  '<hook>|<first name> <real word>|...',  5.0, 64, 7,  1.0),
+    ('v6_stress',       '<hook>|<name, stress in caps>|...',    5.0, 64, 7,  1.0),
+    ('v7_anglicized',   '<hook>|<name, anglicized>|...',        5.0, 64, 13, 1.0),
+    ('v8_gain15',       '<hook>|<name>|...',                    5.0, 64, 7,  1.5),
+    ('v9_cfg9',         '<hook>|<name>|...',                    9.0, 96, 99, 1.2),
+    ('<4 syllables>_cfg5', '<hook>|<plain name>|...',           5.0, 64, 7,  1.0),
+    ('<4 syllables>_cfg7', '<hook>|<plain name>|...',           7.0, 64, 11, 1.0),
+    # ...the same pair again for a 5-syllable and a 3-syllable name
+]
+```
+
+`mix()` adds the new vocal times `vocal_gain` to the instrumental and divides
+by the peak if the sum goes over 1.0. A failed variant prints its error and
+the loop moves on to the next one.
+
+</Depth>
+
 ## The pivot, and why it sounded wrong
+
+<Depth max={1}>
+
+If the singing model won't say the word, build the word and paste it in. I
+had a cloud text-to-speech voice say the name and a script drop it over each
+shout. You could hear the name clearly, and it sounded like a podcast guest
+reading it over a house track.
+
+</Depth>
+
+<Depth min={2}>
 
 If the singing model won't say the word, build the word and paste it in. So I
 pivoted to a splice pipeline. Separate the vocal stem with Demucs, find every
@@ -149,17 +377,112 @@ gets. Neutral was the weak link. Read-speech prosody has the wrong texture for
 a shouted crowd vocal, and no amount of EQ, distortion, or pitch-shifting moved
 it from narrator to drop. Clear words, wrong instrument.
 
+</Depth>
+
 <Audio
   src="/audio/ai-music-june-2026/tts-splice.mp3"
   caption="The splice pipeline. The name finally comes through clean, and the voice reads it like a line of dialogue, not a chant."/>
 
+<Depth min={4}>
+
+### Where the splice windows landed
+
+The prosody was the failure I could hear. The script I kept shows a second
+problem. Its detector takes every onset librosa reports on the vocal stem, keeps
+one only if it comes at least 3 seconds after the last one kept, and drops
+any that land in near-silence. Re-run on the cached stem, that is 52 raw
+onsets cut to six. The first, at 9.10 seconds, was a background sample, and I
+removed it with a hard-coded "ignore anything before 14 seconds". Each of the
+five left got a window 2 seconds long.
+
+<AiMusicChantWindows />
+
+The vocal in that chorus repeats every 3.75 seconds, which is two bars at 128
+beats per minute. My five windows start 3.0 to 3.3 seconds apart, because
+with 52 onsets to choose from there is always one just past the 3-second
+gap. So each window begins roughly half a second to three quarters of a
+second earlier in the loop than the one before it, and the pasted name sits at a
+different place in the bar every time. The spliced clip above differs from
+the source in those same five places.
+
+Inside a window the original vocal is faded out over 60 milliseconds and the
+new clip faded in; outside the windows the original stem plays untouched.
+Wherever a window missed part of a shout, the old name is still in the mix.
+I rendered a second version that kept 30% of the original under the new
+voice as a texture bed.
+
+Two steps from the description above ran differently in this script. It
+never calls a separator. It reads the two stem files the first script had
+already cached, and that script used the separator bundled in the model's
+repo. And the time-stretch only fires when a clip is longer than its window.
+I generated the name in five voices and took two into the splice; the five
+clips run 1.48 to 1.92 seconds, all under the 2-second window, so each was
+centered in its window with silence on both sides and never stretched.
+
+</Depth>
+
+<Depth min={5}>
+
+The detector and the processing chain from the script, trimmed, with the
+drop counts from the re-run added as comments:
+
+```python
+def detect_onsets(audio_path, min_gap_sec=3.0):
+    y, sr = librosa.load(audio_path, sr=44100, mono=True)
+    onset_frames = librosa.onset.onset_detect(
+        y=y, sr=sr, hop_length=512, backtrack=True, units='time', delta=0.05,
+    )
+    rms = librosa.feature.rms(y=y, hop_length=512)[0]
+    times = librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=512)
+    def rms_at(t):
+        return float(rms[np.argmin(np.abs(times - t))])
+    onsets = []
+    for t in onset_frames:
+        t = float(t)
+        if onsets and t - onsets[-1] < min_gap_sec:
+            continue                      # dropped 44 of 52
+        if rms_at(t) < 0.02:
+            continue                      # dropped 2 more
+        onsets.append(t)
+    return onsets, len(y) / sr
+
+# window = (onset, min(onset + 2.0, next onset))
+chant_windows = [w for w in windows if w[0] > 14.0]   # the hand cut
+
+def process_tts_edm(audio, sr=44100, pitch_steps=3, drive=2.5):
+    audio = librosa.effects.pitch_shift(audio.astype(np.float32), sr=sr, n_steps=pitch_steps)
+    sos = butter(4, [180, 6000], btype='bandpass', fs=sr, output='sos')
+    audio = sosfilt(sos, audio).astype(np.float32)
+    audio = np.tanh(audio * drive) / np.tanh(drive)   # soft clip
+    return np.clip(audio, -0.95, 0.95).astype(np.float32)
+```
+
+Window starts from the re-run: 15.13, 18.44, 21.46, 24.75 and 27.77 seconds.
+The 3.75-second figure is the autocorrelation peak of the stem's RMS envelope
+from 14 seconds on. Stepping by that figure from the first onset would have
+kept all five windows on the grid.
+
+</Depth>
+
 ## The refusal
+
+<Depth max={1}>
+
+For completeness I asked Google's Lyria 3 Pro to generate the whole track
+from a described prompt. It rejected every version that had a name in the
+lyrics. I removed the name itself, and it generated happily.
+
+</Depth>
+
+<Depth min={2}>
 
 For completeness I tried Lyria 3 Pro, generating the whole thing from a
 described prompt. The content filter rejected it: sensitive words. I stripped
 the references to real artists and festivals. Still rejected. I stripped
 everything down to a generic genre description and the bare name. Rejected. I
 removed the name itself, and it generated happily.
+
+</Depth>
 
 <Callout variant="note" title="Where the gate actually sits">
   Lyria's filter wasn't objecting to a real person. It blocks proper nouns in
@@ -168,7 +491,51 @@ removed the name itself, and it generated happily.
   a defensible safety choice and a useless one for the thing I was doing.
 </Callout>
 
+<Depth min={4}>
+
+### What the Lyria prompts said
+
+The first prompt was long. It opened with style anchors (genre, tempo, key,
+the kick pattern, the vocal treatment) and named the three artists behind the
+original. Then came nine timestamped sections from 0:00 to 2:50, each with
+its arrangement and its lyric lines, the name in every drop.
+
+When that bounced, my notes blamed the artist names. The second version
+dropped them, along with a line calling the named person a world champion,
+which I thought could read as a claim about a real person. It kept the name,
+on the theory that a random name carries no public-figure risk. The third was
+the fallback I had written in advance: a few lines of genre description with
+the name in quotes.
+
+The same notes already had the next move planned if the name was the problem:
+generate with a placeholder word, then splice the name onto the output. That
+would have put me back in the splice pipeline, on a track that was no longer
+the record.
+
+</Depth>
+
+<Depth min={5}>
+
+The fallback prompt, with the name taken out:
+
+```text
+A 128 BPM big-room EDM festival anthem with a heavy pluck-synth lead,
+sidechained kick, and a male crowd chant repeating "<NAME>" over
+the drops. F minor. 2 minutes 50 seconds. Festival main-stage energy.
+```
+
+</Depth>
+
 ## The honest verdict
+
+<Depth max={1}>
+
+The tool that does this job is a specialized commercial one: Suno's cover and
+section-replace, at ten dollars a month.
+
+</Depth>
+
+<Depth min={2}>
 
 Three tiers of the stack, each wrong in its own way:
 
@@ -178,11 +545,15 @@ Three tiers of the stack, each wrong in its own way:
 | General-purpose open source | YingMusic | Under-articulates the name, out-of-distribution consonants |
 | Specialized commercial | Suno cover + replace | Actually does the job, at ten dollars a month |
 
+</Depth>
+
 Picking the right *level* of the stack mattered more than picking the most
 powerful tool, and for this task the right level was a paid product I'd been
 too stubborn to start with.
 
 ## How close it actually is
+
+<Depth min={3}>
 
 I don't read this as a failure. YingMusic didn't exist six months
 ago. The path to run diffusion audio models on Apple silicon matured this year.
@@ -202,6 +573,16 @@ the precursors from here. I went in to swap one name and came out with a
 pretty clear map of where the edge is, which is the return on an evening
 spent at it. Bleeding edge isn't the same as ready. It's just close enough to
 be worth the cuts.
+
+</Depth>
+
+<Depth max={2}>
+
+Music generation hasn't had its GPT-3 moment, the one where a weekend of
+expert work becomes a text box anyone can use. Bleeding edge isn't the same
+as ready. It's just close enough to be worth the cuts.
+
+</Depth>
 
 <Footnotes
   notes={[

@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/parallel-agents-resume-pass-light.svg?raw';
+import darkSvg from '../../assets/diagrams/parallel-agents-resume-pass-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Reading the resume moved 5 of 24 verdicts, 4 of them down"
+  caption="One square for each candidate in a wave researched without resumes, then re-read when the resumes arrived."
+>
+  Unit chart of 24 candidates whose research ran on application text and public footprint, then was re-read against
+  the resume. 19 verdicts held. 1 moved up, from verify-first to interview-grade. 4 moved down: two to verify-first
+  and two to pass.
+</Chart>

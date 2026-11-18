@@ -1,0 +1,21 @@
+---
+import lightSvg from '../../assets/diagrams/notes-app-guard-ledger-light.svg?raw';
+import darkSvg from '../../assets/diagrams/notes-app-guard-ledger-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Five incidents in 2026, and the eight guards that landed behind them"
+  caption="Dates from the vault's git history and runbook. The June push failure has no exact date in either, so it isn't plotted. Rings are incidents; squares are guards."
+>
+  A dated list of incidents and guards in 2026. April 12: category drift repaired on 97 pages (incident). May 9: a
+  package upgrade orphans a permission (incident). May 22: the interpreter moves out of Homebrew's reach (guard). May
+  23: the hash fence and budget cap are first committed (guard). June 1: three breakages in one morning (incident), and
+  the log archive job is added (guard). June 11: the test suite starts at 69 tests (guard). June 12: the drift check
+  joins the test script (guard). July 2: failed jobs write a row in the log (guard). July 30: research agents fail
+  quietly until August 14 (incident). October 11: every job is wrapped and overdue becomes a status (guard). November
+  13: a stranded rebase leaves the vault on an old tree for 12 hours (incident). November 14: the push merges and
+  never rebases (guard).
+</Chart>

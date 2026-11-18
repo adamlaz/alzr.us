@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/parallel-agents-file-size-light.svg?raw';
+import darkSvg from '../../assets/diagrams/parallel-agents-file-size-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="By August, no fabricated resume was under 10 KB"
+  caption="Resume file size on a log scale. Spring shows three individual resumes; August shows the range for the whole wave."
+>
+  Resume file sizes against the 10 KB line, on a log scale. In the spring rounds, two fabricated resumes were 8.5 and
+  8.9 KB, and one real candidate's resume was 5.9 KB. In the August wave every resume was between 65 and 360 KB, and
+  no fabricated application fell under 10 KB.
+</Chart>

@@ -3,17 +3,22 @@ title: 'A wedding app in seventeen unattended hours'
 date: 2026-10-11
 description: 'Two friends wanted a QR code their wedding guests could scan to share photos, with no app and no sign-in. I wrote the plan, Claude Code agents built and reviewed it overnight, and the bug that got past all of them was two attributes in the wrong order.'
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: 'The executor ran the whole test suite against production while testing the guard that existed to stop exactly that.'
 tags: ['ai-augmented-engineering', 'claude-code', 'craft']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import Callout from '../../components/post/Callout.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Figure from '../../components/post/Figure.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import RunLoopDiagram from '../../components/post/RunLoopDiagram.astro';
+import WeddingAppMergeTimeline from '../../components/post/WeddingAppMergeTimeline.astro';
+import WeddingAppLineBudget from '../../components/post/WeddingAppLineBudget.astro';
+import WeddingAppLoadTest from '../../components/post/WeddingAppLoadTest.astro';
 
 The brief came in as a text from the bride: "QR Code that guests can scan
 with their phones and easily upload photos from android or iPhone. No app no
@@ -21,14 +26,25 @@ sign-in." Two close friends are getting married in Key West this December,
 I'm officiating, and I'm building the photo part.
 
 I typed the kickoff on a Saturday at 12:09 PM. At 5:21 the next morning the
-run closed itself out with the whole wedding-night app live in production: a
+run closed itself out with the whole wedding-night app live in production<Depth inline min={2}>: a
 printable sign, a one-button upload page built for one bar of signal, a
 shared gallery, timeline, feed, projector slideshow, venue map and an admin
-page. Fourteen pull requests merged in between. My part in those seventeen
+page</Depth>. Fourteen pull requests merged in between.<Depth inline min={2}> My part in those seventeen
 hours was plugging in my laptop when the orchestrator flagged the battery at
-38%, and typing "continue i approve." I didn't write any of the code. I
+38%, and typing "continue i approve."</Depth> I didn't write any of the code. I
 wrote the plan, and then spent the next day finding out what only a real
 phone could show me.
+
+<Depth min={4}>
+
+The battery was the run's first logged hazard. One minute after kickoff the
+orchestrator found the laptop at 38% with about an hour and a half left,
+started `caffeinate` so the Mac wouldn't sleep, and sent me a desktop
+notification. By 12:36 it was at 21% with about 37 minutes left, and the
+orchestrator let the display sleep to stretch it. By 12:47 the laptop was on
+power.
+
+</Depth>
 
 <Figure
   src="/images/writing/wedding-app-in-seventeen-unattended-hours/guest-flow.webp"
@@ -37,6 +53,8 @@ phone could show me.
   height={1003}
   caption="What a guest sees: the sign, one button, everyone's photos. QR code and address redacted. Every photo in this post is a generated test image except one, and that one is mine."
 />
+
+<Depth min={3}>
 
 <Callout variant="aside" title="Since this was written">
 
@@ -50,43 +68,162 @@ first run, as it happened.
 
 </Callout>
 
+</Depth>
+
 ## Every decision moves before kickoff
 
 Before any code, a deep-research run put 25 claims about storage, uploads and
 phone browsers to a vote of three independent checks across 21 sources. Four
 didn't survive. The finding that shaped the build: Vercel's free Blob tier
 doesn't bill you for going over its limits, it locks the store for 30
-days.<Note id="1" /> Seventeen one-minute iPhone videos fill the free
+days.<Note id="1" /><Depth inline min={2}> Seventeen one-minute iPhone videos fill the free
 gigabyte. A gallery that could go dark during cocktail hour, with the one
-person able to fix it busy officiating, ruled Blob out.
+person able to fix it busy officiating, ruled Blob out.</Depth>
+
+<Depth min={4}>
+
+Of the 25 claims, 21 held. My notes from that run put the free
+tier's limits at 1 GB stored, 2,000 advanced operations and 10 GB of
+transfer, and count every put, every multipart part and every gallery list
+call as an operation. The same research told me to rate-limit the route that hands
+out upload URLs, since the bytes never touch my server and that route is
+the only gate. I overruled it. The plan says no upload limits of any kind,
+no rate limits, size caps or batch caps, and names the admin's pause switch
+as the brake.
+
+</Depth>
 
 So the phones upload straight to Cloudflare R2 on short-lived signed URLs,
-and no photo ever passes through a server function. Vercel caps a function
+and no photo ever passes through a server function.<Depth inline min={2}> Vercel caps a function
 request at 4.5 MB; a 1080p iPhone video runs about 60 MB a minute. iPhones
 have no background upload either, so the resilience has to live in the page:
 each phone makes a small gallery copy first, so the photo shows up for
 everyone within seconds, then sends the original in resumable parts and
-keeps trying as long as the page is open. The map hit its own browser limit.
+keeps trying as long as the page is open.</Depth> The map hit its own browser limit.
 Both platforms mostly strip GPS before a web page sees the file,<Note id="2" />
 so pins come from an opt-in location prompt instead.
 
+<Depth min={4}>
+
+Per file, the page works in a fixed order. A worker fingerprints the file
+and makes two JPEG copies through a canvas: a thumbnail 400 pixels on the
+long edge and a gallery copy at 2,048. Canvas output carries no metadata, so
+the public copies can't carry a location, and the originals stay in a
+private bucket. One server call creates the item and returns signed URLs for
+the copies plus the plan for the original: a single PUT under 8 MB,
+otherwise a multipart upload in 8 MB parts, with part URLs signed twenty at
+a time. The copies go up first and the item becomes visible; the original
+follows. Signed URLs live ten minutes, and each covers one object with its
+content type signed in.
+
+The server's list of parts is the truth, never the phone's. If the page
+reloads, picking the same file again matches its fingerprint on the server,
+which lists the parts storage already holds, and the page sends only the
+missing ones. At most three files upload at once and two decode at once, because a
+300-photo pick must not crash Safari's tab.
+
+</Depth>
+
 The plan that came out of that ran 427 lines: thirteen work units,
-decisions marked as locked, a definition of done in three tiers (core is
+decisions marked as locked,<Depth inline min={3}> a definition of done in three tiers (core is
 never traded for expected, expected never for stretch), a drop order for
-when time runs short, and the conditions under which an agent stops instead
-of improvising. It also pre-approved the scary parts in writing. "Merge =
-production deploy: approved." An unattended run can't ask a question,
+when time runs short,</Depth> and the conditions under which an agent stops instead
+of improvising.<Depth inline min={2}> It also pre-approved the scary parts in writing. "Merge =
+production deploy: approved."</Depth> An unattended run can't ask a question,
 because nobody is there to answer it.
 
+<Depth min={4}>
+
+The stop conditions fit in a short list. A call against any account other
+than the ones the plan named. Any step that needs deleting a cloud resource
+or production data. Any paid upgrade, trial or usage-limit prompt. A missing
+credential or permission. The line budget. A reviewer's BLOCK after two
+revision rounds. On any of them the unit stops, the orchestrator records one
+`BLOCKED:` line naming the single thing I have to decide, and every
+independent unit carries on. Red CI is never merged.
+
+The drop order ran from the top: the load test, then the freeze check, then
+the design pass beyond restyling tokens, then the runbook and decision
+records, then voice notes, then the rest of memories. Core is never dropped,
+and a drop is a deferral to a later attended run with its reason recorded,
+never a cut.
+
+</Depth>
+
+<Depth min={2}>
+
 So the questions got answered in a thirty-minute pre-flight. Everything that
-needed my accounts or my say-so happened there: a new Vercel team, a
+needed my accounts or my say-so happened there<Depth inline min={3}>: a new Vercel team, a
 database project, two Cloudflare credentials, four empty storage buckets
 created ahead of time so the app's own key could be scoped to those four,
 and fifteen secrets in the macOS Keychain. Agents read the Keychain inside
-their own process and print names, never values. When the run started,
+their own process and print names, never values</Depth>. When the run started,
 nothing left on the path needed a human.
 
+</Depth>
+
+<Depth min={4}>
+
+The storage key the app runs on can read and write objects in those four
+buckets and nothing else. Pre-flight proved it both ways: PUT, GET, DELETE
+and LIST passed on each of the four, and the same key got a 403 on the other
+buckets in the account. The setup credential that manages CORS rules and DNS
+expires five days after the wedding. The database's free plan caps a project
+at ten branches, and a branch per preview deploy would have hit that inside
+the run, so every preview shares one preview branch and every unit test runs
+on Postgres in-process. No laptop or CI job can touch a cloud database.
+
+Two rules kept secrets out of the transcript. There are no `.env` files:
+local commands run through a wrapper that reads the Keychain inside its own
+process. And the infrastructure scripts print names and pass or fail only,
+with a unit test that plants a fixture secret and fails if any output
+contains it.
+
+</Depth>
+
+<Depth min={5}>
+
+The three shell helpers from the plan's pre-flight, with the service name
+changed. `p` prompts without echo, `r` generates:
+
+```zsh
+k() { security add-generic-password -U -s "my-app/$1" -a "$USER" -w "$2"; }
+p() { local v; read -rs "v?$1: "; print; k "$1" "$v"; }
+r() { k "$1" "$(openssl rand -base64 "$2" | tr '+/' '-_' | tr -d '=')"; }
+```
+
+The plan's warning sits right under them: never paste a `p` line together
+with anything after it, because its prompt would swallow the next pasted
+line as the secret.
+
+</Depth>
+
 ## One unit, one worktree, one hostile reader
+
+<Depth max={1}>
+
+The session I kicked off was an orchestrator, and it never edited a line of
+app code. It handed each unit to an executor agent, and anything risky to a
+reviewer: a second agent, carrying none of the executor's context, whose
+only job was finding what was wrong. Every merge was a production deploy.
+The reviewers sent back an admin page a guest could reach and a slideshow
+that froze forever if it started with one photo.
+
+</Depth>
+
+<Depth min={2} max={2}>
+
+The session I kicked off was an orchestrator, and it never edited a line of
+app code. It wrote a one-page brief for each unit and handed it to an
+executor agent working in its own copy of the repo. Anything touching
+access, data, uploads, admin or privacy then went to a reviewer: a second
+agent, carrying none of the executor's context, whose only job was finding
+what was wrong. Nothing merged without green checks and a recorded verdict,
+and every merge was a production deploy.
+
+</Depth>
+
+<Depth min={3}>
 
 The session I kicked off was an orchestrator, and it never edited a line of
 app code. For each unit it wrote a one-page brief and dispatched an executor
@@ -102,10 +239,68 @@ production deploy, so the orchestrator then checked the live site and wrote
 a row to a markdown ledger in my notes vault. By 5:21 AM the ledger was at
 row 54.
 
+</Depth>
+
 <RunLoopDiagram />
+
+<Depth min={2}>
 
 Sonnet built most of the units. Opus built the uploader, the hardest unit,
 and did every adversarial review.
+
+</Depth>
+
+<Depth min={4}>
+
+Review depth came from a three-row table in the plan. The scaffold, the map,
+the scripts and docs, and the design pass got the orchestrator's read.
+Infrastructure, the access gate, the data layer, the views, admin and
+memories each got an adversarial pass. The uploader got a fresh-context
+adversarial pass plus an optional review by a second model family, Codex,
+which could never gate a merge.
+
+<WeddingAppMergeTimeline />
+
+The merge rule was mechanical. A fresh read of the checks, all green on the
+final commit with every expected check present; the plan's words are "a
+missing check is not a green." A diff that touches only the unit's files. A
+recorded APPROVE. After each merge the orchestrator confirmed a production
+deployment of that exact commit, requested the health route, and ran a
+`doctor` script that checks the live setup. At close-out it passed 13 of 13
+on production.
+
+One thing went sideways in the first fifteen minutes. A dependency-update
+bot installed on my GitHub account, which the run hadn't set up, opened its
+onboarding pull request, and the host deployed that branch as the project's
+first production deployment while the scaffold's push to main got none. The
+orchestrator left the bot's pull request alone, logged the anomaly, and made
+the next merge prove that main deploys. It did.
+
+</Depth>
+
+<Depth min={5}>
+
+Every review lands as a file in this shape, from the reviewer contract:
+
+```text
+# Review: <unit> PR #<n> @ <sha> -- round <N>
+Verdict: APPROVE | REVISE | BLOCK
+Overview: <3-5 sentences>
+Verified by execution: <what you ran, with counts>
+
+## Findings
+### R<N>-<k> [FACT|JUDGMENT] [blocking|design|additions|cosmetic] [worth closing: yes|no] <one-line summary>
+<detail, citation, failure scenario, suggested fix>
+```
+
+The contract also requires a real `file:line` citation on every finding
+("a fabricated citation is worse than none") and gives a reviewer about 45
+minutes of wall clock. A reviewer works in its own scratch checkout and
+writes throwaway probe scripts outside the repo.
+
+</Depth>
+
+<Depth min={2}>
 
 ## What the reviewers caught
 
@@ -118,20 +313,24 @@ turning into a security product. The reviewers still sent all of these back
 before merge:
 
 1. **An admin page that rendered for a guest** at `/%2561dmin`, a
-   double-encoded path the gate decoded one way and the router another. The
+   double-encoded path the gate decoded one way and the router another.<Depth inline min={3}> The
    same round found admin actions reachable through a query parameter on any
-   route.
+   route.</Depth>
 2. **Upload URLs that didn't sign the content type**, so a phone could have
    put an HTML file on the media domain.
 3. **A video with one failed chunk finishing 61st of 61**, stuck behind a
-   stream of newer photos. The uploader already had a property test running
+   stream of newer photos.<Depth inline min={3}> The uploader already had a property test running
    1,000 random upload schedules, and it passed, because its simulated clock
    never let time go by. Run at 15 seconds a step, it found two more. By the
    follow-up, a mutation check broke the scheduler 28 different ways on
-   purpose, and the tests caught all 28.
+   purpose, and the tests caught all 28.</Depth>
 4. **A slideshow that froze forever if it started with one photo**, which
    is what a projector shows if someone switches it on right after the
    first guest uploads.
+
+</Depth>
+
+<Depth min={3}>
 
 Three units needed a third round (the admin gate, the data layer and the
 uploader), and the reason was the same each time: the fix introduced the
@@ -145,7 +344,93 @@ requests against the built function, zero admin actions run. Pointed at
 the commit before the fix, the same harness ran admin actions 14 times.
 That second number is how I knew the harness could see the bug at all.
 
+</Depth>
+
+<Depth min={4}>
+
+The plan's cost list has four more lines than the ones above. Uploads stuck
+on weak signal: high. The couple seeing memories before the reveal: medium.
+Spam uploads: low, because hiding everything from one phone and the pause
+switch both exist. Anything after the end of January: negligible.
+
+The reviewer contract asks for execution over reading: "A reviewer who
+executes is rarely wrong; one who only reasons often is." A re-review has to
+map every earlier finding to a commit or an explicit decline, then look for
+defects the fix introduced.
+
+The uploader's first review had two blocking findings. A re-sync after a
+failed PUT reset the attempt counter, so an upload that always failed ran 40
+cycles at half a second to a second apart and never sent a failure report.
+And a file waiting out a backoff kept its slot, so three failing files
+starved a fourth. Codex read the same diff and raised four findings; the
+Opus reviewer reproduced all four. The mutation count grew with each round:
+7 broken invariants in the first review, then 17, 23 and 28.
+
+The two bugs the property test found once time passed at 15 seconds a step:
+files that fail forever took no turns among themselves and held the one
+remaining slot, and a storage outage re-decoded the whole pick, 337 decodes
+for 60 photos against 60 after the fix.
+
+</Depth>
+
+<Depth min={5}>
+
+The scheduler's constants as shipped at the end of the run, with my
+comments:
+
+```ts
+export const MAX_FILES = 3; // files uploading at once
+export const MAX_DECODES = 2; // files being resized at once
+export const MAX_HELD = 2 * MAX_FILES; // files holding phone-made copies in memory
+export const BACKOFF_CAP_MS = 30_000;
+export const PART_BATCH = 20; // part URLs signed per request
+export const URL_FRESH_MS = 8 * 60_000; // signed URLs live 10 minutes; older than this is re-signed
+export const CHRONIC = 5; // consecutive failures before a file waits behind the others
+export const CHRONIC_TURN = 5; // a waiting chronic file still gets a turn every 5 starts
+export const RELEASE_AT = 10; // attempts before a failing file gives its copies back
+```
+
+And the policy, as pseudocode of the real logic:
+
+```text
+backoff(attempt) = min(30 s, 1 s * 2^(attempt - 1)) * random(0.5 .. 1.0)
+
+after each PUT:
+  success: fails = 0; a 5th success in a row raises the limit by 1, up to 3
+  failure: wins = 0;  a 2nd failure in a row sets the limit to 1
+  (a chronic file's failures don't lower the limit)
+
+choosing what to start:
+  ready   = files not running and past their retry time
+  tired   = ready files with 5+ consecutive failures, longest-waiting first
+  healthy = the rest, in pick order
+  line    = tired first if 5 starts have gone by while one waited, else healthy first
+  start down the line while running < limit,
+    skipping a decode that would pass 2 decodes or 6 held sets of copies
+
+a file waiting out a backoff or a pause holds no slot
+the attempt counter resets only on durable progress, never on a re-sync
+```
+
+The decision record accepts one trade. Because chronic files don't lower the
+limit, mean concurrency on a hopeless link stays near 1.75 instead of 1.0,
+and the reviewer's simulation finished 96 of 110 files over 8 hours against
+100 with the limit lowered.
+
+</Depth>
+
 ## The guard that ran the thing it guarded
+
+<Depth max={1}>
+
+The executor that built the admin page was told never to run anything
+against production. It did anyway, to check whether its own safety guard
+refused. The guard had a bug, and the whole test suite ran against the live
+site for 58 seconds. No secret value turned up in any log afterwards.
+
+</Depth>
+
+<Depth min={2}>
 
 The admin unit also built the only door to production tests: a wrapper that
 runs one tagged smoke test against the live site with the real access key
@@ -157,22 +442,85 @@ for 58 seconds, 47 tests passed and 17 failed. Test photos landed on the
 live site, and most of them deleted themselves. Twelve admin tests signed in
 and failed at a placeholder before any admin action ran.
 
-The executor reported it unprompted, which is the part I'd keep. The
+</Depth>
+
+The executor reported it unprompted, which is the part I'd keep.<Depth inline min={2}> The
 orchestrator searched 43 task outputs and 22 session transcripts for seven
-secret values and found none, so nothing needed rotating. The final cleanup
+secret values and found none, so nothing needed rotating.</Depth><Depth inline min={3}> The final cleanup
 cleared the test uploads. Then the reviewer found the rebuilt guard was still bypassable: a trailing `--retries` with no
-value swallowed the `--no-deps` flag the fix had forced on. The version that
+value swallowed the `--no-deps` flag the fix had forced on.</Depth><Depth inline min={2}> The version that
 shipped takes one word, `smoke` or `cleanup`, maps it to a fixed argument
 list, asks Playwright to list what that list would run, and refuses unless
-every test carries the mode's tag. There's no passthrough left to get wrong.
+every test carries the mode's tag. There's no passthrough left to get wrong.</Depth>
+
+<Depth min={4}>
+
+The full count was 47 passed, 17 failed and 5 skipped. Guest tests uploaded
+fixtures to the live site and deleted them as their owners. The tests that
+flip the pause and approval switches never ran, so the switches were
+untouched. The secret search ran in-process and reported counts only.
+
+The first repair forced `--no-deps` onto the command. The reviewer broke
+that without touching production: with the process spawn stubbed and the
+target pointed at a dead local port, the real test listing showed the guard
+approving 67 of 67 tests, 60 of them untagged. The rebuilt guard shipped
+with 25 refused-argument regression cases. It also strips every `PW*` and
+`PLAYWRIGHT_*` environment variable, since those can change what Playwright
+selects, and clears `CI`, because under CI the config switches to the HTML
+reporter and that reporter records every step, the typed passphrase
+included. At close-out the production smoke run was one test and took 4.9
+seconds.
+
+</Depth>
+
+<Depth min={5}>
+
+The guard's core, trimmed from the module, with the error messages
+shortened (the `cleanup` mode mirrors `smoke`):
+
+```ts
+export const PROD_MODES = {
+  smoke: {
+    tag: 'smoke',
+    projects: ['android'],
+    argv: ['playwright', 'test', '--project=android', '--no-deps', '--grep', '@smoke', 'tests/e2e/smoke.spec.ts'],
+  },
+  // cleanup: the same shape, its own project, tag and spec
+} as const;
+
+/** Throws unless every listed test belongs to the mode (its tag, its project) and at least one is listed. */
+export function checkListing(mode: keyof typeof PROD_MODES, listed: Listed[]): void {
+  const m = PROD_MODES[mode];
+  if (listed.length === 0) throw new Error(`--env prod ${mode}: no tests listed`);
+  const bad = listed.filter((t) => !t.tags.includes(m.tag) || !(m.projects as readonly string[]).includes(t.project));
+  if (bad.length) throw new Error(`--env prod ${mode} refused: ${bad.length} of ${listed.length} listed tests ...`);
+}
+
+/** The one argv to run for `args` (exactly `smoke` or `cleanup`), after listing it. */
+export function prodArgv(args: string[], list: Lister): string[] {
+  const mode = args[0];
+  if (args.length !== 1 || !Object.hasOwn(PROD_MODES, mode))
+    throw new Error(`--env prod takes exactly one argument, smoke or cleanup`);
+  const argv = [...PROD_MODES[mode as keyof typeof PROD_MODES].argv];
+  checkListing(mode as keyof typeof PROD_MODES, list(argv));
+  return argv;
+}
+```
+
+`list` runs Playwright's own `--list --reporter=json` on that exact argv,
+with no secrets in its environment.
+
+</Depth>
 
 I'd learned this once already this summer, from a teammate: an instruction
-isn't a boundary, and removing the capability is.<Note id="3" /> The
+isn't a boundary, and removing the capability is.<Note id="3" /><Depth inline min={3}> The
 executor contract now says it anyway: never run anything against production
 with credentials, "not even to prove a guard refuses." By my own rule that
-line is not the fix. Every agent on this Mac can still read the production
+line is not the fix.</Depth> Every agent on this Mac can still read the production
 key out of the Keychain, and moving that key out of their reach is the real
 fix. I haven't done it yet.
+
+<Depth min={3}>
 
 ## A line budget that said no
 
@@ -203,7 +551,44 @@ from one phone to the other before the reveal.
   caption="The memories form, the wall, and the slideshow before the reveal. The stories are test data an agent wrote; the real ones stay hidden until Friday night."
 />
 
+</Depth>
+
+<Depth min={4}>
+
+The plan split the 5,600 into 5,000 for the wedding-night app and 600 for
+memories, counted with `cloc` over the app's source folder, with tests,
+migrations, the lockfile and docs left out.
+
+<WeddingAppLineBudget />
+
+The memories executor measured before it wrote anything and estimated about
+530 lines without voice notes and about 680 with them, give or take 15%.
+Either number crossed the stop. My first reply that morning was "raise the
+cap", which the orchestrator read as 6,250: the estimate plus its margin.
+Three minutes later I made it 10,000.
+
+The memories review is where the subscription's weekly limit hit. The
+reviewer stopped on a rate-limit error, I added usage credits, and it
+resumed with its context, scratch checkout and probes intact. The privacy
+sweep it finished covered seven views, by list and by poll. The admin review
+had already flagged that the "Clear test uploads" button had no collection
+filter and would have wiped memories before the reveal; that fix was
+carried into the memories unit.
+
+</Depth>
+
 ## Then I used it
+
+<Depth max={1}>
+
+Twenty-one hours after kickoff every unit in the plan was live, and I
+finally used the thing like a guest. I asked for one pass to simplify the
+browsing. It put a tab bar along the bottom of the screen and passed all 90
+end-to-end tests in Playwright's emulated phones.
+
+</Depth>
+
+<Depth min={2}>
 
 Twenty-one hours after kickoff every unit in the plan was live, and I
 finally used the thing like a guest, on my laptop and my phone. Browsing
@@ -222,6 +607,10 @@ bottom. It passed all 90 end-to-end tests.
   caption="The first pass, in Playwright's emulated iPhone: the header before and after."
 />
 
+</Depth>
+
+<Depth min={3}>
+
 <Figure
   src="/images/writing/wedding-app-in-seventeen-unattended-hours/ux1-reactions.webp"
   alt="Two phone screenshots of one photo. Left, before: the photo with two rows of emoji reaction buttons below it, then Download and Share buttons and a details list. Right, after: the photo full screen with one row of reactions, a plus button, and Share, Download, Info and Delete along the bottom."
@@ -229,6 +618,8 @@ bottom. It passed all 90 end-to-end tests.
   height={1400}
   caption="Reactions before and after the first pass."
 />
+
+</Depth>
 
 Then I opened the new build on my iPhone, in Chrome, and the tab bar sat
 stacked on top of Chrome's own toolbar. Playwright's phone emulation sets the
@@ -240,16 +631,27 @@ Playwright.
   Ninety tests passed on a phone with no browser bars. Mine has them.
 </PullQuote>
 
+<Depth max={1}>
+
+So the second pass tested in the iOS Simulator's real Safari, and it took
+things away. Nothing is pinned to the bottom of the page anymore.
+
+</Depth>
+
+<Depth min={2}>
+
 So the second pass changed where it looked before it changed anything else:
 the iOS Simulator's real Safari on two iPhone sizes, plus a WebKit window
 393 by 660, the slice of screen Chrome leaves you, since Chrome won't
-install on the Simulator. The landscape test images went portrait, because
-that's what phones take. Then it took things away. Nothing is pinned to the
-bottom of the page anymore (one fixed element before, none after), the tabs
+install on the Simulator.<Depth inline min={3}> The landscape test images went portrait, because
+that's what phones take.</Depth> Then it took things away. Nothing is pinned to the
+bottom of the page anymore<Depth inline min={3}> (one fixed element before, none after), the tabs
 sit up top and scroll away, the photo fills the screen until you tap it, and
 the row of reaction buttons became one React button that opens a tray of
-six. In the Chrome-shaped window the lowest control clears the toolbar by 16
+six</Depth>. In the Chrome-shaped window the lowest control clears the toolbar by 16
 pixels. That's the number I'll check on a real phone in November.
+
+</Depth>
 
 <Figure
   src="/images/writing/wedding-app-in-seventeen-unattended-hours/ux2-tab-bar.webp"
@@ -259,6 +661,8 @@ pixels. That's the number I'll check on a real phone in November.
   caption="The same build in the Simulator's real Safari: the bottom tab bar stacked on the browser's bar (left), and the second pass with the tabs up top (right). Addresses blurred."
 />
 
+<Depth min={3}>
+
 <Figure
   src="/images/writing/wedding-app-in-seventeen-unattended-hours/ux2-viewer.webp"
   alt="Three iPhone Simulator screenshots of a sunset test photo. Left, before: a row of small reaction buttons with counts crowded above Share, Download and Info. Middle, after: two reaction pills and a React button, with a tray of six large emoji and a More button open above them. Right, after: the same photo with every control hidden, filling the screen."
@@ -267,12 +671,31 @@ pixels. That's the number I'll check on a real phone in November.
   caption="The viewer before the second pass, the React tray, and the photo with its controls tapped away. The orange address bar is Safari's tint while automation drives it."
 />
 
+</Depth>
+
+<Depth min={4}>
+
+The first pass had been checked only in Playwright's emulation, on landscape
+test images 960 by 720. When I said it still needed work on mobile, the
+session asked what felt off and showed me previews. I picked three: a
+full-screen viewer with floating controls, a React button with a tray, and a
+top row of views that scrolls away.
+
+The second pass measured the result. In the Simulator's Safari on two iPhone
+sizes, the lowest viewer control sits 33.3 points above Safari's address
+pill, and the count of elements fixed to the bottom of a list page went from
+one to zero. The Simulator sessions signed in with secrets expanded
+in-process from the Keychain, cleaned the URL before every screenshot, and
+erased the simulators afterwards.
+
+</Depth>
+
 ## The blue question mark
 
 That evening I sent the session a screenshot: "I see some blue question
-marks in the middle of some of the images when looking on my iphone." The
+marks in the middle of some of the images when looking on my iphone."<Depth inline min={2}> The
 copies on the server were fine. Cloudflare's edge answered CORS requests
-correctly. A fresh Simulator showed zero broken images. It only happened the
+correctly. A fresh Simulator showed zero broken images.</Depth> It only happened the
 second time a phone looked at a photo.
 
 <Figure
@@ -283,7 +706,9 @@ second time a phone looked at a photo.
   caption="Left, my screenshot from Chrome on my iPhone: the soft thumbnail holding the place, and WebKit's broken-image box where the full photo should be. Right, a Simulator phone poisoned on purpose and healed by the fix."
 />
 
-The executor proved the cause in the Simulator. Preact applies JSX props in
+The executor proved the cause in the Simulator.<Depth inline max={1}> The viewer's image tag set
+two attributes in the wrong order, so an iPhone cached a copy of each photo
+that it refused to show the next time.</Depth><Depth inline min={2}> Preact applies JSX props in
 source order, and the viewer's image set `src` before `crossOrigin`. WebKit
 starts loading the moment `src` lands, so it first fetched the full-size
 photo as a plain request without CORS. The media domain answers that kind of
@@ -292,27 +717,134 @@ request without an `Access-Control-Allow-Origin` header and without
 it. The next time the viewer asked for the same photo properly, with CORS,
 the phone answered from its cache, the CORS check failed, and WebKit drew
 its broken-image icon. Chrome on iPhone is WebKit underneath, so it did the
-same. Chromium doesn't start that first plain request. The Fetch standard
+same. Chromium doesn't start that first plain request.</Depth> The Fetch standard
 describes this exact trap, and `Vary: Origin` is its answer.<Note id="5" />
 Rather than change the storage side, the fix went in the page.
 
 It swapped two attributes and added a unit test that fails if any component
-sets `src` before `crossOrigin`. Phones that had already cached a bad copy
+sets `src` before `crossOrigin`.<Depth inline min={2}> Phones that had already cached a bad copy
 needed more. A page-wide listener hides a photo that fails to load and
 retries it once with `?r=1` on the end: a new cache key for the phone, a
-query the storage ignores. The reviewer caught one more way in. The
+query the storage ignores.</Depth><Depth inline min={3}> The reviewer caught one more way in. The
 Download button's fallback opened the photo in a new tab, which is itself a
 plain request, and it would have poisoned the rescue URL too. It opens
-`?dl=1` now, an address no image on the page ever loads. The next morning I
+`?dl=1` now, an address no image on the page ever loads.</Depth> The next morning I
 reopened the photos that had shown a question mark, and they loaded.
+
+<Depth min={4}>
+
+The first hypothesis was wrong. The orchestrator guessed that one failed
+load was sticking in WebKit's in-memory cache and dispatched a fix for that:
+hide the photo until it loads, retry once. The executor's Simulator work
+refuted the guess and found the attribute order. The reviewer then
+reproduced the cause on its own with the repo's Preact: `src` first produced
+a no-CORS load followed by a CORS load, and `crossOrigin` first produced the
+CORS load alone.
+
+The fix's first end-to-end run caught a gap in the fix. The gallery's first
+page and a shared photo link are server-rendered, so a copy can fail before
+the page's script has run, where an `onError` prop never hears it. That's
+why the listener is page-wide: one capture-phase listener for image errors,
+plus a sweep for images that failed before it attached. It touches only the
+app's own thumbnails, gallery copies and video posters. A second failure
+hides the image for good, with no third request.
+
+The proof ran in the Simulator against a preview deploy. Three photos
+poisoned on purpose failed on the old build, and all three healed on the
+fixed one, in the viewer and in the slideshow. The reviewer reproduced the
+Download problem in both WebKit and Chromium before the `?dl=1` change.
+
+</Depth>
+
+<Depth min={5}>
+
+The retry, trimmed from the module, with two comments shortened:
+
+```ts
+const withQuery = (url: string, q: string) => `${url}${url.includes('?') ? '&' : '?'}${q}`;
+
+/** The same copy at a URL no cache has seen: the phone and the edge both key on the full URL. */
+export const retryUrl = (url: string) => withQuery(url, 'r=1');
+
+/** Where Download sends a tab when it has no file ready: a URL no <img> ever loads. */
+export const tabUrl = (url: string) => withQuery(url, 'dl=1');
+
+/** Hide the image (no icon, no alt text), try the fresh URL once, and show it again once that loads. */
+export function retry(img: HTMLImageElement) {
+  img.style.opacity = '0';
+  if (img.dataset.retry) return;
+  img.dataset.retry = '1';
+  img.addEventListener('load', () => img.style.removeProperty('opacity'), { once: true });
+  img.src = retryUrl(img.src);
+}
+
+/** Every copy in the page: one listener for failures from now on, and a sweep for any that failed before it. */
+export function watchCopies() {
+  const on = (t: EventTarget | null) => t instanceof HTMLImageElement && isCopy(t.src) && retry(t);
+  document.addEventListener('error', (e) => on(e.target), true);
+  for (const img of document.images) if (img.complete && !img.naturalWidth) on(img);
+}
+```
+
+And the unit test that holds the attribute order, which reads the component
+source as text:
+
+```ts
+it('every <img> that sets crossOrigin sets it before src', () => {
+  const dir = new URL('../src/components/', import.meta.url);
+  const imgs = readdirSync(dir)
+    .filter((f) => f.endsWith('.tsx'))
+    .flatMap((f) =>
+      [...readFileSync(new URL(f, dir), 'utf8').matchAll(/<img\b[\s\S]*?\/>/g)].map((m) => ({ f, tag: m[0] })),
+    );
+  const cors = imgs.filter((i) => /\bcrossOrigin=/.test(i.tag));
+  expect(cors.length).toBeGreaterThanOrEqual(2);
+  for (const i of cors) expect(i.tag.indexOf('crossOrigin='), i.f).toBeLessThan(i.tag.search(/\bsrc=/));
+});
+```
+
+</Depth>
 
 ## Twenty pull requests later
 
 Twenty merged pull requests, 7,203 lines of app code, 402 unit tests and 106
-end-to-end test runs across emulated iPhones and Androids. A load test of
+end-to-end test runs across emulated iPhones and Androids.<Depth inline min={3}> A load test of
 150 simulated guests uploading ten small files each over ten minutes, against
 a preview deploy: zero errors once the test harness retried failed uploads
-the way the real uploader does, and a p95 of 184 ms on the server actions.
+the way the real uploader does, and a p95 of 184 ms on the server actions.</Depth>
+
+<Depth min={4}>
+
+The load test took three runs. The first had zero errors, but its cleanup
+fired all 1,500 deletes at once and counted them. The second passed on
+latency and failed the error gate on one request: a single 503 from storage
+on a PUT, which the test didn't retry and the real uploader would have.
+So the load test got the uploader's rules, six attempts with exponential
+backoff from 500 ms capped at 30 seconds and never on a 4xx, and it now
+reports recovered failures apart from unrecovered ones. The third run made
+6,300 actions with zero errors and zero recovered failures. Nothing
+needed a retry that time.
+
+The same pull request found a real bug by accident. Its end-to-end run went
+red four times because a map tile on the admin page covered the "Clear test
+uploads" button whenever any item had coordinates. The admin page renders
+only in the browser, so the map library's stylesheet was never attached
+there and the map drew outside its box. That fix merged at 4:37 AM, 27
+minutes before the load test did.
+
+</Depth>
+
+<Depth min={5}>
+
+<WeddingAppLoadTest />
+
+The 184 ms figure is the 95th percentile across the 4,800 gated server
+actions in that run, with a median of 121 and a 99th percentile of 241. The
+storage numbers cover 4,500 PUTs.
+
+</Depth>
+
+<Depth min={3}>
 
 <Figure
   src="/images/writing/wedding-app-in-seventeen-unattended-hours/slideshow-and-admin.webp"
@@ -322,25 +854,43 @@ the way the real uploader does, and a p95 of 184 ms on the server actions.
   caption="The projector slideshow and the admin page on a preview deploy. Twelve hundred items from a thousand phones: nearly all of them test runs, already cleaned up by the suite itself."
 />
 
-The accounting a skeptic should ask for. The orchestrator ran with Claude
+</Depth>
+
+The accounting a skeptic should ask for.<Depth inline max={1}> My time went into the plan
+and the phone testing.</Depth><Depth inline min={2}> The orchestrator ran with Claude
 Code's permission prompts off, because an unattended run can't click Allow;
 the plan's stop conditions and the credentials it couldn't mint were the
 fence. My time was the research and planning in the two days before
 kickoff, the pre-flight, and the day after, testing on my phone and asking
-for changes. I don't have a clean dollar figure: it ran on a Claude
+for changes.</Depth><Depth inline min={3}> I don't have a clean dollar figure: it ran on a Claude
 subscription plan rather than metered API calls, hit the weekly usage limit
-during the memories review, and finished on extra usage credits. And I
+during the memories review, and finished on extra usage credits.</Depth> And I
 haven't read most of the 7,203 lines. A reviewer agent read every diff that
 touched anything risky, and the orchestrator read the rest; the tests are
 what I trust.
+
+<Depth min={4}>
+
+Permission prompts were off for a specific reason. On earlier runs the
+default auto mode's classifier had denied admin merges of my own pull
+requests and writes to the secret store, and either denial would have parked
+this run at its first merge.
+
+</Depth>
+
+<Depth min={3}>
 
 Most of what's left needs a person in the room: friends' phones on bad
 signal, a printed sign scanned by two different phones, the projector laptop
 playing voice notes, Android's back gesture with the reaction tray open.
 None of it needs an agent.
 
+</Depth>
+
 One of the last units the run built was a check that fails any pull request
-touched between December 4 and 7 unless I label it by hand. On the 5th I'm
+touched between December 4 and 7 unless I label it by hand.<Depth inline min={4}> The repo's free
+plan has no branch protection, so the check binds only because the merge
+rule requires every expected check to be present and green.</Depth> On the 5th I'm
 holding the microphone, not a laptop.
 
 <Footnotes

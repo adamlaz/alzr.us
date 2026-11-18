@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="340" viewBox="0 0 420 340">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#1c1d24">
+
+<text x="0" y="14" font-size="13.5" fill="#55565f" letter-spacing="0.04em">WHAT THE WRITER FINDS</text>
+<text x="236" y="14" font-size="13.5" fill="#55565f" letter-spacing="0.04em">WHAT IT DOES</text>
+<text x="0" y="59" font-size="14">No block on the page yet</text>
+<path d="M196 54 L228 54" fill="none" stroke="#8a8a90" stroke-width="1.5" stroke-linecap="round"/>
+<path d="M222 49 L228 54 L222 59" fill="none" stroke="#8a8a90" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="236" y="35" width="184" height="38" rx="4" fill="none" stroke="#8a8a90" stroke-width="1.5"/>
+<text x="328" y="59" font-size="14" font-weight="400" text-anchor="middle">Insert, stamp the hash</text>
+<text x="0" y="106" font-size="14">Opening marker with</text>
+<text x="0" y="124" font-size="14">no closing marker</text>
+<path d="M196 110 L228 110" fill="none" stroke="#8a8a90" stroke-width="1.5" stroke-linecap="round"/>
+<path d="M222 105 L228 110 L222 115" fill="none" stroke="#8a8a90" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="236" y="91" width="184" height="38" rx="4" fill="none" stroke="#8a8a90" stroke-width="1.5"/>
+<text x="328" y="115" font-size="14" font-weight="400" text-anchor="middle">Write nothing</text>
+<text x="0" y="162" font-size="14">Marker carries no hash</text>
+<text x="0" y="180" font-size="14">(an older block)</text>
+<path d="M196 166 L228 166" fill="none" stroke="#8a8a90" stroke-width="1.5" stroke-linecap="round"/>
+<path d="M222 161 L228 166 L222 171" fill="none" stroke="#8a8a90" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="236" y="147" width="184" height="38" rx="4" fill="none" stroke="#8a8a90" stroke-width="1.5"/>
+<text x="328" y="171" font-size="14" font-weight="400" text-anchor="middle">Replace, stamp it now</text>
+<text x="0" y="218" font-size="14">Stamped hash matches</text>
+<text x="0" y="236" font-size="14">the body on disk</text>
+<path d="M196 222 L228 222" fill="none" stroke="#8a8a90" stroke-width="1.5" stroke-linecap="round"/>
+<path d="M222 217 L228 222 L222 227" fill="none" stroke="#8a8a90" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="236" y="203" width="184" height="38" rx="4" fill="none" stroke="#8a8a90" stroke-width="1.5"/>
+<text x="328" y="227" font-size="14" font-weight="400" text-anchor="middle">Replace, restamp</text>
+<text x="0" y="274" font-size="14">Stamped hash differs:</text>
+<text x="0" y="292" font-size="14">I edited inside the fence</text>
+<path d="M196 278 L228 278" fill="none" stroke="#2f3eb0" stroke-width="2" stroke-linecap="round"/>
+<path d="M222 273 L228 278 L222 283" fill="none" stroke="#2f3eb0" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="236" y="259" width="184" height="38" rx="4" fill="none" stroke="#2f3eb0" stroke-width="2.5"/>
+<text x="328" y="283" font-size="14" font-weight="600" text-anchor="middle">Skip. My edit stays.</text>
+<text x="236" y="328" font-size="13.5" fill="#55565f">A force flag overrides the skip.</text>
+</g>
+</svg>

@@ -3,15 +3,19 @@ title: 'Discovery is cheap, curation is the cost'
 date: 2026-05-21
 description: "I swapped the username scanner in my candidate-research workflow for one that searches seven times as many sites. The extra reach mattered least. Finding an account was never the bottleneck; telling whose account it is was."
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: "A username that exists on fifty sites tells you a username exists on fifty sites. Existence is not identity."
 tags: ['ai-augmented-engineering', 'hiring', 'osint']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import DiscoveryTieringDiagram from '../../components/post/DiscoveryTieringDiagram.astro';
+import DiscoveryTierCountsChart from '../../components/post/DiscoveryTierCountsChart.astro';
+import DiscoveryLikelyPerRunChart from '../../components/post/DiscoveryLikelyPerRunChart.astro';
 
 I swapped the username-search tool in my hiring-research workflow and braced
 for the obvious payoff: the new one searches more sites, so it finds more.
@@ -21,26 +25,33 @@ candidate OSINT, finding was never the bottleneck.
 This is a footnote to an earlier post about running candidate background
 research with parallel Claude Code agents.<Note id="1" /> That post described
 the OSINT step running on Sherlock: point it at a username, get back a list
-of the sites where that handle exists. For a distinctive handle that's
-useful. For a common one it's a flood. Fifty to a hundred hits, almost all of
-them a different human who happened to pick the same string. The agent, or I,
+of the sites where that handle exists.<Depth inline min={2}> For a distinctive handle that's
+useful.</Depth> For a common one it's a flood. Fifty to a hundred hits, almost all of
+them a different human who happened to pick the same string.<Depth inline min={2}> The agent, or I,
 then burned the time throwing ninety-five percent of them away. That discard
 tax scaled with every candidate, and it was the slowest part of the whole
-workflow.
+workflow.</Depth>
 
 ## Existence is not identity
 
 Sherlock answers a question I'd stopped needing: does this handle exist
 somewhere? The question that decides a candidate is whether this account is
-*this person*. That's a metadata question, and asking it that way is what
-picks the tool.
+*this person*.<Depth inline min={2}> That's a metadata question, and asking it that way is what
+picks the tool.</Depth>
+
+<Depth min={3}>
 
 <PullQuote>
   Sherlock tells me a handle exists. The question that decides a candidate is
   whether the handle is this person.
 </PullQuote>
 
-So I moved the workflow's primary engine to Maigret.<Note id="2" />
+</Depth>
+
+So I moved the workflow's primary engine to Maigret.<Note id="2" /><Depth inline max={1}> It
+reads each profile it finds: display name, bio, location.</Depth>
+
+<Depth min={2}>
 
 | | Sherlock | Maigret |
 |---|---|---|
@@ -49,21 +60,38 @@ So I moved the workflow's primary engine to Maigret.<Note id="2" />
 | Role now | cheap cross-check | primary engine |
 
 The reach (four hundred to three thousand) is the headline number and the one
-that matters least. The parsed metadata is the part that changes the job, and
-it also lets Maigret follow IDs across sites. I kept Sherlock running as a cheap
+that matters least. The parsed metadata is the part that changes the job<Depth inline min={3}>, and
+it also lets Maigret follow IDs across sites</Depth>. I kept Sherlock running as a cheap
 cross-check: a profile both engines find is a small corroboration, never a
 proof.
 
+</Depth>
+
+<Depth min={4}>
+
+Three thousand is the default sweep. A full one takes ten to twenty minutes
+per username, so it runs in the background while the agent starts on the
+resume. The overnight batch narrows it by role with Maigret's site tags:
+coding sites for engineers, design, art and video sites for designers, and
+writing, business and blog sites for product roles. If the sweep fails
+outright, the research goes ahead without it and the writeup says so.
+
+</Depth>
+
 ## The curation moves to parse time
 
-The metadata only helps if something reads it before I do. That something is
+The metadata only helps if something reads it before I do.<Depth inline max={1}> A short script
+does, sorting every hit into likely, possible or noise by whether the
+candidate's name or location appears on the profile.</Depth><Depth inline min={2}> That something is
 about three hundred lines of Python with no dependencies beyond the standard
 library, sitting between the scan and the agent. It reads every profile
 Maigret extracted and sorts it onto a confidence scale. The match is
 deliberately dumb: a case-folded check for whether the candidate's first and
 last name appear as whole tokens in a parsed name field, with Maigret's own
 fuzzy-search flag knocking a hit down a tier. No model and no scoring. Three
-rules:
+rules:</Depth>
+
+<Depth min={2}>
 
 ```python
 def tier(profile, candidate):              # profile = what Maigret parsed off the page
@@ -75,7 +103,18 @@ def tier(profile, candidate):              # profile = what Maigret parsed off t
     return "noise"          # a bare username hit, nothing behind it
 ```
 
+</Depth>
+
 <DiscoveryTieringDiagram />
+
+<Depth max={1}>
+
+Throwing away the ninety-five percent that belong to someone else used to be
+a manual pass. Now it happens at parse time, before anyone looks.
+
+</Depth>
+
+<Depth min={2}>
 
 Found-by-both-engines is recorded but doesn't promote a hit; the count of
 sites was never the signal. The agent that
@@ -84,12 +123,59 @@ pile is still there if I want to audit it, but nobody reads it first. The
 ninety-five-percent discard that used to be a manual pass now happens at parse
 time, before anyone looks.
 
+</Depth>
+
+<Depth min={4}>
+
+Since I wrote this, 49 research runs have kept their output, from late July
+to mid-November. Between them the two engines returned 6,690 hits, with a
+median of 95 per run. The tiering step sent 6,218 of them to noise. That's
+93%, against the ninety-five percent I used to throw away by hand.
+
+<DiscoveryTierCountsChart />
+
+About half of the hits, 3,425, came from Sherlock alone, and a URL with no
+metadata can only tier as noise. Both engines found 576. Another 632 noise
+hits did carry parsed metadata, and it matched neither the candidate's name
+nor their city. All 83 likely hits had metadata behind them.
+
+</Depth>
+
+<Depth min={3}>
+
 The brittleness objection answers itself here. Parsing three thousand sites
 means three thousand fragile little scrapers, and plenty of them fail: a site
 changes its markup, throws up a bot wall, rate-limits. That failure mode is
 harmless. A profile Maigret can't parse degrades to an existence-only hit with
 no metadata attached, which is the exact definition of the noise tier. The
 flakiness falls into the bucket built to ignore it.
+
+</Depth>
+
+<Depth min={4}>
+
+The bucket leaks in one place. The free-text rule also reads the handle, so a
+handle shaped like first.last matches the candidate's name on every site
+where it exists, with nothing parsed behind it. In the saved runs, 376 of the
+389 possible hits were that case: a name-shaped handle and no metadata at
+all. Most of the possible pile is the handle agreeing with itself.
+
+The other two signals barely fired. A city was supplied on 47 of the 49 runs
+and produced 8 location matches. Maigret's fuzzy-search flag sat on 119 of
+its 3,265 hits, none of which also matched a name field, so the rule that
+knocks a hit down a tier has never run on real data.
+
+A tier sets the reading order and nothing more. Since November the agent's
+rules require two independent anchors before a profile is tied to a
+candidate: the same email, the same photo, the same employer with overlapping
+dates, or a link to or from a profile already tied to them. A matching name
+is not an anchor, and name plus city counts as one at most. The likely tier
+is a name match, so it tells the agent where to look first and settles
+nothing by being there.
+
+</Depth>
+
+<Depth min={3}>
 
 The tiering layer outlives the scanner. That's the first post's lesson moved
 one tool down: there the durable artifact was the agent brief, here it's the
@@ -106,13 +192,131 @@ reaches the writeup. A scanner that touches three thousand sites surfaces more
 of exactly the material that should never enter a hiring file, so the filter
 in front of it is load-bearing.
 
+</Depth>
+
+<Depth min={4}>
+
+## Inside the sweep and the scorer
+
+One shell script runs the whole step. It takes the candidate's name, an
+optional city and a list of handles, then runs Maigret, Sherlock and the
+tiering script in that order and writes everything to one folder per run. The
+handles are guesses: the local part of the email address, the slugs in a
+portfolio or GitHub URL, and permutations of the name. A non-zero exit
+from either engine doesn't stop the run, because partial results are still
+usable.
+
+The tiering script reads Maigret's JSON reports and keeps only the accounts
+Maigret marks as claimed. It pulls every URL out of Sherlock's text output
+and folds the two lists together by domain: a Sherlock URL on a domain
+Maigret already found marks that account as seen by both engines, and any
+other becomes a bare entry with no metadata. The script writes a JSON
+list for the agent and a Markdown summary grouped by tier for me, where a
+noise hit prints as one line with no extracted fields. In the code the noise
+tier is named `unverified`.
+
+</Depth>
+
+<Depth min={5}>
+
+The two engine calls, with paths trimmed:
+
+```sh
+maigret "${USERNAMES[@]}" -a --timeout 10 -n 100 \
+    -J simple -H --folderoutput "$OUT/maigret" --no-color --no-progressbar
+
+sherlock --print-found --timeout 5 --folderoutput "$OUT/sherlock" "${USERNAMES[@]}"
+```
+
+`-a` is every site. Swapping it for `--tags coding` or `--top-sites 500` is
+the speed lever, along with a shorter timeout or `--no-recursion` to stop
+Maigret following the IDs it discovers. The installed versions today are
+Maigret 0.6.6 and Sherlock 0.16.2.
+
+The three rules above are a simplification. The scorer as
+it runs, in pseudocode that keeps the real patterns:
+
+```python
+NAME_KEYS = r"(full[_\s]?name|real[_\s]?name|display[_\s]?name|screen[_\s]?name|nickname|^name$)"
+TEXT_KEYS = ("bio", "about", "description", "headline", "title", "status", "occupation")
+LOC_KEYS  = r"(location|city|country|region|place|address|geo)"
+
+def tokens(s):          # lowercase, split on anything but a-z and 0-9, drop 1-char tokens
+    return [t for t in re.split(r"[^a-z0-9]+", s.lower()) if len(t) > 1]
+
+first, last = tokens(candidate_name)[0], tokens(candidate_name)[-1]
+
+def has_name(blob):     # first AND last as whole tokens; middle names don't matter
+    return first in tokens(blob) and last in tokens(blob)
+
+def score(account):     # account.ids = the fields Maigret parsed off the profile
+    name_field = any(has_name(v) for k, v in account.ids.items() if search(NAME_KEYS, k))
+    text       = has_name(join(account.ids.get(k, "") for k in TEXT_KEYS) + " " + account.username)
+    loc_blob   = values_where_key(account.ids, LOC_KEYS) or all_values(account.ids)
+    location   = bool(tokens(candidate_location) & tokens(loc_blob))
+
+    if name_field and not account.is_similar: return "likely"
+    if name_field and account.is_similar:     return "possible"    # fuzzy-search result
+    if text or location:                      return "possible"
+    return "unverified"                                             # the noise tier
+```
+
+Two lines explain the leaks. `+ account.username` is why a first.last handle
+tiers possible with nothing parsed. The `or all_values` fallback means a
+profile with no location field gets every parsed value checked against the
+city, so a display name that contains the city's name scores as a location
+match.
+
+What the agent receives:
+
+```json
+{
+  "candidate": "...",
+  "location": "...",
+  "counts": { "likely": 0, "possible": 0, "unverified": 0 },
+  "accounts": [
+    {
+      "site": "...",
+      "url": "...",
+      "confidence": "likely",
+      "matched_on": ["name:fullname=...", "found-by-both-engines"],
+      "engines": ["maigret", "sherlock"],
+      "tags": [],
+      "extracted": {}
+    }
+  ]
+}
+```
+
+Accounts sort by tier, then by how many things matched, then by site name. Of
+the 83 likely hits in the saved runs, 78 matched on the field Maigret calls
+`fullname`. The script has no tests.
+
+</Depth>
+
 ## What it doesn't fix
+
+<Depth min={3}>
 
 Searching three thousand sites instead of four hundred finds more garbage in
 absolute terms. The metadata keeps that tractable; it isn't magic. Common names still collide, and when they do the colliding profiles
 land in the noise tier, which is correct but not satisfying. A candidate named
 something rare gets a clean read. A candidate named something common gets a
 big noise pile and a small shortlist, which is the best any of this can do.
+
+</Depth>
+
+<Depth min={4}>
+
+The dumb match has misses of its own. It needs the exact first and last name
+as tokens, so a profile under a nickname or a shortened first name sinks to
+noise. The tokenizer splits on anything outside a-z and 0-9, so a name
+written with an accent on the profile and without one on the resume doesn't
+match either.
+
+</Depth>
+
+<Depth min={3}>
 
 And the failure mode no engine touches: the candidate with almost no public
 footprint. A GitHub gone quiet since 2014, no personal site, a locked-down
@@ -121,17 +325,29 @@ Sherlock can't find an account that doesn't exist. OSINT cannot manufacture
 signal that isn't public, and the honest version of this workflow says so out
 loud instead of treating an empty result as a verdict.
 
+</Depth>
+
 The sharper instrument surfaced something uncomfortable. Across a real
-backlog, the limiting factor was the pool, not the tool. One recent wave of fourteen candidates produced exactly one profile
+backlog, the limiting factor was the pool, not the tool.<Depth inline min={2}> One recent wave of fourteen candidates produced exactly one profile
 that tiered likely on its own merits: a real name, a real city, and a
 role-relevant tag, all matching, while ninety-some junk hits for the same
 common handle sank to noise without my touching them. Reading the noise pile
 by hand afterward promoted none of them. The rest of the pool was not fake so
-much as thin, off-shape, or stale. A better microscope shows
+much as thin, off-shape, or stale.</Depth> A better microscope shows
 you the sample more clearly. It does not give you a better sample.
 
-It still doesn't decide. It tells me, faster and with less noise, which
-accounts are worth a human's attention, and then it gets out of the way. The
+<Depth min={4}>
+
+The saved runs look the same. Of the 49, 21 produced no likely hit at all and
+12 produced exactly one. One run swept fifteen handle variants and came back
+with 1,694 hits, 1,391 of them noise.
+
+<DiscoveryLikelyPerRunChart />
+
+</Depth>
+
+It still doesn't decide.<Depth inline min={2}> It tells me, faster and with less noise, which
+accounts are worth a human's attention, and then it gets out of the way.</Depth> The
 curation tax is what I removed. The judgment is the part I kept.
 
 <Footnotes

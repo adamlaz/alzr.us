@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="636" viewBox="0 0 400 636">
+<g font-family="Inter Variable, system-ui, sans-serif" font-size="18" fill="#1c1d24">
+
+<text x="200" y="25" text-anchor="middle" font-size="16" letter-spacing="1">FIVE CHECKS, THEN ONE WRITE</text>
+
+<rect x="24" y="44" width="352" height="74" rx="8" fill="#ffffff" stroke="#cfcfd1"/>
+<text x="44" y="75" font-size="16" fill="#8a8a90">1</text>
+<text x="68" y="75" font-weight="600">Shared and local settings</text>
+<text x="68" y="101" >Refuse a differing value</text>
+<path d="M200 118 V138 m-5 -7 5 7 5 -7" fill="none" stroke="#8a8a90" stroke-width="2"/>
+<rect x="24" y="140" width="352" height="74" rx="8" fill="#ffffff" stroke="#cfcfd1"/>
+<text x="44" y="171" font-size="16" fill="#8a8a90">2</text>
+<text x="68" y="171" font-weight="600">Codex process</text>
+<text x="68" y="197" >Refuse if it is running</text>
+<path d="M200 214 V234 m-5 -7 5 7 5 -7" fill="none" stroke="#8a8a90" stroke-width="2"/>
+<rect x="24" y="236" width="352" height="74" rx="8" fill="#ffffff" stroke="#cfcfd1"/>
+<text x="44" y="267" font-size="16" fill="#8a8a90">3</text>
+<text x="68" y="267" font-weight="600">Parsed result</text>
+<text x="68" y="293" >Refuse if anything else changed</text>
+<path d="M200 310 V330 m-5 -7 5 7 5 -7" fill="none" stroke="#8a8a90" stroke-width="2"/>
+<rect x="24" y="332" width="352" height="74" rx="8" fill="#ffffff" stroke="#cfcfd1"/>
+<text x="44" y="363" font-size="16" fill="#8a8a90">4</text>
+<text x="68" y="363" font-weight="600">File on disk</text>
+<text x="68" y="389" >Refuse if it changed mid-run</text>
+<path d="M200 406 V426 m-5 -7 5 7 5 -7" fill="none" stroke="#8a8a90" stroke-width="2"/>
+<rect x="24" y="428" width="352" height="74" rx="8" fill="#ffffff" stroke="#cfcfd1"/>
+<text x="44" y="459" font-size="16" fill="#8a8a90">5</text>
+<text x="68" y="459" font-weight="600">Codex process, again</text>
+<text x="68" y="485" >Refuse if it has started</text>
+<path d="M200 502 V522 m-5 -7 5 7 5 -7" fill="none" stroke="#8a8a90" stroke-width="2"/>
+<rect x="24" y="524" width="352" height="98" rx="8" fill="#2f3eb0"/>
+<g fill="#ffffff">
+<text x="44" y="555" font-size="16" letter-spacing="1">WRITE</text>
+<text x="44" y="584" font-size="21" font-weight="600">Swap in the new file</text>
+<text x="44" y="609" >Save its digest in the receipt</text>
+</g>
+</g>
+</svg>

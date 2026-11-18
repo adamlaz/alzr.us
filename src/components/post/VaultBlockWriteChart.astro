@@ -1,0 +1,17 @@
+---
+import lightSvg from '../../assets/diagrams/notes-app-block-write-light.svg?raw';
+import darkSvg from '../../assets/diagrams/notes-app-block-write-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="One of five states makes the writer back off"
+  caption="What a guarded writer does with a fenced block, by what it finds on the page."
+>
+  Five states a writer can find and what it does with each. No block on the page yet: insert it and stamp the hash. An
+  opening marker with no closing marker: write nothing. A marker that carries no hash, from an older block: replace the
+  body and stamp it now. A stamped hash that matches the body on disk: replace and restamp. A stamped hash that differs
+  because I edited inside the fence: skip, and my edit stays. A force flag overrides the skip.
+</Chart>

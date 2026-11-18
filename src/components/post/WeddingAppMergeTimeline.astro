@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/wedding-app-merges-light.svg?raw';
+import darkSvg from '../../assets/diagrams/wedding-app-merges-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Fourteen merges between 12:09 PM and 5:21 AM"
+  caption="Merge times from the app repo's git log, Eastern time. Circles had a fresh-context reviewer; squares were read by the orchestrator. The thick bar on the axis is the run."
+>
+  Timeline of the first run's fourteen merges, from kickoff at 12:09 PM Saturday to close-out at 5:21 AM Sunday. Seven merges followed a fresh-context adversarial review: 1:03, 1:49, 2:48, 6:09, 6:58, 8:00 and 11:52 PM. Seven were read by the orchestrator: 9:17 PM, then 12:16, 1:49, 2:05, 4:37, 5:04 and 5:19 AM.
+</Chart>

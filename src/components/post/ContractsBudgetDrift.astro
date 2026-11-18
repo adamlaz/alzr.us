@@ -1,0 +1,18 @@
+---
+import lightSvg from '../../assets/diagrams/contracts-budget-drift-light.svg?raw';
+import darkSvg from '../../assets/diagrams/contracts-budget-drift-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Eight of the eleven word budgets went up between the Sunday lock and the merge"
+  caption="The benchmark file's word budget per screen state at two commits: the Sunday-night lock and the merge five days later. Each raise carries its reason in the test file."
+>
+  Dot chart of the browser benchmark's word budget for eleven screen states, as locked on Sunday night and as merged
+  five days later, against a 15-word target. Scan stayed at 9, Result at 15 and Already inspected at 17. Order ready
+  went from 3 to 16, Tape playing from 8 to 10, Fail while picking a symptom from 3 to 10, Fail with Other needing a
+  note from 10 to 17, Exception from 15 to 17, Could not inspect from 15 to 17, Round 2 ready from 13 to 28, and Round 2
+  tape from 18 to 20. At the lock two budgets sat over 15; at merge seven did.
+</Chart>

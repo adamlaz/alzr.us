@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/dotfiles-agents-tests-light.svg?raw';
+import darkSvg from '../../assets/diagrams/dotfiles-agents-tests-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="7 of the 11 regression tests pass only when the installer refuses"
+  caption="One square for each test of the Codex sync and rollback. Filled squares must refuse or block; hollow squares must go through."
+>
+  Unit chart of the 11 regression tests. Sync and drift detection has 5 tests: 3 must refuse or block and 2 must go
+  through. One test installs and then uninstalls, and must go through. Rollback has 5 tests: 4 must refuse and 1 must
+  go through. In total 7 tests must refuse and 4 must go through.
+</Chart>

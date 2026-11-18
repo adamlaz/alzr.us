@@ -3,15 +3,19 @@ title: 'Giving the brief away'
 date: 2026-07-29
 description: 'I said the brief was the artifact and the agents were fungible. So I packaged the brief as a repo, handed it to a teammate, and found out what breaks when someone else runs your workflow.'
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: 'A teammate found the hole in one day: instructions are not a boundary. Removing the capability is.'
 tags: ['ai-augmented-engineering', 'hiring', 'claude-code']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Callout from '../../components/post/Callout.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
+import GivingBriefKitDiagram from '../../components/post/GivingBriefKitDiagram.astro';
+import GivingBriefFirstEvening from '../../components/post/GivingBriefFirstEvening.astro';
 
 In May I wrote that the brief was the artifact and the agents just render
 it.<Note id="1" /> That was a claim, not a result. This summer the claim got
@@ -20,6 +24,16 @@ became a repo a teammate could clone and run, and I got to watch which half
 of my confident sentence was true. He was productive with it the next day.
 He also found a hole I had built, proved my fix for it wrong, and was right
 about the reason.
+
+<Depth max={1}>
+
+The kit is one command. It looks up a candidate, sends a research agent out
+to the public record, checks that every finding in the draft carries a
+source, and only then publishes the page.
+
+</Depth>
+
+<Depth min={2}>
 
 ## What packaging meant
 
@@ -39,6 +53,10 @@ pre-approved permissions. Extracting it produced four things:
 4. Two hooks: database writes locked by ancestry to the one table they're
    allowed to touch, and candidate PII physically blocked from entering git.
 
+</Depth>
+
+<Depth min={3}>
+
 The code was the fast part. Rewriting a runbook for a reader with zero
 context is the slow part, because that's where your assumptions surface,
 one at a time, each disguised as a sentence you almost didn't write down.
@@ -47,6 +65,60 @@ The repo itself stays private -- it drives a live candidate database -- but
 nothing in it is specific to me anymore: no personal paths, no personal
 permissions, a blank env template.
 
+</Depth>
+
+<Depth min={4}>
+
+The first commit was 22 files and 1,693 lines. The kit never writes to my
+notes vault, and my side of the split kept two triggers: a morning report of
+who is missing research, and a nightly driver that runs the kit with nobody
+at the keyboard. The contract between the two is one string, the title
+prefix of the research page. Change it on one side and the other stops
+seeing coverage.
+
+The write hook takes the target of any write made through the interactive
+database connector, walks up its parents for at most four hops, and blocks
+the call unless the chain reaches the candidate table. Two limits shipped
+with it. With no API token configured it can't do the walk, so it prints a
+warning and allows the write. And it only saw the connector's calls. The
+publish script, added thirteen minutes after the first commit because the
+connector isn't available in a headless run, went straight to the API, and
+when it was handed a row id nothing checked where that row lived. A mistyped
+id would have put a research page under a stranger's page. I closed that the
+next evening by moving the walk into shared code that both write paths call.
+The shared version fails closed: an id it can't resolve refuses the write.
+
+The git hook sits behind the ignore file. It blocks any `git add` that names
+the working directory or the env file, and any commit while either one is
+staged, so a forced add doesn't get through.
+
+</Depth>
+
+<Depth min={5}>
+
+The ancestry walk, as pseudocode:
+
+```python
+def reaches_candidate_table(start_id, table_id, max_hops=4):
+    current = start_id
+    for _ in range(max_hops):
+        if current == table_id:
+            return True
+        obj = fetch_page_or_database(current)   # any failed lookup: return False
+        parent = obj.parent
+        if parent.is_database and parent.id == table_id:
+            return True
+        if parent.is_page:
+            current = parent.id
+            continue
+        return False
+    return False
+```
+
+</Depth>
+
+<Depth min={2}>
+
 ## Five ways it broke before anyone else touched it
 
 Every one of these failures happened while the only user was still me. None
@@ -54,50 +126,165 @@ of them is about hiring.
 
 1. **An untrusted workspace silently voids the project permission file.**
    Clone the repo, skip the trust dialog, and every shell call the agent
-   makes is denied. Interactively you'd get a prompt; in a headless run you
+   makes is denied.<Depth inline min={3}> Interactively you'd get a prompt; in a headless run you
    get nothing but the bill. The agent flails, the budget drains, nothing
    gets produced, and no error says why. Silent and expensive is the worst
    combination, so setup now names the dialog and a preflight check refuses
-   to spend money until the workspace can work.
+   to spend money until the workspace can work.</Depth>
 2. **Trusting exit codes.** The first unattended run took 1.6 minutes, cost
-   about a dollar, exited zero, created nothing, and logged itself as a
+   about a dollar<Depth inline min={4}> ($1.01)</Depth>, exited zero, created nothing, and logged itself as a
    success. The driver now decides success by querying for the page it was
-   supposed to create. Ask the system whether the artifact exists; never ask
-   the process whether it thinks it succeeded.
-3. **Permission syntax I assumed instead of tested, twice.** A write rule
+   supposed to create.<Depth inline min={3}> Ask the system whether the artifact exists; never ask
+   the process whether it thinks it succeeded.</Depth>
+3. **Permission syntax I assumed instead of tested, twice.**<Depth inline min={3}> A write rule
    spelled as a relative path matched the relative form I tested and not the
    absolute path the agent actually used, and the deny loop that followed
    looked exactly like failure number one. The third time I touched a
    permission rule, I wrote a throwaway probe first. A probe costs a minute
-   and protects a run that costs real money.
+   and protects a run that costs real money.</Depth>
 4. **Dispatching by name when I already had the unique id.** Two candidates
    with the same name stalled a run that the row id would have sailed
-   through. The id now flows from lookup to publish and the name is display
-   only.
+   through.<Depth inline min={3}> The id now flows from lookup to publish and the name is display
+   only.</Depth>
 5. **No unattended-mode rule.** The agent hit real ambiguity, reasoned
    about it correctly, and asked me what to do, in a nightly run with
-   nobody awake to answer. Correct judgment, wrong ending. The brief now
+   nobody awake to answer. Correct judgment, wrong ending.<Depth inline min={3}> The brief now
    says it plainly: non-interactive runs never ask. Take the documented
-   default or emit one BLOCKED line and stop.
+   default or emit one BLOCKED line and stop.</Depth>
 
 Then the sixth, the one that wasn't mechanical. The first real nightly run
-swept the entire candidate database and spent its whole budget researching
-applications far outside scope. The actual ask was one funnel stage. Worse:
+swept the entire candidate database<Depth inline min={4}>, counted 577 candidates missing
+research,</Depth> and spent its whole budget researching
+applications far outside scope. The actual ask was one funnel stage.<Depth inline min={3}> Worse:
 my own runbook had already ruled that scope out, in writing, precisely so
 research wouldn't fire on untriaged arrivals. I re-introduced
-the exact thing a past decision existed to prevent. Scope bugs cost more
+the exact thing a past decision existed to prevent.</Depth> Scope bugs cost more
 than crashes and take longer to notice, because nothing fails.
 
 <PullQuote>
   Nothing errored. The job ran, exited clean, and researched the wrong people.
 </PullQuote>
 
+</Depth>
+
+<Depth min={4}>
+
+## What each fix checks now
+
+Every fix on the kit's side landed the same evening as its first commit.
+
+<GivingBriefFirstEvening />
+
+The preflight reads the agent CLI's own config file, finds the entry for the
+kit's directory, and exits with the fix in the error message if the trust
+flag is off. It runs only when the driver is about to spend money, so a dry
+run skips it. It has a gap of its own: if the config file can't be read, or
+the CLI has never seen the directory and has no entry for it, the check lets
+the run through.
+
+The success gate lists the child pages under the candidate's row and looks
+for the research page's title prefix. The same function runs before dispatch
+to skip anyone already covered, so one string decides both "skip" and
+"succeeded". Every run also appends the CLI's full JSON result to a log
+file, including the list of denied tool calls, so I can diagnose a failed
+night in the morning without paying to reproduce it.
+
+The permission failures came in three shapes. Write had no allow rule at
+all, and a run got through the public-record sweep and then died on three
+denials trying to save its draft. The next run succeeded but logged four
+denials it had to work around. My rule for the working directory matched
+only the relative spelling. The skill's own example set an environment
+variable inline in front of the sweep script, and an inline prefix breaks
+prefix matching on the allow list. And the agent reached for a compound
+`mkdir && cat` command to save the draft, which can't match an allow rule
+either; the skill now tells it to use the Write tool.
+
+I fixed the relative-path rule by adding an absolute one, which put my home
+directory into a file I was about to hand to someone else. It matched
+nothing on his machine. During review of the first pull request I replaced
+eight path rules with four anchored at the project root.
+
+On the same-name run, the lookup did its job and returned an "ambiguous"
+error listing both row ids. The skill gave no sanctioned next step, so the
+agent improvised a shell loop and a throwaway helper script, had both
+denied, and gave up. The driver already knows the exact row, so it now
+passes the id on the command line and the publish script takes the same id.
+
+The unattended rule ships with four documented defaults. Two rows with the
+same name that are different people: research the row whose id you were
+given. The same person re-applying, with research already on either row:
+write nothing and stop with a BLOCKED line. A missing resume is not a
+blocker, and neither is a sweep that failed or is still running; the run
+proceeds without it and says so on the page. The run that prompted the rule
+was the second case. The agent had worked out
+that two rows were one person, and that the older row already had research.
+
+The scope fix has the largest numbers. The run counted 577 and took four,
+oldest first, which put it in applications from the previous December that
+had no status at all. The driver now researches one status by default, the
+one a person sets after deciding a candidate is worth the time, and the
+backlog went from 577 to 13. An empty status list is an error instead of
+meaning everyone, and the first line of each run's log prints the statuses
+and the model.
+
+</Depth>
+
+<Depth min={5}>
+
+The driver's run for one candidate, as pseudocode. The flags are the real
+ones:
+
+```python
+def run_one(candidate):
+    result = run([
+        "claude", "-p", f'/research-candidate "{name}" --page-id {row_id}',
+        "--output-format", "json",
+        "--max-budget-usd", budget,         # default 6.00 per candidate
+        "--permission-mode", "dontAsk",
+        "--no-session-persistence",
+        "--strict-mcp-config",              # no connectors; the script is the write path
+        "--model", model,                   # default "sonnet"
+    ], cwd=kit_dir, env=minimal_env, timeout=45 * 60)
+
+    append_to_run_log(result.json)          # cost, error subtype, permission_denials
+
+    if research_page_exists(row_id):        # the gate; the exit code decides nothing
+        return ok(cost)
+    return failed("agent finished but no research page exists on the candidate row")
+
+
+def research_page_exists(row_id):
+    return any(child.type == "child_page" and child.title.lower().startswith(PREFIX)
+               for child in list_children(row_id))
+```
+
+The working-directory write rule across its three spellings, with my paths
+scrubbed:
+
+```jsonc
+"Write(./work/**)"                      // matched the relative spelling only
+"Write(//Users/<me>/<repo>/work/**)"    // bolted on for the absolute path the agent used
+"Write(/work/**)"                       // after review: a leading slash anchors at the project root
+```
+
+The unattended rule as the skill states it:
+
+```text
+If something genuinely blocks you, publish nothing and make your final
+message a one-line reason starting `BLOCKED:` naming the specific thing a
+human must decide. Never leave a half-written page behind.
+```
+
+</Depth>
+
+<Depth min={3}>
+
 ## The model question, one afternoon's worth
 
 Packaging forced a question I'd been dodging: does this workflow need the
 big model? One afternoon gave me a field answer, head-to-head on live
 candidates instead of vibes. Fable took 10.2 minutes; Sonnet took 6.2
-minutes at roughly a third of the cost, and Sonnet's output was not worse.
+minutes at roughly a third of the cost<Depth inline min={4}> ($1.84 of usage against $5.66)</Depth>, and Sonnet's output was not worse.
 It caught exactly the class of contradiction the workflow exists to catch,
 cross-checking an employment claim against public records, and it correctly
 discarded a coincidental username match as a different person. Sonnet is
@@ -108,6 +295,18 @@ different candidates. "No loss observed" is not "proven equivalent." It's
 the difference between a field note and a benchmark, and pretending
 otherwise is how a config default hardens into a false belief.
 
+</Depth>
+
+<Depth min={4}>
+
+The commit that changed the default labels both costs as equivalents. I set the default in the driver's code instead of its env file,
+because the env file isn't tracked and a fresh clone would otherwise run
+whatever model the CLI happened to be configured with. A flag overrides it
+per run and an env variable per machine. At the time each candidate was
+capped at $6 and 45 minutes, four candidates a night, two at once.
+
+</Depth>
+
 ## Then someone else ran it
 
 A teammate started using the kit the day after it shipped, and within a day
@@ -117,37 +316,102 @@ the publish script. Those two facts, together, let the subagent publish
 without the citation check that downgrades unsourced claims. It did exactly
 that three times in one of his batch runs.
 
-Nobody decided the subagent should have shell access. It had it because I
-never took it away, and the default is everything. I had already met the
+<GivingBriefKitDiagram />
+
+Nobody decided the subagent should have shell access.<Depth inline min={2}> It had it because I
+never took it away, and the default is everything.</Depth> I had already met the
 publishing behavior and thought I'd fixed it with a line in the brief:
 don't publish yourself. It reduced the behavior without stopping it. His
 framing is the one that stuck: shell access plus a pre-approved script is a
 structural bypass that prompt wording can't reliably close. The agent never
-needed the shell -- read-only file tools like Read, Glob, and Grep cover
-everything it does locally -- so the fix was removal, not rewording, and
+needed the shell<Depth inline min={2}> -- read-only file tools like Read, Glob, and Grep cover
+everything it does locally --</Depth><Depth inline max={1}>,</Depth> so the fix was removal, not rewording, and
 the publish step now belongs to the orchestrator, downstream of the
 citation check.<Note id="2" />
+
+<Depth min={2}>
 
 <Callout variant="note" title="Capability plus pre-approval">
   A capability you have granted plus a permission you have pre-approved
   equals a path you did not intend. Audit the pair, not each half.
 </Callout>
 
+</Depth>
+
+<Depth min={4}>
+
+The publish script wasn't in the first commit's allow list. I added it
+thirteen minutes later, in the commit that created the script, so the
+orchestrator could publish without a prompt in a headless run. The subagent
+had carried a shell since the first commit. His pull request says the instruction not to publish "stopped it
+in most but not all subsequent cases." The repo's agent contract now carries
+the warning: don't give that agent a shell again without also re-scoping
+the publish permission, or research pages can land on live rows unreviewed.
+
+</Depth>
+
+<Depth min={5}>
+
+The whole fix is one word off one line of the subagent's definition. The
+allow rule it had been pairing with stayed where it was (script name
+scrubbed):
+
+```diff
+-tools: WebSearch, WebFetch, Read, Glob, Grep, Bash
++tools: WebSearch, WebFetch, Read, Glob, Grep
+```
+
+```jsonc
+"Bash(python3 scripts/<publish script>:*)"
+```
+
+</Depth>
+
+<Depth min={2}>
+
 The second thing he did impressed me more. He removed the shell access,
 tested in the same session, and watched the agent use the shell anyway.
 So he flagged his own fix as unverified, with a theory: tool grants
 resolve at session start, so an in-session test of a permission change
 proves nothing. He was right. A fresh session the next day confirmed the
-capability was gone, and his in-session test had been a false negative.
+capability was gone, and his in-session test had been a false negative.<Depth inline min={3}>
 An honest "I could not confirm this" is worth more than a green checkmark,
 and a repo one day old already had a better review culture than some
-production services I've inherited.
+production services I've inherited.</Depth>
+
+</Depth>
+
+<Depth min={4}>
+
+He opened the pull request 21 hours after the kit's first commit. Its
+description asked for one thing before merge: start a new session, spawn the
+researcher, ask it to run a shell command, and confirm that it can't. From
+the commit message: "tool grants appear to be resolved at session start, not
+re-read per invocation." I approved and merged 38 minutes after he opened
+it, with the three boxes in his test plan still unchecked. In those 38
+minutes I pushed four commits of my own. Two brought the written rules in
+line with what the publish script now did, one put the ancestry check on the
+script's write path, and one took my home directory out of the permission
+file.
+
+</Depth>
 
 ## The scorecard on the May claim
 
 The methodology, the conventions, the tier discipline, the tells: all of it
-transferred intact and produced comparable work in someone else's hands, on
-a cheaper model, the day after handoff. That half of the claim held.
+transferred intact and produced comparable work in someone else's hands<Depth inline min={3}>, on
+a cheaper model</Depth>, the day after handoff. That half of the claim held.
+
+<Depth min={2} max={2}>
+
+What didn't transfer was everything I had never been forced to write down:
+paths on my machine, a trust dialog I'd clicked through once, which funnel
+stage deserved the spend, and a capability grant that only looked safe
+because I never combined it with the permission next to it.
+
+</Depth>
+
+<Depth min={3}>
 
 What didn't transfer was everything I had never been forced to write down.
 Machine-specific paths. A trust dialog I'd clicked through once and
@@ -156,6 +420,8 @@ capability grant that only looked safe because I never combined it with the
 permission sitting next to it. None of that was in the brief, because none
 of it had ever needed to be: I was the environment, and the environment
 never has to explain itself until it's gone.
+
+</Depth>
 
 A workflow that works and a workflow that travels are separated by the set
 of things you don't know you know, and every one of mine was invisible

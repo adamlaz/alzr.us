@@ -3,16 +3,20 @@ title: 'Running candidate background research with parallel Claude Code agents'
 date: 2026-05-06
 description: "I built a parallel-agent workflow to make candidate background research faster. Sixty-four candidates later, the speedup is the least of it: running the investigations side by side turned a noisy classifier into a confident one, and then into a way to rank the candidates who are real."
 draft: false
+depth: true
 ogTreatment: candidate-grid
 pullQuote: 'At ten candidates the workflow caught fakes. At sixty-four it started ranking the real ones.'
 tags: ['ai-augmented-engineering', 'hiring', 'claude-code']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import Callout from '../../components/post/Callout.astro';
 import AgentsFanoutDiagram from '../../components/post/AgentsFanoutDiagram.astro';
+import ParallelAgentsFileSize from '../../components/post/ParallelAgentsFileSize.astro';
+import ParallelAgentsResumePass from '../../components/post/ParallelAgentsResumePass.astro';
 
 I built a parallel-agent workflow to make candidate background research
 faster. It made the research deeper instead. The speedup is real: about
@@ -22,24 +26,26 @@ for is more useful than the speedup, and it only got clearer as the sample
 grew.
 
 I'm hiring for a senior mobile role. Sixty-four candidates now, across
-five waves: the first three rounds in the spring, a handful of one-offs,
-then two larger sweeps as the applications piled up. Each one
-gets real public-footprint work before a calendar invite goes out: resume
+five waves<Depth inline min={3}>: the first three rounds in the spring, a handful of one-offs,
+then two larger sweeps as the applications piled up</Depth>. Each one
+gets real public-footprint work before a calendar invite goes out<Depth inline min={3}>: resume
 cross-reference, GitHub search, App Store verification, conference and
 podcast checks, employer-city sanity tests, and a Sherlock OSINT sweep for
-username discovery across 400+ sites. Twenty-five minutes per candidate,
+username discovery across 400+ sites</Depth>. Twenty-five minutes per candidate,
 done seriously. Done serially, the arithmetic doesn't survive contact with
 a normal week. Done in parallel through Claude Code, it does.
 
 ## The shape of the workflow
 
 For each candidate I spin up one general-purpose agent with `run_in_background:
-true`.<Note id="1" /> Each agent gets the same brief: candidate identity, resume path,
+true`.<Note id="1" /> Each agent gets the same brief<Depth inline min={2}>: candidate identity, resume path,
 the full application content, the curated Sherlock dump, the role-specific
-signals to chase, and the sub-page template to fill out. I launch the whole
+signals to chase, and the sub-page template to fill out</Depth>. I launch the whole
 wave in a single message and let them work.
 
 <AgentsFanoutDiagram />
+
+<Depth min={3}>
 
 The brief is the most-asked-for artifact when I describe this. Here it
 is, lightly redacted:
@@ -86,6 +92,7 @@ confidence tags, surfaced (not in resume), flagged for interview, 3-5
 interview questions, internet personality, public footprint summary]
 ```
 
+
 While the agents run, I curate the raw Sherlock output (50-100 hits per
 username, maybe 5% actionable) and prep interview kits for candidates I
 already know will advance. Twenty minutes later, a wave of structured
@@ -97,6 +104,136 @@ three. Round three: seventy-five minutes for three. The later sweeps ran
 bigger: seventeen candidates in an afternoon, then thirty-four in a long
 morning. The agents have not gotten faster. The brief, and the triage in
 front of it, have gotten tighter.
+
+</Depth>
+
+<Depth min={4}>
+
+## How a wave runs
+
+A wave follows the same written order every time. I keep it as a runbook
+so a fresh agent session can pick it up cold.
+
+1. Pull the candidate list from the hiring database, leaving out anyone
+   already passed on.
+2. Run the five-minute triage on the application text and bring me the
+   results. Nobody gets passed on without my sign-off.
+3. Get resumes onto disk. For the early waves I dropped them in a folder by
+   hand. A script pulls them now, and it runs at the start of the wave
+   because the database's file links expire in about an hour.
+4. Start the username sweep in the background.
+5. Read each resume and note its file size.
+6. Launch one agent per candidate.
+7. Write each agent's output to its own sub-page under the candidate's
+   record.
+8. Send me a recap: top picks ranked, who is worth a screen and what to
+   probe, the wrong-shape cases, and each pass with the gap that
+   disqualifies it.
+
+The runbook also carries rules that sit outside the brief:
+
+- Agents never change a candidate's status. Research lands on a sub-page,
+  and the candidate's main page stays clear for my notes.
+- Six agents at once is usually fine. Past ten candidates, the wave goes
+  out in batches.
+- Each agent has to be a general-purpose one. A read-only exploration agent
+  is too shallow for this work, which takes web fetches, PDF reads and
+  repeated searches.
+- People-data aggregator sites mix up people who share a name. An
+  aggregator profile is a lead to check against a primary source, never
+  proof.
+- Internal referrals, people I've already worked with and very junior
+  candidates skip the dig. Footprint expectations scale with career stage.
+
+Every research page has the same nine sections: sources reviewed, with
+what loaded and what was blocked; resume against cover letter; confirmed
+claims; anything surfaced that the resume left out; a role-specific
+evaluation; flags for the interview; three to five questions written for
+that candidate; how the person shows up publicly; and a short footprint
+summary. Each confirmed claim carries one of three tags. Strong means
+public proof, such as an App Store listing or a commit. Medium means a
+circumstantial match. Weak means an unverified hit. A quiet footprint gets
+written down as a finding, and it can cut either way. The page's icon
+carries the overall verdict: strong match, real with concerns, wrong shape
+for the role, pass-grade, or neutral.
+
+</Depth>
+
+<Depth min={5}>
+
+The page skeleton the agents fill in, lightly redacted:
+
+```markdown
+# Background Research -- [Name]
+
+*Compiled YYYY-MM-DD* -- [1-sentence headline verdict]
+
+## Sources reviewed
+- [be specific: what loaded vs. was blocked]
+
+## Resume vs. cover letter
+- [Voice consistency, dates aligned, specifics that cross-reference]
+
+## Confirmed
+- [strong / medium / weak tag per claim]
+
+## Surfaced (not in resume / cover letter)
+- [Side projects, talks, articles, public code]
+- [If nothing surfaced, say so explicitly]
+
+## [Role-specific evaluation block]
+
+## Flagged for interview
+- [Inconsistencies, gaps, things worth probing]
+
+## Interview questions (derived from research)
+- [3-5 concrete, candidate-specific questions]
+
+## Internet personality
+- [How they show up publicly. Quietness IS a signal, in either direction]
+
+## Public footprint summary
+[1-2 sentences honest assessment]
+```
+
+LinkedIn answers most automated fetches with an HTTP 999, so the agents
+read search snippets for the profile and leave the wall alone:
+
+```
+site:linkedin.com/in "Candidate Name" employer
+```
+
+</Depth>
+
+<Depth min={4}>
+
+## What happened to the brief when I packaged it
+
+When I packaged the workflow for a teammate, the brief above split in two.
+The methodology (the research targets, the tag rules, the tells) moved into
+the research agent's own definition. The brief shrank to the per-candidate
+facts: identity, resume path, application text, the path to the curated
+sweep, and any yellow flags already noticed.
+
+That agent definition grants no shell. Its tools are web search, web fetch
+and read-only file access. Two of its rules do most of the work on fakes:
+an empty GitHub at ten-plus years of seniority is a yellow flag and never
+a verdict, and two or more independent red flags make a pass-grade page.
+
+</Depth>
+
+<Depth min={5}>
+
+The top of the agent definition:
+
+```yaml
+---
+name: candidate-researcher
+tools: WebSearch, WebFetch, Read, Glob, Grep
+---
+```
+
+</Depth>
 
 ## What the signals look like together
 
@@ -111,6 +248,17 @@ Six signals show up reliably across the pass-grade resumes. The first four
 were there from the start; the last two are what the bigger sample
 surfaced.<Note id="2" />
 
+<Depth max={1}>
+
+They are a resume file under 10 KB, job-description phrases repeated word
+for word, no public code after a claimed decade, claims that fail a
+five-minute employer check, a GitHub account created the week of the
+application, and a footprint stitched together from more than one person.
+
+</Depth>
+
+<Depth min={2}>
+
 | Signal | What it looks like | The read |
 |---|---|---|
 | Resume under 10 KB | Real document editors produce 100-200 KB; minimal AI templates land at 8-9 KB. The fastest first pass, basically an `ls -la`. | A flag, never a verdict. One real candidate's spartan one-pager was 5.9 KB and verified clean on every other axis. |
@@ -120,13 +268,64 @@ surfaced.<Note id="2" />
 | A GitHub born for the application | A "ten-year engineer" whose entire footprint is timestamped to the week they applied (portfolio repos six to nine days old). | Presence, freshly manufactured. Check creation dates, not just whether the handle exists. |
 | A footprint stitched from more than one person | Commits authored under a different name and email than the candidate; an "App Store link" that resolves to a different developer's app. | The inverse of absence, and the signal I'd least want to miss, because it's deliberate. |
 
+</Depth>
+
 Two signals is worth a closer look. Three is a routing decision, and at
 this sample size routing got more granular than pass or fail.
+
+<Depth min={3}>
 
 <PullQuote>
   One tell is an accident. The same cluster on three resumes, surfaced by
   agents that never compared notes, is a method.
 </PullQuote>
+
+</Depth>
+
+<Depth min={4}>
+
+## The file-size check stopped working by August
+
+The file-size check was my lead tell in the spring. The two smallest
+fabricated resumes in the first rounds were 8.5 and 8.9 KB. By August,
+hiring for a different role, it caught nothing. In a wave of 54 candidates
+a colleague had already screened by hand, about a third were
+fabrication-pattern applications, and every resume in the wave ran between
+65 and 360 KB. I demoted the check. It still gets a glance, since an 8.7 KB
+file is still a flag, but I never lead with it and a big file clears
+nobody.
+
+<ParallelAgentsFileSize />
+
+Five checks caught the August fabrications:
+
+- Every bullet carries a specific percentage in the same verb-led
+  structure. Real careers have bullets with no number at all.
+- The long-answer essay repeats the resume's bullets, with the same
+  metrics and the same phrasing. A real answer tells a story the resume
+  doesn't.
+- The candidate's own links contradict the resume: a claimed senior GitHub
+  history on an account that holds only forks and test repos, or a
+  portfolio repo missing the projects the resume names.
+- The chronology is impossible: a tenure that starts before the company
+  was founded, or a technology used years before it existed.
+- The same name carries mutually exclusive employment histories on
+  different platforms.
+
+A sixth only shows up when I compare applications from the same batch. Two
+of them shared an intro sentence template and an identical niche skill
+cluster: one from a verified, real engineer who had used a resume-tailoring
+service, the other a full fabrication. The tell flags the application, and
+the research still has to judge the person.
+
+The posting itself turned into a signal. Its exact library list came back
+verbatim in fake resumes as a bare skills cluster. I kept the specific
+stack in the posting on purpose: a real candidate tells a story about one
+of those libraries and what broke, and a generator lists the names.
+
+</Depth>
+
+<Depth min={3}>
 
 ## What it catches besides AI fakes
 
@@ -158,7 +357,28 @@ footprint verifies cleanly. They are the wrong shape, and at ten
 candidates I didn't see enough of them to name the category. At sixty-four
 it's a routing bucket of its own.
 
+</Depth>
+
 ## When three signals fire on a real candidate
+
+<Depth max={2}>
+
+Three flags will fire on a real candidate sooner or later: some people
+like one-page resumes, and some spent a decade on code their employer
+owns. So three flags never reject anyone. They send the candidate to a
+harder phone screen aimed at the flagged claims, and if those claims hold
+up, the candidate advances.
+
+</Depth>
+
+<Depth max={1}>
+
+At sixty-four candidates that routing fanned out into five buckets, and
+only one of them is a no.
+
+</Depth>
+
+<Depth min={3}>
 
 The obvious counterargument: a candidate's resume is compactly formatted
 because they prefer one-pagers. They have no GitHub because they spent
@@ -175,6 +395,10 @@ hard problem we both care about, all three signals dissolve and the
 candidate advances. Cluster detection is a routing decision, not a rejection
 decision.
 
+</Depth>
+
+<Depth min={2}>
+
 At ten candidates, "route, don't reject" was a binary: aggressive screen,
 or advance. At sixty-four it fanned out into five buckets. The most recent
 sweep of thirty-four sorted like this:
@@ -187,10 +411,18 @@ sweep of thirty-four sorted like this:
 | Verify-first | 5 | A conversation before anything advances |
 | Pass | 6 | The only bucket that's a no |
 
+</Depth>
+
+<Depth min={3}>
+
 Verify-first is the interesting middle: a real person with real code whose
 resume embellishes hard enough to need a conversation first: a team hackathon
 rebranded as a solo award, repos backdated to look older than they are. The
 buckets earn their keep because they route to different next steps.
+
+</Depth>
+
+<Depth min={2}>
 
 Every candidate the workflow flagged hardest also failed the screen on
 independent grounds. The sample of hardest-flagged candidates is still
@@ -198,6 +430,34 @@ small, so the false-positive count doesn't generalize, but the asymmetry I
 care about does. The false-negative cost (interviewing a candidate whose
 claims don't survive contact) was the cost I was trying to avoid in the
 first place.
+
+</Depth>
+
+<Depth min={4}>
+
+## A resume moves verdicts in both directions
+
+Not every sweep had resumes. The seventeen-candidate wave went out on
+application text and public footprint alone, because the script that
+downloads resumes wasn't connected to the hiring database yet. A later
+sweep of twenty-six ran the same way. When resumes arrived for 24 of those
+26, I sent one agent per candidate to read the resume against the existing
+page and append a dated resume-review section: what it confirms, what it
+contradicts, what's new, and a revised verdict. The agents appended to the
+pages and rewrote nothing.
+
+Five of the 24 verdicts moved. One went up, from verify-first to
+interview-grade, when the resume corroborated a streaming build the
+footprint pass couldn't reach. Four went down. An interview-grade candidate
+dropped to verify-first because the streaming credit the first pass rested
+on wasn't in their own resume, a screen-grade candidate dropped to
+verify-first, and two verify-first candidates became passes.
+
+<ParallelAgentsResumePass />
+
+</Depth>
+
+<Depth min={2}>
 
 ## What this workflow doesn't do
 
@@ -212,17 +472,60 @@ The discipline matters legally (EEOC-protected attributes can't enter the
 evaluation file) and operationally (hiring decisions should turn on the
 work, not the person).
 
+</Depth>
+
 ## Sherlock and the curation discipline
 
 I lean on Sherlock for username discovery across 400+ public sites in one
-pass.<Note id="3" /> I do *not* treat raw Sherlock hits as evidence. A
+pass.<Note id="3" /> I do *not* treat raw Sherlock hits as evidence.<Depth inline min={3}> A
 common username generates fifty to a hundred matches, most of them
 different people. The signal lives in the *curated* set: which platforms
 had a profile that matched the candidate's job history, location,
 and stated interests. Real curation rate hovers around five percent. The
-other ninety-five is collision.
+other ninety-five is collision.</Depth>
 
 Sherlock surfaces. I verify. The split is the whole point.
+
+<Depth min={4}>
+
+## What goes into the sweep
+
+The sweep starts from handles I derive for each candidate: the part of the
+email before the @, the slugs in their profile and portfolio URLs, and name
+permutations such as first.last, firstlast and flast. It runs in the
+background because it is slow, ten to twenty minutes per candidate, and the
+agents start without waiting for it. If the sweep hasn't finished, the
+agent begins from the resume and the web targets and reads the curated hits
+late in its run. If the sweep fails outright, the research goes ahead on
+footprint alone and the page says so under sources reviewed.
+
+Sherlock is the cross-check now. A scanner that parses each profile's
+metadata took over as the primary engine, and a script tiers every hit
+before an agent reads it.
+
+The curation rule has since got stricter. An account is
+linked to a candidate only on two independent anchors: the same email, the
+same photo, the same employer with overlapping dates, or a link to or from
+a profile already tied to them. A matching name is not an anchor, and name
+plus city counts as one at most.
+
+</Depth>
+
+<Depth min={5}>
+
+The Sherlock call in the wrapper script today:
+
+```sh
+sherlock --print-found --timeout 5 --folderoutput "$S_DIR" "${USERNAMES[@]}"
+```
+
+A non-zero exit doesn't stop the run. The wrapper carries on with whatever
+the primary engine found. Each run writes into a fresh timestamped
+directory, so two sweeps never collide.
+
+</Depth>
+
+<Depth min={2}>
 
 ## Cost, and the arms race
 
@@ -236,6 +539,10 @@ running their own parallel-agent workflows, tailoring ten applications to
 ten roles in the time it used to take to write one. The defender side of
 that equation is what this post describes. Same underlying capability,
 different ends.
+
+</Depth>
+
+<Depth min={3}>
 
 Signal five is that arms race made visible. A year ago the tell was no
 GitHub. Now it's a GitHub with a birthday three days before the
@@ -251,30 +558,108 @@ timestamps, not just the artifact.
   orchestration layer is the fragile part. The brief never wobbled.
 </Callout>
 
+</Depth>
+
+<Depth min={4}>
+
+## From hand-launched waves to a nightly job
+
+Later in the summer the waves moved to a schedule. A script checks the
+hiring database every morning and reports each in-scope candidate with no
+research page. It only reports: it creates no pages and starts no research.
+A nightly job takes the candidates a person has already screened and runs
+the research for each one, four at a time.
+
+The nightly job runs under four limits: $6 per candidate, 45 minutes of
+wall clock per candidate, $150 for the whole night, and a stop after three
+failures in a row. A lock keeps a manual run from overlapping the scheduled
+one. A candidate counts as researched only when the job can find the
+research page on their record afterward. An earlier version trusted the
+exit code and logged a candidate as researched when no page existed.
+
+Coverage hangs on one string, the research page's title prefix. The morning
+check lists the pages under each candidate and looks for a title that
+starts with it, so renaming the page would make the whole pool look
+unresearched. The check has also failed in the other direction. A
+rate-limit response from the database once got swallowed and counted as "no
+page", which reported researched candidates as missing. It now tries up
+to four times on that response. Any other API error still counts as
+missing, so the report can overstate the gap, and I re-run it when a number
+looks wrong.
+
+</Depth>
+
+<Depth min={5}>
+
+The morning check and the nightly guard loop, as pseudocode:
+
+```python
+IN_SCOPE = {"New", "Screened", "Interview Requested", "Interview Scheduled",
+            "Take-Home", "Considering", "Offer"}    # plus rows with no status yet
+PREFIX = "background research"
+
+def has_research_page(candidate_page):
+    for _ in range(4):                              # retry only on rate limits
+        resp = list_child_blocks(candidate_page)
+        if resp.status != 429:
+            break
+        sleep(resp.retry_after + 0.5)
+    if not resp.ok:
+        return False                                # can over-report "missing"
+    return any(b.type == "child_page" and b.title.lower().startswith(PREFIX)
+               for b in resp.blocks)
+
+def needs_research(row):                            # research starts at Screened
+    return not row.has_research and row.status not in (None, "New")
+
+def nightly(queue, concurrency=4, per_candidate_usd=6.00, timeout_min=45,
+            max_total_usd=150, max_consecutive_failures=3):
+    take_lock_or_exit()
+    spent, failures = 0.0, 0
+    for result in run_pool(queue, concurrency):     # one headless run per row id
+        ok = has_research_page(result.page)         # the page, never the exit code
+        spent += result.cost
+        failures = 0 if ok else failures + 1
+        if spent + per_candidate_usd > max_total_usd or failures >= max_consecutive_failures:
+            stop_dispatching()                      # the rest wait for tomorrow
+            report_failure()
+```
+
+</Depth>
+
 ## At scale, it stops catching and starts ranking
 
 At ten candidates the workflow was a fake detector. At sixty-four, most of the fakes get caught in the
 first five minutes of triage, and what's left is the harder, more useful
 problem: ranking the real ones.
 
-Most real senior iOS candidates are solid generalists. They've shipped
-apps, their employers check out, their GitHub has the right sediment. What
+Most real senior iOS candidates are solid generalists.<Depth inline min={2}> They've shipped
+apps, their employers check out, their GitHub has the right sediment.</Depth> What
 separates them is a rare signal the role needs. For this one it's media
-and streaming depth: AVFoundation, HLS, the living-room screen. A decade
+and streaming depth<Depth inline min={2}>: AVFoundation, HLS, the living-room screen</Depth>.<Depth inline min={3}> A decade
 of competent iOS work with zero AVFoundation is common. The few candidates
 with real tvOS or streaming experience (one who shipped a four-stream
 Twitch app for Apple TV, one with a decade at a streaming platform and an
 Apple TV launch to show for it) rank well above an equally-real
-generalist. Once the fakes are gone, the workflow's job is to
+generalist.</Depth> Once the fakes are gone, the workflow's job is to
 surface that rare signal and rank on it.
 
-AI fluency is the same story one level up. It has become a resume keyword
+AI fluency is the same story one level up.<Depth inline min={2}> It has become a resume keyword
 the way "agile" was: most candidates claim a CLAUDE.md, skills files, a
 daily Claude-and-Cursor habit, with no public artifact behind it. The rare
-one has an actual config file checked into a repo you can read. Treat the
+one has an actual config file checked into a repo you can read.</Depth> Treat the
 claim like any other: verify the artifact, not the vocabulary.<Note id="4" />
 
 ## What stays when the model changes
+
+<Depth max={1}>
+
+The brief is the artifact and the agents are fungible. A different model
+or a different tool next year renders the same brief.
+
+</Depth>
+
+<Depth min={2}>
 
 Triage moved earlier, and it's no longer hypothetical. A five-minute
 application-triage checklist (file size, JD-vocabulary check, App Store
@@ -282,11 +667,50 @@ link verification, and now a glance at GitHub creation dates) runs before
 any agent launches. The agents point only at candidates who survive it, not
 at fabricated ones who'd waste the depth.
 
+</Depth>
+
+<Depth min={4}>
+
+The checklist is a tally: zero or one red flag sends the candidate to full
+research, and two or more is a pass, so the twenty-five-minute dig never
+runs. Checked against the first seven candidates, it flags three as
+four-flag passes it would have caught in five minutes each, about
+seventy-five minutes of research saved. A fourth, the candidate running a
+retail business, had a resume that read real. Triage alone would not have
+caught that one, and only the full research did.
+
+</Depth>
+
+<Depth min={5}>
+
+The checklist has eight checks now, in this order: uniform metrics on every
+bullet, an essay that paraphrases the resume, artifacts that contradict the
+claims, impossible chronology, conflicting identities across platforms,
+three or more of the posting's phrases repeated verbatim, an intro under
+100 words or an empty long answer, and a senior claim with no public
+footprint at all. The decision, as pseudocode:
+
+```python
+def triage(application):
+    flags = count_red_flags(application)        # one flag per check at most
+    if flags >= 2:
+        return "pass"                           # skip the dig; I sign off first
+    if flags == 0 and strong_everywhere(application):
+        return "direct to interview"            # rare; usually an internal referral
+    return "research"
+```
+
+</Depth>
+
+<Depth min={2}>
+
 The compounding return is something else. The brief is the artifact and
 the agents are fungible: Claude Code today, whatever Anthropic ships next
 year, whatever Cursor or OpenAI builds for the same job. What survives a
 model change, a tool change, a team-member change is the brief. The agents
 just render it.
+
+</Depth>
 
 Hiring depth at speed used to cost a week. Now it costs an afternoon. And
 somewhere past the fortieth candidate, the harder problem took over: not

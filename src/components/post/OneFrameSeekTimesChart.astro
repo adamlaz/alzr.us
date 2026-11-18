@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/one-frame-seek-times-light.svg?raw';
+import darkSvg from '../../assets/diagrams/one-frame-seek-times-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Three seeks into the 4.8 GB file, each 3 seconds or less"
+  caption="One frame per seek, wall-clock, with a local ffmpeg over a residential connection. The file's index sits at its end."
+>
+  Bar chart of three single-frame extractions from one 4.8 GB, 6.68-hour video. A frame 10 seconds in took 1.9
+  seconds, a frame 200 minutes in took 2.4 seconds, and a frame 380 minutes in took 3.0 seconds. A dashed line marks
+  the 10-second stop line the plan carried.
+</Chart>

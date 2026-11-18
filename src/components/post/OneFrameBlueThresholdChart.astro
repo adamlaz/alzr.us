@@ -1,0 +1,18 @@
+---
+import lightSvg from '../../assets/diagrams/one-frame-blue-threshold-light.svg?raw';
+import darkSvg from '../../assets/diagrams/one-frame-blue-threshold-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="The blue cutoff sits just above steel blue, at 160"
+  caption="signalstats ULOW per frame, TV-range decode. Real content, the VCR channel screen and the tape leader are readings from two real tapes; the solid colors are synthetic test frames."
+>
+  Dot chart of ULOW readings on a 0 to 255 scale with the production cutoff at 160 and the first cutoff at 180. Kept,
+  below 160: real content at 36 to 114, gray or black at 128, sky blue at 151, steel blue at 159. Dropped, at 160 or
+  above: purple at 165, cyan at 166, a VCR channel screen at 166 to 167, navy at 184, magenta at 202, a saturated tape
+  leader at 217 to 218, pure blue at 240. Purple, cyan and the VCR channel screen sit between 160 and 180, so the
+  first cutoff kept them.
+</Chart>

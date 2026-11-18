@@ -3,37 +3,49 @@ title: 'The tasks AI makes worth doing'
 date: 2026-04-20
 description: "For fifteen years I've built a custom Chrome theme at every company I've worked at, and always built it badly, because it was never worth doing well. This time AI made it the best version I've shipped, for the same one evening of work. The theme is trivial. The category of task it unlocks isn't."
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: "There's a whole class of tasks worth doing that are never worth the effort, so they never get done. AI moves that line."
 tags: ['ai-augmented-engineering', 'developer-experience', 'craft']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import ChromeThemePipelineDiagram from '../../components/post/ChromeThemePipelineDiagram.astro';
+import TasksAiTokenSources from '../../components/post/TasksAiTokenSources.astro';
+import TasksAiEveningLog from '../../components/post/TasksAiEveningLog.astro';
 
-I've built a custom Chrome theme at almost every company I've worked at or run.
-Fifteen years of it. It's a small ritual with two real jobs: a little internal
+I've built a custom Chrome theme at almost every company I've worked at or run.<Depth inline min={2}>
+Fifteen years of it.</Depth><Depth inline min={3}> It's a small ritual with two real jobs: a little internal
 team branding, and a way to tell my three-plus Chrome profiles apart at a glance
 so I stop pasting a work link into a personal window. Each profile gets the
 company's colors. The window tells me where I am before I read anything on the
-screen.
+screen.</Depth>
 
-And for fifteen years I built it badly. Pick a few hex codes by eye, hardcode
-them into a theme manifest, sideload it, forget it. Within a quarter the real
-brand had moved and my theme hadn't. It was a cheap, slightly embarrassing
-pleasure, and it was never worth doing properly, so I never did. Worth doing,
+And for fifteen years I built it badly.<Depth inline min={2}> Pick a few hex codes by eye, hardcode
+them into a theme manifest, sideload it, forget it.</Depth> Within a quarter the real
+brand had moved and my theme hadn't.<Depth inline min={2} max={2}> It was never worth doing properly, so I
+never did.</Depth><Depth inline min={3}> It was a cheap, slightly embarrassing
+pleasure, and it was never worth doing properly, so I never did.</Depth> Worth doing,
 not worth doing well. That gap is the whole post.
 
 ## The same evening, a different result
 
 This time the theme is the best one I've ever made, and it took the same one
-evening. The difference is that none of the colors are typed by hand.
+evening. The difference is that none of the colors are typed by hand.<Depth inline max={1}> They
+come from the stylesheet the product itself ships.</Depth>
+
+<Depth min={2}>
 
 They sync from the app's live design-system tokens, the same stylesheet the
 product itself ships, with a newer AI-accent palette layered in from the design
-team's Figma. The whole path runs at build time:
+team's Figma.<Depth inline min={3}> The whole path runs at build time:</Depth>
+
+</Depth>
+
+<Depth min={3}>
 
 ```text
 app design tokens  +  Figma accents
@@ -43,39 +55,340 @@ app design tokens  +  Figma accents
   -> managed browsers poll and auto-update
 ```
 
+</Depth>
+
 The Zod contract<Note id="1" /> means a malformed theme can't ship; the signed,
 self-hosted extension reaches the team's managed browsers through the Workspace
 admin console<Note id="2" />, so one merge updates every browser within a poll
-window. Dark and light variants, calendar-versioned releases, a CI pipeline
+window.<Depth inline min={3}> Dark and light variants, calendar-versioned releases, a CI pipeline
 that mirrors the main app's. About four hundred lines of TypeScript, no bundler,
-no runtime, no permissions. The artifact is four kilobytes of color; the
-pipeline around it is the entire point.
+no runtime, no permissions.</Depth><Depth inline min={2}> The artifact is four kilobytes of color; the
+pipeline around it is the entire point.</Depth>
 
 <ChromeThemePipelineDiagram />
+
+<Depth min={3}>
 
 <PullQuote>
   I could always build the theme. What changed is the ratio: an evening of
   work that now maintains itself instead of decaying in a quarter.
 </PullQuote>
 
+</Depth>
+
+<Depth min={4}>
+
+## Where each color comes from
+
+A sync script reads the app's global stylesheet and keeps very little of it:
+the light and dark blocks, and inside those only the plain hex declarations for
+the nine tokens the theme maps. It skips `rgba()` values, `var()` references
+and every other token, so most upstream churn can't break it. The output is a
+small JSON file with nine colors per mode.
+
+The AI accents are a second file, and I maintain that one by hand. The app
+doesn't ship those colors yet, so the file holds six values copied from Figma
+with the source nodes written next to them. It retires when the accents land in
+the app's stylesheet and the sync picks them up.
+
+One mapping file decides which token paints which browser surface. Each variant
+sets 19 of Chrome's color keys.
+
+<TasksAiTokenSources />
+
+So "none of the colors are typed by hand" has four exceptions in the dark
+variant. Chrome has surfaces the app's design system has no token for: the
+inactive window frame, the incognito frame in both states, and the text on
+inactive tabs. Those are constants in the mapping file, tuned during local
+testing. The light variant adds a fifth. At its brand value the accent came out
+around 4.4:1 as link text on the light surface, under the 4.5:1 WCAG AA line,
+so the link uses a slightly darker version at about 5.3:1.
+
+</Depth>
+
+<Depth min={5}>
+
+The sync, trimmed to its logic. It runs once for `:root` and once for `.dark`:
+
+```ts
+// CSS custom property -> token key. Only these nine are synced.
+const WANTED: Record<string, string> = {
+    '--background': 'background',
+    '--foreground': 'foreground',
+    '--card': 'card',
+    '--secondary': 'secondary',
+    '--primary': 'primary',
+    '--primary-foreground': 'primaryForeground',
+    '--muted': 'muted',
+    '--accent': 'accent',
+    '--link': 'link',
+}
+
+function extractBlock(css: string, selector: string): Record<string, string> {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const block = new RegExp(`${escaped}\\s*\\{([\\s\\S]*?)\\n\\}`).exec(css)
+    if (!block || !block[1]) {
+        throw new Error(`Could not find "${selector} { … }" block.`)
+    }
+
+    const out: Record<string, string> = {}
+    const decl = /(--[\w-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g
+    let m: RegExpExecArray | null
+    while ((m = decl.exec(block[1])) !== null) {
+        const key = WANTED[m[1]!]
+        if (key) out[key] = m[2]!.toLowerCase()
+    }
+    return out
+}
+```
+
+The source is a local path, a raw URL, or a sibling checkout of the app, in
+that order.
+
+A renamed token never reaches the Zod contract. The sync prints a warning that
+names the missing token, then writes the file without it. The next build
+throws a `TypeError` in the hex-to-RGB conversion, one step before the manifest
+is assembled, so it still fails loudly.
+
+</Depth>
+
+<Depth min={4}>
+
+## What the build checks and what it only reports
+
+The build converts each hex value to the RGB integer array Chrome expects,
+assembles the manifest, and parses it against the contract before writing it.
+It also rasterizes the emblem into 16, 48 and 128 pixel icons and emits the
+JSON schema from the same contract.
+
+Two checks only warn. A color key outside the set current Chrome honors gets a
+warning, because Chrome silently ignores unknown keys. And the build prints a
+WCAG contrast ratio for five text-and-surface pairs per variant. That report
+never fails the build, so a low ratio is mine to catch by reading it.
+
+The preview image on the showcase page is a mock browser window painted from
+each variant's real color values. Headless Chrome doesn't render browser
+chrome, so there's no screenshot to take.
+
+</Depth>
+
+<Depth min={5}>
+
+The contract, trimmed. What it rejects: a color channel outside 0-255, a tint
+outside -1 to 1, a manifest version other than 3, a version string that isn't
+one to four dot-separated integers.
+
+```ts
+const RgbSchema = z.tuple([
+    z.number().int().min(0).max(255),
+    z.number().int().min(0).max(255),
+    z.number().int().min(0).max(255),
+])
+
+/** HSL tint: three floats in [-1, 1]; -1 means "no change". */
+const TintSchema = z.tuple([
+    z.number().min(-1).max(1),
+    z.number().min(-1).max(1),
+    z.number().min(-1).max(1),
+])
+
+export const ThemeSchema = z.object({
+    colors: z.record(z.string(), RgbSchema),
+    tints: z.record(z.string(), TintSchema).optional(),
+    images: z.record(z.string(), z.string()).optional(),
+    properties: z
+        .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+        .optional(),
+})
+
+export const ThemeManifestSchema = z.object({
+    $schema: z.string().optional(),
+    manifest_version: z.literal(3),
+    name: z.string().min(1),
+    version: z.string().regex(/^\d{1,5}(\.\d{1,5}){0,3}$/),
+    description: z.string().optional(),
+    icons: z.record(z.string(), z.string()).optional(),
+    theme: ThemeSchema,
+})
+```
+
+`colors` is an open record on purpose. The list of 23 known keys lives beside
+the schema and only drives the warning. The build ends with
+`z.toJSONSchema(ThemeManifestSchema)`, which writes the file editors use for
+autocomplete.
+
+Versions are `YYYY.WW.NNN`: ISO year, ISO week, and a three-digit counter
+within the week, read from the existing git tags. Chrome wants plain integers,
+so the build strips the zero padding before the version goes into the manifest
+and a counter of `001` ships as `1`.
+
+</Depth>
+
+<Depth min={4}>
+
+## Signing, hosting and the admin policy
+
+Each variant is signed with its own RSA key, because Chrome derives an
+extension's ID from its key and the two themes need distinct, stable IDs. The
+keys live as CI secrets, and the runbook says to keep an offline copy of both.
+Losing one would change that theme's ID and break updates for everyone who
+already has it installed.
+
+The repo is private and Chrome fetches updates unauthenticated, so the signed
+package and the update manifest are served from a public static site, next to a
+small showcase page.
+
+The admin console's form offers two install modes: force install, which
+applies a theme and locks it, and allow, which leaves each person to opt in. A
+third mode, installed by default but still switchable, exists only in the raw
+JSON policy.
+The policy reaches managed profiles only, so a personal profile on the same
+laptop never gets the theme.
+
+</Depth>
+
+<Depth min={5}>
+
+The extension ID is the SHA-256 of the public key, first 16 bytes, with each
+hex digit remapped from `0-f` to `a-p`:
+
+```ts
+function extensionId(pem: string): string {
+    const der = createPublicKey(pem).export({ type: 'spki', format: 'der' })
+    const hash = createHash('sha256').update(der).digest().subarray(0, 16)
+    return [...hash]
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('')
+        .split('')
+        .map((c) => String.fromCharCode(97 + Number.parseInt(c, 16)))
+        .join('')
+}
+```
+
+The update manifest is one `<app>` per variant. The package URL carries no
+version; the `version` attribute tells Chrome when to fetch again. IDs and
+host are placeholders here:
+
+```xml
+<?xml version='1.0' encoding='UTF-8'?>
+<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
+  <app appid='DARK_EXTENSION_ID'>
+    <updatecheck codebase='https://HOST/dark.crx' version='VERSION' />
+  </app>
+  <app appid='LIGHT_EXTENSION_ID'>
+    <updatecheck codebase='https://HOST/light.crx' version='VERSION' />
+  </app>
+</gupdate>
+```
+
+And the JSON policy for the third install mode:
+
+```json
+{
+    "ExtensionSettings": {
+        "DARK_EXTENSION_ID": {
+            "installation_mode": "normal_installed",
+            "update_url": "https://HOST/updates.xml",
+            "override_update_url": true
+        },
+        "LIGHT_EXTENSION_ID": {
+            "installation_mode": "allowed",
+            "update_url": "https://HOST/updates.xml"
+        }
+    }
+}
+```
+
+`override_update_url` tells Chrome to use the self-hosted URL instead of also
+checking the Web Store. Changing `normal_installed` to `force_installed` makes
+the dark theme mandatory.
+
+</Depth>
+
+<Depth min={4}>
+
+## What one merge means
+
+Every push to main updates a single open release pull request with the next
+calendar version and a changelog entry built from the commit subjects. Merging
+that pull request is the release. CI restores the keys, builds and signs both
+variants, tags the commit, regenerates the update manifest and deploys the
+site. Managed browsers see a higher version at their next poll, a few hours by
+the runbook's estimate, and pull the new package. Nobody touches the admin
+console per release.
+
+Token sync is the step that doesn't run by itself. The job that re-reads the
+app's stylesheet and opens a pull request when the tokens have drifted runs
+when I trigger it. A weekly schedule sits in the workflow file, commented out.
+
+</Depth>
+
+<Depth min={5}>
+
+The whole release is one script chain, and CI runs the same five steps:
+
+```sh
+npm run build && npm run preview && npm run pack && npm run update-xml && npm run site
+```
+
+The publish job runs on any push to main whose commit message starts with the
+release prefix, and exits early if a release with that tag already exists.
+
+</Depth>
+
 ## The math that never closed
 
-The capability was never the blocker. The token sync, the validation contract,
+The capability was never the blocker.<Depth inline min={3}> The token sync, the validation contract,
 the signing key, the managed-deploy pipeline: none of it is new technology, and
-none of it was beyond me on any given Tuesday of the last decade. What stopped
-me was the ratio. The good version cost a week of fiddly
-plumbing to save a quarter of drift, and that math never closed. So I shipped
-the bad version, every time, for fifteen years.
+none of it was beyond me on any given Tuesday of the last decade.</Depth><Depth inline min={2}> What stopped
+me was the ratio.</Depth> The good version cost a week of fiddly
+plumbing to save a quarter of drift, and that math never closed.<Depth inline min={3}> So I shipped
+the bad version, every time, for fifteen years.</Depth>
 
 AI closed the math. The fiddly plumbing I'd never spend a week on is the
-kind of scaffolding a model writes in an afternoon: wire the
+kind of scaffolding a model writes in an afternoon<Depth inline min={3}>: wire the
 token extraction, sketch the validation schema, stand up the signing and the
-release CI, fix the parts that break. The evening of taste, picking the colors,
+release CI, fix the parts that break</Depth>.<Depth inline min={2}> The evening of taste, picking the colors,
 deciding which token paints which surface, stayed mine. The week of plumbing
-that always killed it collapsed to a couple of hours of review. The honest cost
+that always killed it collapsed to a couple of hours of review.</Depth><Depth inline min={3}> The honest cost
 is that the pipeline is now a small thing that can break, one I have to keep
 alive. I'll take that trade every time: a maintenance surface I understand over
-a manual chore I'll always skip.
+a manual chore I'll always skip.</Depth>
+
+<Depth min={4}>
+
+The git log shows which parts broke. The first commit, the whole pipeline at
+once, landed at 9:24 PM, and the last commit of the night at 10:38.
+
+<TasksAiEveningLog />
+
+All four fixes were in the release path and none were in the theme:
+
+- The first release pull request wouldn't cut until the version baseline was
+  reset.
+- The publish job had to trigger on a push to main, because the hosting
+  environment's branch policy requires deploys to come from the default branch.
+- The two preview images needed distinct file names as release assets.
+- The signed packages first went out as release assets on a private repo, where
+  Chrome can't download them. They moved to the public site.
+
+One of the doc changes records a trap. Double-clicking the signed package gives
+a `CRX_REQUIRED_PROOF_MISSING` error on Mac and Windows, which looks like a
+packaging bug. The package is fine: Chrome blocks hand-installed packages that
+lack a Web Store signature, and the policy path accepts a developer-signed one.
+For a local preview I load the unpacked folder.
+
+</Depth>
+
+<Depth max={1}>
+
+It's bigger than one theme. Everyone has a list of small tools like it, personal
+or team, that were always worth building and never worth the effort. AI lowers
+the bar far enough that a pile of them clears it at once.
+
+</Depth>
+
+<Depth min={2}>
 
 It's bigger than one theme. Everyone has the same list,
 personal or team:
@@ -88,9 +401,20 @@ personal or team:
 The value is real. They don't get built because the effort never clears the
 bar. AI lowers the bar far enough that a pile of them clears it at once.
 
+</Depth>
+
+<Depth min={4}>
+
+Not everything on my list got the pipeline. My personal theme, the one that
+matches this site, is still a single hand-written manifest loaded unpacked on
+one machine. Its README tells me to re-derive the colors by hand if the site's
+palette changes.
+
+</Depth>
+
 So the question I find more useful than "what can AI build for me" is the
-quieter one underneath it: what was always worth doing that I finally get to do?
-The Chrome theme is a silly answer. The list behind it isn't.
+quieter one underneath it: what was always worth doing that I finally get to do?<Depth inline min={2}>
+The Chrome theme is a silly answer. The list behind it isn't.</Depth>
 
 <Footnotes
   notes={[

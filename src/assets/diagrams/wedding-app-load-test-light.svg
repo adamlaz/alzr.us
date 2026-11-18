@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="284" viewBox="0 0 420 284">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#1c1d24">
+<text x="0" y="18" font-size="15" font-weight="600">Start a file</text>
+<rect x="0" y="28" width="134.2" height="12" rx="3" fill="#aab1e2"/>
+<text x="142.2" y="39" font-size="13.5" fill="#55565f" font-family="'Geist Mono Variable', ui-monospace, monospace">p95 122</text>
+<rect x="0" y="44" width="83.6" height="12" rx="3" fill="#2f3eb0"/>
+<text x="91.6" y="55" font-size="13.5" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">median 76</text>
+<text x="0" y="88" font-size="15" font-weight="600">Gallery copies confirmed</text>
+<rect x="0" y="98" width="206.8" height="12" rx="3" fill="#aab1e2"/>
+<text x="214.8" y="109" font-size="13.5" fill="#55565f" font-family="'Geist Mono Variable', ui-monospace, monospace">p95 188</text>
+<rect x="0" y="114" width="138.6" height="12" rx="3" fill="#2f3eb0"/>
+<text x="146.6" y="125" font-size="13.5" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">median 126</text>
+<text x="0" y="158" font-size="15" font-weight="600">Original completed</text>
+<rect x="0" y="168" width="222.2" height="12" rx="3" fill="#aab1e2"/>
+<text x="230.2" y="179" font-size="13.5" fill="#55565f" font-family="'Geist Mono Variable', ui-monospace, monospace">p95 202</text>
+<rect x="0" y="184" width="152.9" height="12" rx="3" fill="#2f3eb0"/>
+<text x="160.9" y="195" font-size="13.5" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">median 139</text>
+<text x="0" y="228" font-size="15" font-weight="600">One PUT to storage</text>
+<rect x="0" y="238" width="322.3" height="12" rx="3" fill="#aab1e2"/>
+<text x="330.3" y="249" font-size="13.5" fill="#55565f" font-family="'Geist Mono Variable', ui-monospace, monospace">p95 293</text>
+<rect x="0" y="254" width="212.3" height="12" rx="3" fill="#2f3eb0"/>
+<text x="220.3" y="265" font-size="13.5" font-weight="600" font-family="'Geist Mono Variable', ui-monospace, monospace">median 193</text>
+</g>
+</svg>

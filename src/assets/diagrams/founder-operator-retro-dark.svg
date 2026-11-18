@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="360" viewBox="0 0 420 360">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#eceae4">
+<text x="0" y="16" font-size="14" font-weight="500">Welcome and warm-up, 3 min</text>
+<path d="M0 30 L406 30" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<rect x="0" y="24" width="22.1" height="12" rx="2" fill="#5c5c64"/>
+<text x="0" y="56" font-size="14" font-weight="500">Set the scene, 5 min</text>
+<path d="M0 70 L406 70" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<rect x="22.1" y="64" width="36.9" height="12" rx="2" fill="#5c5c64"/>
+<text x="0" y="96" font-size="14" font-weight="600">Silent brainstorm, 10 min</text>
+<path d="M0 110 L406 110" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<rect x="59.1" y="104" width="73.8" height="12" rx="2" fill="#8fa1ef"/>
+<text x="0" y="136" font-size="14" font-weight="500">Read out and cluster, 15 min</text>
+<path d="M0 150 L406 150" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<rect x="132.9" y="144" width="110.7" height="12" rx="2" fill="#5c5c64"/>
+<text x="0" y="176" font-size="14" font-weight="500">Vote, 3 min</text>
+<path d="M0 190 L406 190" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<rect x="243.6" y="184" width="22.1" height="12" rx="2" fill="#5c5c64"/>
+<text x="0" y="216" font-size="14" font-weight="500">Discuss the top two or three, 12 min</text>
+<path d="M0 230 L406 230" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<rect x="265.7" y="224" width="88.6" height="12" rx="2" fill="#5c5c64"/>
+<text x="0" y="256" font-size="14" font-weight="500">Commitments, 5 min</text>
+<path d="M0 270 L406 270" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<rect x="354.3" y="264" width="36.9" height="12" rx="2" fill="#5c5c64"/>
+<text x="0" y="296" font-size="14" font-weight="500">Close, 2 min</text>
+<path d="M0 310 L406 310" fill="none" stroke="#2b2b33" stroke-width="1" stroke-linecap="round"/>
+<rect x="391.2" y="304" width="14.8" height="12" rx="2" fill="#5c5c64"/>
+<path d="M0 330 L406 330" fill="none" stroke="#5c5c64" stroke-width="1" stroke-linecap="round"/>
+<path d="M0 326 L0 334" fill="none" stroke="#5c5c64" stroke-width="1" stroke-linecap="round"/>
+<text x="0" y="352" font-size="13.5" text-anchor="start" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">0</text>
+<path d="M110.7 326 L110.7 334" fill="none" stroke="#5c5c64" stroke-width="1" stroke-linecap="round"/>
+<text x="110.7" y="352" font-size="13.5" text-anchor="middle" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">15</text>
+<path d="M221.5 326 L221.5 334" fill="none" stroke="#5c5c64" stroke-width="1" stroke-linecap="round"/>
+<text x="221.5" y="352" font-size="13.5" text-anchor="middle" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">30</text>
+<path d="M406 326 L406 334" fill="none" stroke="#5c5c64" stroke-width="1" stroke-linecap="round"/>
+<text x="406" y="352" font-size="13.5" text-anchor="end" fill="#b9b7b1" font-family="'Geist Mono Variable', ui-monospace, monospace">55 min</text>
+</g>
+</svg>

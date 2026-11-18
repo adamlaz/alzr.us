@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/founder-operator-week-light.svg?raw';
+import darkSvg from '../../assets/diagrams/founder-operator-week-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="The standing week: one 30-minute kickoff, four 15-minute standups"
+  caption="My current team's fixed meetings, late 2026. Bar length is minutes. Squares are the two release events."
+>
+  The fixed weekly meetings. Monday has a 30-minute kickoff that runs in this order: gaps, last week, this week,
+  blockers, Wednesday's release. Tuesday to Friday each have a 15-minute standup. The release is cut at noon on Tuesday
+  and goes out on Wednesday.
+</Chart>

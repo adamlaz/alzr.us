@@ -1,0 +1,17 @@
+---
+import lightSvg from '../../assets/diagrams/cad-conv-filament-light.svg?raw';
+import darkSvg from '../../assets/diagrams/cad-conv-filament-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="The eight bins are most of the plastic"
+  caption="Solid-mesh mass per piece, computed off the STLs, times the print count. Solid means 100% infill; the slicer's sparse infill brings the real budget down to 1.2 to 1.4 kg."
+>
+  Bar chart of solid-mesh filament mass for the drawer kit. Four 2x5 bins at 184 grams each: 736 grams. Two 2x6 bins
+  at 219 grams each: 438 grams. Two 2x4 bins at 150 grams each: 300 grams. Two rear plates with pad at 66 grams each:
+  132 grams. Two rails and the test bin: 101 grams. Two front plates at 36 grams each: 72 grams. About 1.8 kilograms
+  solid across all 15 pieces, budgeted at 1.2 to 1.4 kilograms after infill.
+</Chart>

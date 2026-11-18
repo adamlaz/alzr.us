@@ -1,0 +1,17 @@
+---
+import Diagram from './Diagram.astro';
+import lightSvg from '../../assets/diagrams/interview-after-grading-gates-light.svg?raw';
+import darkSvg from '../../assets/diagrams/interview-after-grading-gates-dark.svg?raw';
+---
+
+<Diagram
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  maxWidth={460}
+  caption="The grading pass as it runs now. A quote the script can't find never reaches the page."
+>
+  The grading pass first checks that a transcript or hand notes are on the page. If not, it stops and asks for them. If
+  so, it picks one or two quotes per dimension, and a script checks each quote against the transcript. A quote the
+  script can't find is dropped. Each dimension is then scored one to four, or N/A when no checked quote backs it. The
+  result block is appended to the page and the pass stops for review. I set the fields and the status.
+</Diagram>

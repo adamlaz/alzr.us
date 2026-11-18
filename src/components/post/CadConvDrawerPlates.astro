@@ -1,0 +1,18 @@
+---
+import lightSvg from '../../assets/diagrams/cad-conv-drawer-plates-light.svg?raw';
+import darkSvg from '../../assets/diagrams/cad-conv-drawer-plates-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Four plates fill the drawer to within a millimeter"
+  caption="Plan view, to scale. Eight by ten 42 mm cells, split two-by-two for a 256 mm bed. The rear pair carries the 29 mm of leftover length as a solid strip against the back wall."
+  maxWidth={460}
+>
+  Plan view of the drawer grid. The drawer interior is 337 by 450 millimeters. Four baseplates cover 336 by 449
+  millimeters. The front pair are each 4 by 5 cells, 168 by 210 millimeters. The rear pair are each 4 by 5 cells plus
+  a 29 millimeter solid pad strip with no sockets, 168 by 239 millimeters, with the pad against the back wall of the
+  drawer.
+</Chart>
