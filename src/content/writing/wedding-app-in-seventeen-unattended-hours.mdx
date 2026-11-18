@@ -138,12 +138,12 @@ uploader), and the reason was the same each time: the fix introduced the
 next bug. The admin-route fix re-implemented the framework's action-name
 parsing and got one path wrong. The fix that told phones about removed
 photos leaked the ids of photos they had never been shown. The uploader's
-first fix sorted healthy files first, which is how that video ended up 61st. So re-reviews were held to
-the same standard as the first round, and the admin gate's final proof was
-a differential harness: 124 hostile requests against the built function,
-zero admin actions run. Pointed at the commit before the fix, the same
-harness ran admin actions 14 times. That second number is how I knew the
-harness could see the bug at all.
+first fix sorted healthy files first, which is how that video ended up
+61st. So re-reviews were held to the same standard as the first round, and
+the admin gate's final proof was a differential harness: 124 hostile
+requests against the built function, zero admin actions run. Pointed at
+the commit before the fix, the same harness ran admin actions 14 times.
+That second number is how I knew the harness could see the bug at all.
 
 ## The guard that ran the thing it guarded
 
@@ -159,8 +159,8 @@ and failed at a placeholder before any admin action ran.
 
 The executor reported it unprompted, which is the part I'd keep. The
 orchestrator searched 43 task outputs and 22 session transcripts for seven
-secret values and found none, so nothing needed rotating. The final cleanup cleared the test uploads. Then the reviewer
-found the rebuilt guard was still bypassable: a trailing `--retries` with no
+secret values and found none, so nothing needed rotating. The final cleanup
+cleared the test uploads. Then the reviewer found the rebuilt guard was still bypassable: a trailing `--retries` with no
 value swallowed the `--no-deps` flag the fix had forced on. The version that
 shipped takes one word, `smoke` or `cleanup`, maps it to a fixed argument
 list, asks Playwright to list what that list would run, and refuses unless
@@ -176,7 +176,7 @@ fix. I haven't done it yet.
 
 ## A line budget that said no
 
-The plan capped app code at 5,600 lines, as a hard stop rather than a nudge.
+The plan capped app code at 5,600 lines, as a hard stop.
 By the memories unit (a surprise for the couple, more below), the
 wedding-night features had used all but 260 of them, and memories needed
 about 680. The executor measured, refused to ship a partial version because
@@ -187,8 +187,8 @@ with my name on it, waiting for me in the morning. I raised the cap to
 10,000 ("we can always optimize/refactor later") and memories was live by
 8:06 AM.
 
-The couple hears that memories exists, and nothing about what's in it. Before the
-wedding, friends and family share a photo, video or voice note about the
+The couple hears that memories exists, and nothing about what's in it.
+Before the wedding, friends and family share a photo, video or voice note about the
 two of them with a line of story. Every one waits for my approval, and
 nobody sees any of them, the couple included, until the rehearsal dinner.
 The gate lives on the server, and the review checked it with two simulated

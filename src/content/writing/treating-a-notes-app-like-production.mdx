@@ -71,14 +71,15 @@ those markers. The dict in `vault_logger.py` is canonical, and a comment above
 it lists every downstream consumer, because the sync is manual and forgetting
 one is how dashboards rot.
 
-The constraint that forced the next rule isn't size -- the live log runs
-613 KB, with a monthly job archiving prior years -- it's where the queries
-run: JavaScript inside a markdown renderer on a phone, re-executed on every
-open. The stream is append-only in the database sense -- entries never mutate
-once written -- but the file runs newest-first, and the prepend is the point:
-every query stops at the first stale date instead of walking the whole file.
-Event logs, schema registries, early termination -- the same kit I'd reach
-for at work, just pointed at a notes app.
+The next rule was forced by where the queries run, not by size. The live
+log runs 613 KB, with a monthly job archiving prior years, but the queries
+are JavaScript inside a
+markdown renderer on a phone, re-executed on every open. The stream is
+append-only in the database sense (entries never mutate once written), but
+the file runs newest-first, and the prepend is the point: every query stops
+at the first stale date instead of walking the whole file. Event logs,
+schema registries, early termination: the same kit I'd reach for at work,
+pointed at a notes app.
 
 ## Contracts where the machine meets my editing
 
@@ -100,8 +101,8 @@ carries a truncated SHA-1 of the body the machine last wrote:
 On the next run the writer re-hashes what's actually there. A mismatch means I
 edited inside the fence, and the writer skips its update rather than clobber
 mine. My edit wins by default; the machine needs an explicit `--force` to take
-a block back. It reads like optimistic concurrency control because it is --
-the vault's version of a write-write conflict is an AI overwriting a sentence
+a block back. It reads like optimistic concurrency control because it is.
+The vault's version of a write-write conflict is an AI overwriting a sentence
 I wrote about a friend, which is a worse bug than any lost row.
 
 ## Budgets with a hard stop
@@ -111,10 +112,10 @@ calling `assert_within_budget()`, which reads an append-only spend ledger and
 raises if today's total is over the cap. Not a warning: the job refuses to
 run. The check sits at job start, so a single run can still overshoot; what
 it stops is the compounding kind of runaway, tomorrow's run repeating today's
-mistake. Two vendors get two caps and two ledgers -- Gemini handles the daily text
-and audio under $12 a day, Claude runs the podcast's research agents under $5
-a day -- because a shared cap across two billing models hides which side is
-spending.<Note id="2" />
+mistake. Two vendors get two caps and two ledgers (Gemini handles the daily
+text and audio under $12 a day, Claude runs the podcast's research agents
+under $5 a day) because a shared cap across two billing models hides which
+side is spending.<Note id="2" />
 
 For scale: email triage runs about $1.50 a day, the morning podcast about
 $0.40 an episode before its research pass (that pass is what the Claude
@@ -122,7 +123,7 @@ ledger meters), the standup two cents a run. A normal day lands nowhere near
 either cap, and that's deliberate: month-boundary jobs and backfill reruns
 spike, and the cap exists to stop a runaway loop, not to bill to plan. The
 dashboard renders both ledgers as a gauge that turns yellow at 70 percent,
-and the gauge earns its pixels -- a stuck retry loop shows up in spend hours
+and the gauge earns its pixels: a stuck retry loop shows up in spend hours
 before it shows up anywhere else.
 
 ## Fifteen toasts, all missed
@@ -132,8 +133,8 @@ failure handlers do: it fired a macOS notification. Fifteen toasts, each one
 on screen for a few seconds, every one of them missed. The vault kept
 accumulating unpushed commits on a laptop whose whole backup story was that
 push -- and the laptop is the datacenter whether I like it or not, because
-the message database and the local apps live nowhere else. The push isn't a
-convenience. It's the replication strategy.
+the message database and the local apps live nowhere else. The push is the
+replication strategy.
 
 The postmortem rule is now written into the repo's agent contract: toast-only
 notification is banned. A scheduled job that fails writes a 🚨 row into the
@@ -143,7 +144,7 @@ Toasts still fire, but nothing depends on me seeing one. The SRE literature
 has said this for a decade -- a page nobody acts on is not monitoring -- and
 it turns out to apply at N=1.<Note id="3" />
 
-One gap, named honestly: a 🚨 row only exists if the script runs far enough
+One gap: a 🚨 row only exists if the script runs far enough
 to write it. A job that never launches at all -- an unloaded plist, a
 sleeping laptop, an interpreter that won't start -- is the May failure in
 different clothes, and catching it means alerting on the absence of success,
@@ -177,9 +178,9 @@ attention because it tested `status != "healthy"` and the default status was a
 different word. And Obsidian on iOS froze under six JavaScript query blocks
 re-scanning a 15,000-line log on every keystroke. Vendor policies are
 requirements you didn't write, every filter encodes a schema assumption that
-will eventually be false, and mobile is the performance budget that counts. Nine query widgets became native database views --
-Obsidian's Bases -- the log learned to archive itself, and ten plugins came
-out that week.
+will eventually be false, and mobile is the performance budget that counts.
+Nine query widgets became native database views (Obsidian's Bases), the log
+learned to archive itself, and ten plugins came out that week.
 
 **The drift (April).** The inventory category list existed in three places: a
 schema file, a Python map, a template picker. They drifted, and 97 item pages
@@ -198,10 +199,9 @@ None of this carries an SLA. A skipped podcast episode inconveniences an
 audience of exactly one. Call it over-engineering -- on the days everything
 works, I'm tempted to agree.<Note id="4" />
 
-But the alternative to discipline here isn't a lighter system. It's a system I
-have to supervise -- one where every quiet morning might mean "nothing
-happened" or might mean "nothing was recorded," and I can't tell which without
-going and looking. The entire return on automating your own life is trust.
+But the alternative to discipline here is a system I have to supervise, one
+where every quiet morning might mean "nothing happened" or might mean
+"nothing was recorded," and I can't tell which without going and looking. The entire return on automating your own life is trust.
 The vault's contributor doc holds one sentence I think about more than any
 dashboard: the unit of work is that the vault stays consistent and the
 automation keeps working. The discipline exists so the next failure gets one

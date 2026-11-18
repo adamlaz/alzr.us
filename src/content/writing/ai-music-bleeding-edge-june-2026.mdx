@@ -24,9 +24,9 @@ hiring a singer.
 It's June 2026. Music models write entire songs from a text prompt. Voice
 cloning is a commodity. Swapping one name in an existing chorus is a strictly
 smaller problem than the things these tools demo every week. So this is a
-one-evening project. I want to walk through why it wasn't, because the gap
-between "the tools can almost do this" and "the tools can do this" is the
-whole story of working at the bleeding edge right now.
+one-evening project. It wasn't, and the gap between "the tools can almost do
+this" and "the tools can do this" is the whole story of working at the
+bleeding edge right now.
 
 ## The task is smaller than it sounds, and harder
 
@@ -92,9 +92,9 @@ os.environ.setdefault(
 )
 ```
 
-None of that is hard. All of it is the part the demo videos skip. Forty-five
-minutes of yak-shaving stood between "git clone" and the first sound, and in my
-experience that's the rule at the bleeding edge, not the exception.
+That's the part the demo videos skip. Forty-five minutes of yak-shaving stood
+between "git clone" and the first sound, and in my experience that's the rule
+at the bleeding edge.
 
 ## The failure that actually matters
 
@@ -127,10 +127,9 @@ clean, sustained singing, and a festival chant is shouted, heavily processed,
 half-sung, well outside that. Maybe the model generalizes badly past its
 distribution. Maybe it's the phoneme conditioning, or the decoder choking on a
 vocal style it never saw. I swept the knobs but I didn't isolate the cause, so
-I won't pretend I know which it is. What I can say is the failure was identical
-across all fourteen runs: the melody and timbre came out right and the
-consonants came out wrong. It blurred the one piece of detail that was the
-entire job.
+I won't pretend I know which it is. The failure was identical across all
+fourteen runs: the melody and timbre came out right and the consonants came
+out wrong.
 
 ## The pivot, and why it sounded wrong
 
@@ -179,19 +178,18 @@ Three tiers of the stack, each wrong in its own way:
 | General-purpose open source | YingMusic | Under-articulates the name, out-of-distribution consonants |
 | Specialized commercial | Suno cover + replace | Actually does the job, at ten dollars a month |
 
-The lesson wasn't "open source isn't ready" or "cloud is too locked down." It
-was that picking the right *level* of the stack mattered more than picking the
-most powerful tool, and for this task the right level was a paid product I'd
-been too stubborn to start with.
+Picking the right *level* of the stack mattered more than picking the most
+powerful tool, and for this task the right level was a paid product I'd been
+too stubborn to start with.
 
 ## How close it actually is
 
-Here's why I don't read this as a failure. YingMusic didn't exist six months
+I don't read this as a failure. YingMusic didn't exist six months
 ago. The path to run diffusion audio models on Apple silicon matured this year.
 Teaching the model the shouted-chant texture it's missing is plausibly a
-weekend of compute, with one honest catch: the hard part isn't the training,
-it's sourcing and force-aligning a few hours of clean festival-vocal data, the
-same alignment problem that ate the splice path. And the pipeline I hand-built
+weekend of compute, with one catch: the hard part is sourcing and
+force-aligning a few hours of clean festival-vocal data, the same alignment
+problem that ate the splice path. And the pipeline I hand-built
 -- separate the stem, detect the onsets, synthesize the word, splice and mix --
 is the kind of thing that tends to fold into a single model once someone bothers.
 I'd bet on that inside a year or two. The caveat is that "just assemble the
@@ -201,7 +199,7 @@ part, and I have a podcast-guest-over-a-house-track to prove it.
 Music generation hasn't had its GPT-3 moment, the one where the thing that
 took an expert a weekend becomes a text box anyone can use. But you can see all
 the precursors from here. I went in to swap one name and came out with a
-pretty clear map of where the edge is, which is the actual return on an evening
+pretty clear map of where the edge is, which is the return on an evening
 spent at it. Bleeding edge isn't the same as ready. It's just close enough to
 be worth the cuts.
 
@@ -213,7 +211,7 @@ be worth the cuts.
     },
     {
       id: '2',
-      body: 'Google publishes the boundaries the Lyria filter enforces in its <a href="https://policies.google.com/terms/generative-ai/use-policy">Generative AI Prohibited Use Policy</a>. The proper-noun-in-vocals behavior is the policy applied conservatively, not a documented rule of its own, which is exactly why it surprised me mid-task.',
+      body: 'Google publishes the boundaries the Lyria filter enforces in its <a href="https://policies.google.com/terms/generative-ai/use-policy">Generative AI Prohibited Use Policy</a>. The proper-noun-in-vocals behavior is the policy applied conservatively, not a documented rule of its own, which is why it surprised me mid-task.',
     },
   ]}
 />

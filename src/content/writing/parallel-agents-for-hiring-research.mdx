@@ -21,9 +21,9 @@ to twenty-five the serial version would have run. The part I didn't plan
 for is more useful than the speedup, and it only got clearer as the sample
 grew.
 
-The setup. I'm hiring for a senior mobile role. Sixty-four candidates now,
-across five waves -- the first three rounds in the spring, a handful of
-one-offs, then two larger sweeps as the applications piled up. Each one
+I'm hiring for a senior mobile role. Sixty-four candidates now, across
+five waves: the first three rounds in the spring, a handful of one-offs,
+then two larger sweeps as the applications piled up. Each one
 gets real public-footprint work before a calendar invite goes out: resume
 cross-reference, GitHub search, App Store verification, conference and
 podcast checks, employer-city sanity tests, and a Sherlock OSINT sweep for
@@ -101,8 +101,8 @@ front of it, have gotten tighter.
 ## What the signals look like together
 
 Running a wave of agents at once surfaced something I didn't plan for. Call
-it cluster detection. Any single AI-tell on a resume is noise -- plenty of
-explanations besides "AI wrote this." But lay a wave of investigations side
+it cluster detection. Any single AI-tell on a resume is noise, with plenty
+of explanations besides "AI wrote this." But lay a wave of investigations side
 by side in one comparison table and the same handful of signals fire on the
 same resumes. That cluster is the fingerprint. At ten candidates it was
 suggestive. At sixty-four it is the most reliable thing the workflow does.
@@ -120,16 +120,15 @@ surfaced.<Note id="2" />
 | A GitHub born for the application | A "ten-year engineer" whose entire footprint is timestamped to the week they applied (portfolio repos six to nine days old). | Presence, freshly manufactured. Check creation dates, not just whether the handle exists. |
 | A footprint stitched from more than one person | Commits authored under a different name and email than the candidate; an "App Store link" that resolves to a different developer's app. | The inverse of absence, and the signal I'd least want to miss, because it's deliberate. |
 
-Two signals is worth a closer look. Three is a routing decision -- and at
-this sample size, routing got more granular than pass or fail. More on that
-below.
+Two signals is worth a closer look. Three is a routing decision, and at
+this sample size routing got more granular than pass or fail.
 
 <PullQuote>
   One tell is an accident. The same cluster on three resumes, surfaced by
   agents that never compared notes, is a method.
 </PullQuote>
 
-## Cluster detection isn't only useful against AI fakes
+## What it catches besides AI fakes
 
 The parallel approach also catches things that have nothing to do with AI
 generation.
@@ -143,7 +142,7 @@ parallel agent flagged it because it was looking for that exact kind of
 cross-reference, on a brief written in advance.
 
 The inverse case was more interesting. Another candidate's application was
-thin -- a one-sentence intro, an empty deep-dive box. On its own it read
+thin: a one-sentence intro, an empty deep-dive box. On its own it read
 as low effort. The resume plus the public footprint surfaced a senior
 mobile developer with directly-relevant streaming and TV-platform
 experience, plus a prior research role building communication technology
@@ -155,13 +154,13 @@ A third real-candidate case only showed up at scale: the right engineer for
 the wrong role. A senior Android engineer, genuinely senior, applying to an
 iOS-first opening. A full-stack web engineer with a real shipping history
 and no mobile surface area at all. Nothing about these is fake. The
-footprint verifies cleanly. They are simply the wrong shape, and at ten
+footprint verifies cleanly. They are the wrong shape, and at ten
 candidates I didn't see enough of them to name the category. At sixty-four
 it's a routing bucket of its own.
 
 ## When three signals fire on a real candidate
 
-The obvious counterargument. A candidate's resume is compactly formatted
+The obvious counterargument: a candidate's resume is compactly formatted
 because they prefer one-pagers. They have no GitHub because they spent
 a decade inside a company that owns the work product. They quoted the JD
 in their cover letter because they read it carefully. Three signals fire.
@@ -170,10 +169,10 @@ You miss a real candidate.
 The answer is the cluster threshold, plus the verification step. Three
 yellow flags doesn't pass the candidate. It downgrades them to *aggressive
 phone screen*. The screen probes the specific signals that fired. If the
-employer claim verifies, the GitHub absence has a believable cause, the
-quoted JD phrasing turns out to be the candidate's own framing of a hard
-problem we both care about -- all three signals dissolve and the candidate
-advances. Cluster detection is a routing decision, not a rejection
+employer claim verifies, the GitHub absence has a believable cause, and
+the quoted JD phrasing turns out to be the candidate's own framing of a
+hard problem we both care about, all three signals dissolve and the
+candidate advances. Cluster detection is a routing decision, not a rejection
 decision.
 
 At ten candidates, "route, don't reject" was a binary: aggressive screen,
@@ -189,14 +188,13 @@ sweep of thirty-four sorted like this:
 | Pass | 6 | The only bucket that's a no |
 
 Verify-first is the interesting middle: a real person with real code whose
-resume embellishes hard enough to need a conversation first -- a team hackathon
+resume embellishes hard enough to need a conversation first: a team hackathon
 rebranded as a solo award, repos backdated to look older than they are. The
-buckets earn their keep because they route to different next steps, and only
-the bottom one is a no.
+buckets earn their keep because they route to different next steps.
 
 Every candidate the workflow flagged hardest also failed the screen on
 independent grounds. The sample of hardest-flagged candidates is still
-small, so the false-positive count doesn't generalize -- but the asymmetry I
+small, so the false-positive count doesn't generalize, but the asymmetry I
 care about does. The false-negative cost (interviewing a candidate whose
 claims don't survive contact) was the cost I was trying to avoid in the
 first place.
@@ -207,7 +205,7 @@ OSINT sweeps across 400+ public sites surface personal information that
 has no business in a hiring decision: dating profiles, religious
 community forums, family-status signals, political affiliations. The
 curation step discards all of it. The agent brief is scoped to the
-candidate's professional surface area -- the work they've built, the
+candidate's professional surface area: the work they've built, the
 venues they've spoken at, the public artifacts they own. Personal-life
 surface area is filtered out before anything reaches the hiring panel.
 The discipline matters legally (EEOC-protected attributes can't enter the
@@ -217,10 +215,10 @@ work, not the person).
 ## Sherlock and the curation discipline
 
 I lean on Sherlock for username discovery across 400+ public sites in one
-pass.<Note id="3" /> What I do *not* do is treat raw Sherlock hits as evidence. A
+pass.<Note id="3" /> I do *not* treat raw Sherlock hits as evidence. A
 common username generates fifty to a hundred matches, most of them
 different people. The signal lives in the *curated* set: which platforms
-had a profile that actually matched the candidate's job history, location,
+had a profile that matched the candidate's job history, location,
 and stated interests. Real curation rate hovers around five percent. The
 other ninety-five is collision.
 
@@ -247,7 +245,7 @@ timestamps, not just the artifact.
 <Callout variant="warn" title="One expensive way to get this wrong">
   One parallel run spawned roughly 688 agents and burned about 15 million
   tokens, because the candidate list was passed as a function argument,
-  arrived as a string, and got sliced into fragments -- one agent per
+  arrived as a string, and got sliced into fragments, one agent per
   fragment. The fix was unglamorous: embed the list as a literal, with a
   guard that refuses to launch more agents than there are candidates. The
   orchestration layer is the fragile part. The brief never wobbled.
@@ -255,46 +253,45 @@ timestamps, not just the artifact.
 
 ## At scale, it stops catching and starts ranking
 
-Here's the shift the bigger sample forced. At ten candidates the workflow
-was a fake detector. At sixty-four, most of the fakes get caught in the
+At ten candidates the workflow was a fake detector. At sixty-four, most of the fakes get caught in the
 first five minutes of triage, and what's left is the harder, more useful
 problem: ranking the real ones.
 
 Most real senior iOS candidates are solid generalists. They've shipped
 apps, their employers check out, their GitHub has the right sediment. What
-separates them is a rare signal the role actually needs -- for this one,
-media and streaming depth. AVFoundation, HLS, the living-room screen. A
-decade of competent iOS work with zero AVFoundation is common. The few
-candidates with real tvOS or streaming experience -- one who shipped a
-four-stream Twitch app for Apple TV, one with a decade at a streaming
-platform and an Apple TV launch to show for it -- rank well above an
-equally-real generalist. Once the fakes are gone, the workflow's job is to
+separates them is a rare signal the role needs. For this one it's media
+and streaming depth: AVFoundation, HLS, the living-room screen. A decade
+of competent iOS work with zero AVFoundation is common. The few candidates
+with real tvOS or streaming experience (one who shipped a four-stream
+Twitch app for Apple TV, one with a decade at a streaming platform and an
+Apple TV launch to show for it) rank well above an equally-real
+generalist. Once the fakes are gone, the workflow's job is to
 surface that rare signal and rank on it.
 
 AI fluency is the same story one level up. It has become a resume keyword
 the way "agile" was: most candidates claim a CLAUDE.md, skills files, a
 daily Claude-and-Cursor habit, with no public artifact behind it. The rare
 one has an actual config file checked into a repo you can read. Treat the
-claim like any other -- verify the artifact, not the vocabulary.<Note id="4" />
+claim like any other: verify the artifact, not the vocabulary.<Note id="4" />
 
 ## What stays when the model changes
 
 Triage moved earlier, and it's no longer hypothetical. A five-minute
-application-triage checklist -- file size, JD-vocabulary check, App Store
-link verification, and now a glance at GitHub creation dates -- runs before
+application-triage checklist (file size, JD-vocabulary check, App Store
+link verification, and now a glance at GitHub creation dates) runs before
 any agent launches. The agents point only at candidates who survive it, not
 at fabricated ones who'd waste the depth.
 
-The compounding return is something else. The brief is the artifact; the
-agents are fungible -- Claude Code today, whatever Anthropic ships next
+The compounding return is something else. The brief is the artifact and
+the agents are fungible: Claude Code today, whatever Anthropic ships next
 year, whatever Cursor or OpenAI builds for the same job. What survives a
 model change, a tool change, a team-member change is the brief. The agents
 just render it.
 
 Hiring depth at speed used to cost a week. Now it costs an afternoon. And
 somewhere past the fortieth candidate, the harder problem took over: not
-which resumes are fake, but which of the real ones can actually do the rare
-part of the job.<Note id="5" />
+which resumes are fake, but which of the real ones can do the rare part of
+the job.<Note id="5" />
 
 <Footnotes
   notes={[
