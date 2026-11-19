@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="258" viewBox="0 0 420 258">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#1c1d24">
+<rect x="1" y="1" width="418" height="36" rx="4" fill="#f6f5f1" stroke="#8a8a90"/>
+<text x="14" y="24" font-size="15" font-weight="600" fill="#1c1d24">Header</text>
+<text x="406" y="24" font-size="13.5" text-anchor="end" fill="#55565f">links to the research</text>
+<rect x="1" y="45" width="418" height="36" rx="4" fill="#2f3eb0" stroke="#2f3eb0"/>
+<text x="14" y="68" font-size="15" font-weight="600" fill="#ffffff">The read</text>
+<text x="406" y="68" font-size="13.5" text-anchor="end" fill="#ffffff">written per candidate</text>
+<rect x="1" y="89" width="418" height="36" rx="4" fill="#f6f5f1" stroke="#8a8a90"/>
+<text x="14" y="112" font-size="15" font-weight="600" fill="#1c1d24">How I run it</text>
+<text x="406" y="112" font-size="13.5" text-anchor="end" fill="#55565f">same on every page</text>
+<rect x="1" y="133" width="418" height="36" rx="4" fill="#2f3eb0" stroke="#2f3eb0"/>
+<text x="14" y="156" font-size="15" font-weight="600" fill="#ffffff">Probe bank</text>
+<text x="406" y="156" font-size="13.5" text-anchor="end" fill="#ffffff">written per candidate</text>
+<rect x="1" y="177" width="418" height="36" rx="4" fill="#aab1e2" stroke="#2f3eb0"/>
+<text x="14" y="200" font-size="15" font-weight="600" fill="#1c1d24">Scorecard</text>
+<text x="406" y="200" font-size="13.5" text-anchor="end" fill="#1c1d24">fixed rows, evidence pre-filled</text>
+<rect x="1" y="221" width="418" height="36" rx="4" fill="#f6f5f1" stroke="#8a8a90"/>
+<text x="14" y="244" font-size="15" font-weight="600" fill="#1c1d24">After the call</text>
+<text x="406" y="244" font-size="13.5" text-anchor="end" fill="#55565f">same on every page</text>
+</g>
+</svg>

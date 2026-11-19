@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/wedding-app-line-budget-light.svg?raw';
+import darkSvg from '../../assets/diagrams/wedding-app-line-budget-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="The wedding-night units used 5,340 of 5,600 lines"
+  caption="App-code lines as the run ledger recorded them at each unit, tests and docs excluded. The dashed bar is the executor's estimate with memories added, about 15% either way."
+>
+  Bar chart of app-code lines after each unit against a stop at 5,600 lines. Infrastructure 344, access gate 1,024, data and API 2,309, uploader 3,827, views 4,711, map 4,882, admin 5,340. The executor estimated about 6,020 lines with the memories feature added, past the stop.
+</Chart>

@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/tasks-ai-token-sources-light.svg?raw';
+import darkSvg from '../../assets/diagrams/tasks-ai-token-sources-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="13 of the dark theme's 19 colors come from app tokens; 4 are typed by hand"
+  caption="One square for each Chrome color key the dark variant sets."
+>
+  Unit chart of the 19 Chrome color keys the dark variant sets. 13 take their value from the app's synced tokens: the
+  frame, toolbar, omnibox, new tab page, and text and icons. 2 come from the Figma accent file: new-tab links and the
+  button background. 4 are constants typed by hand: the inactive frame, the two incognito frames and inactive-tab text.
+</Chart>

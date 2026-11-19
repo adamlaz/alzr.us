@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/discovery-likely-per-run-light.svg?raw';
+import darkSvg from '../../assets/diagrams/discovery-likely-per-run-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="21 of 49 runs produced no likely hit"
+  caption="One square for each saved research run. An empty likely pile reflects the handles searched as much as the person."
+>
+  Unit chart of 49 saved research runs. 28 produced at least one hit in the likely tier. 21 produced none.
+</Chart>

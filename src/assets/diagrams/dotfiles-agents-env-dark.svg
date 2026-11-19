@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="640" viewBox="0 0 400 640">
+<g font-family="Inter Variable, system-ui, sans-serif" font-size="18" fill="#eceae4">
+
+<rect x="24" y="8" width="352" height="84" rx="8" fill="#1d1d24" stroke="#3a3a43"/>
+<text x="44" y="38" font-size="16" letter-spacing="1">IN THE REPO</text>
+<text x="44" y="68" font-weight="600">Template of 1Password references</text>
+<path d="M200 92 V136 m-5 -7 5 7 5 -7" fill="none" stroke="#8fa1ef" stroke-width="2"/>
+<text x="214" y="120" font-size="16">op inject</text>
+<rect x="24" y="140" width="352" height="110" rx="8" fill="#8fa1ef"/>
+<g fill="#14141a">
+<text x="44" y="170" font-size="16" letter-spacing="1">ON THIS MAC ONLY</text>
+<text x="44" y="201" font-size="21" font-weight="600">Local env file</text>
+<text x="44" y="229" >Plaintext · mode 600 · not in git</text>
+</g>
+<path d="M200 250 V274 H24 V450" fill="none" stroke="#8fa1ef" stroke-width="2"/>
+
+<path d="M24 340 H52 m-6 -4 6 4 -6 4" fill="none" stroke="#8fa1ef" stroke-width="2"/>
+<rect x="60" y="300" width="316" height="80" rx="8" fill="#1d1d24" stroke="#3a3a43"/>
+<text x="80" y="332" font-size="21" font-weight="600">Terminal sessions</text>
+<text x="80" y="360" >Shell startup reads the file</text>
+<path d="M24 444 H52 m-6 -4 6 4 -6 4" fill="none" stroke="#8fa1ef" stroke-width="2"/>
+<rect x="60" y="404" width="316" height="80" rx="8" fill="#1d1d24" stroke="#3a3a43"/>
+<text x="80" y="436" font-size="21" font-weight="600">Desktop apps</text>
+<text x="80" y="464" >A LaunchAgent sets each value</text>
+<rect x="24" y="514" width="352" height="112" rx="8" fill="#25252d" stroke="#8a8a93" stroke-dasharray="5 5"/>
+<g text-anchor="middle">
+<text x="200" y="544" font-size="16" letter-spacing="1">THE CHECK READS BOTH</text>
+<text x="200" y="577" >Its own process environment</text>
+<text x="200" y="605" >The GUI launch environment</text>
+</g>
+</g>
+</svg>

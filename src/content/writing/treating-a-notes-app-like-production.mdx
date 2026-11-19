@@ -3,40 +3,46 @@ title: 'Treating a notes app like production'
 date: 2026-07-01
 description: "Forty Python scripts on seven schedules run my mornings -- email triage, inventory, a private daily podcast, an end-of-day commit -- all of them reading and writing the same Obsidian vault I edit by hand. Keeping that honest took production discipline: an event-log spine, hash-fenced write contracts, budget caps with hard stops, and an alerting rule I learned the embarrassing way."
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: 'My edit wins by default; the machine needs an explicit force flag to take a block back.'
 tags: ['ai-augmented-engineering', 'automation', 'observability']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import Callout from '../../components/post/Callout.astro';
 import VaultPipelineDiagram from '../../components/post/VaultPipelineDiagram.astro';
+import VaultBlockWriteChart from '../../components/post/VaultBlockWriteChart.astro';
+import VaultGuardLedgerChart from '../../components/post/VaultGuardLedgerChart.astro';
 
 On May 9th a routine `brew upgrade` replaced the Python binary my home
 automation runs on, and the grant that lets it read my iMessage database
-silently stopped applying. Full Disk Access keys to a binary's code identity,
+silently stopped applying.<Depth inline min={3}> Full Disk Access keys to a binary's code identity,
 not the path it lives at, and an ad-hoc-signed package-manager Python gets a
 new identity with every rebuild, so a patch release is a brand-new stranger
-as far as the OS is concerned.<Note id="1" /> The 6 a.m. pipeline started dying at
+as far as the OS is concerned.</Depth><Note id="1" /> The 6 a.m. pipeline started dying<Depth inline min={3}> at
 `imessage_extract.py:810` with `sqlite3.OperationalError: unable to open
-database file`, and it died the same way every morning for ten days.
+database file`</Depth>, and it died the same way every morning for ten days.
 
 What ended the streak wasn't monitoring, because there wasn't any. I stumbled
-onto the failure, re-granted the permission, backfilled the missing history
-out of the source database, and sat with the number. Ten days. I had built the
+onto the failure<Depth inline min={2}>, re-granted the permission, backfilled the missing history
+out of the source database,</Depth> and sat with the number. Ten days. I had built the
 pipeline to be quiet when it worked and never built it to be loud when it
-failed, and a personal system has no on-call rotation to catch the difference.
+failed<Depth inline min={2}>, and a personal system has no on-call rotation to catch the difference</Depth>.
 That incident, and the ones that followed, convinced me to run a folder of
 markdown notes with the same discipline I'd expect from a production service:
 an event spine, write contracts, budgets, alerts, and a postmortem habit.
 
 ## The system worth protecting
 
-The folder is an Obsidian vault: people pages, project notes, a daily note, an
-inventory of everything I own. It is also the read/write surface for about
-forty Python scripts on seven launchd schedules. A compressed tour of the day:
+The folder is an Obsidian vault<Depth inline min={2}>: people pages, project notes, a daily note, an
+inventory of everything I own</Depth>. It is also the read/write surface for about
+forty Python scripts on seven launchd schedules.<Depth inline min={3}> A compressed tour of the day:</Depth>
+
+<Depth min={3}>
 
 | Time (ET) | Job | What it writes |
 | --- | --- | --- |
@@ -46,30 +52,45 @@ forty Python scripts on seven launchd schedules. A compressed tour of the day:
 | hourly, 7:00-22:00 | signals + drafts | work signals into a ledger; reply drafts for texts I haven't answered -- drafts only, nothing sends itself |
 | 23:00 | reflection + commit | 3-5 first-person bullets into the daily note, then `git add -A && git commit && git push` |
 
+</Depth>
+
 Markdown is the database. Every one of those writers lands in files I also
 edit by hand, in an app that syncs to my phone. That last sentence is the
-entire engineering problem. It is also not negotiable: plain files I can edit
+entire engineering problem.<Depth inline min={3}> It is also not negotiable: plain files I can edit
 anywhere, syncing everywhere, are the reason the system is worth having, so
-the discipline bends around that constraint.
+the discipline bends around that constraint.</Depth>
 
 <VaultPipelineDiagram />
+
+<Depth min={4}>
+
+Those counts were true in July. As of November 2026 the scripts folder holds
+65 Python files and twelve scheduled jobs are deployed.
+
+</Depth>
 
 ## An event log as the spine
 
 Early on, each script wrote wherever it pleased and every dashboard widget
 grew its own parser. The fix was boring and structural: every script that
 records an event writes through one module, which prepends one line to one
-file, `Activity Log.md`, under a `## Log` heading, with file locking and an
-atomic replace. Purchases, pool chemistry, emails triaged, podcast episodes,
-git pushes: one reverse-chronological stream. Everything that displays
-activity -- the dashboard's pulse widget, the daily note's log block, the
-per-project queries -- is a filter over that stream.
+file, `Activity Log.md`<Depth inline min={3}>, under a `## Log` heading, with file locking and an
+atomic replace</Depth>.<Depth inline min={2}> Purchases, pool chemistry, emails triaged, podcast episodes,
+git pushes: one reverse-chronological stream.</Depth> Everything that displays
+activity<Depth inline min={2}> -- the dashboard's pulse widget, the daily note's log block, the
+per-project queries --</Depth> is a filter over that stream.
+
+<Depth min={2}>
 
 The event schema is an emoji taxonomy, eighteen keys, and it is load-bearing:
 📦 delivery, 📧 email, 📚 research, 🚨 error. Four different surfaces parse
-those markers. The dict in `vault_logger.py` is canonical, and a comment above
+those markers.<Depth inline min={3}> The dict in `vault_logger.py` is canonical, and a comment above
 it lists every downstream consumer, because the sync is manual and forgetting
-one is how dashboards rot.
+one is how dashboards rot.</Depth>
+
+</Depth>
+
+<Depth min={3}>
 
 The next rule was forced by where the queries run, not by size. The live
 log runs 613 KB, with a monthly job archiving prior years, but the queries
@@ -81,13 +102,88 @@ at the first stale date instead of walking the whole file. Event logs,
 schema registries, early termination: the same kit I'd reach for at work,
 pointed at a notes app.
 
+</Depth>
+
+<Depth min={4}>
+
+The write path is about twenty lines of Python. It takes an exclusive `flock`
+on a separate lock file, reads the whole log, splices the new line in directly
+under the `## Log` heading, writes the result to a temp file in the same
+directory, and renames it over the original. The rename is the atomic part,
+and the commit that made writes crash-safe landed on June 12, two months after
+the logger itself. Every line has one shape,
+`- YYYY-MM-DD HH:MM <emoji> message #tag`, in Eastern time, so a query can
+compare the first ten characters of a line as a date.
+
+Before a line is written it gets two enrichment passes. Known names of people,
+inventory items and projects become wikilinks, and a YAML file of patterns
+appends topic tags. Bulk imports turn both off so every imported line keeps
+the same bare format.
+
+The monthly archive splits by calendar year and nothing finer. It moves every
+line from a prior year into its own file under the same header, so old years
+stay queryable the same way, and it leaves the current year live. The live
+file is small in January and grows all year: as of November 2026 it holds
+about 12,000 entries in 1.5 MB, more than twice what it was when I published
+this. The loop that stops at the first stale date matters more every month.
+
+</Depth>
+
+<Depth min={5}>
+
+The writer, as pseudocode:
+
+```python
+def write_entries(lines):
+    with open(LOCK_FILE, "w") as lock:
+        flock(lock, LOCK_EX)                  # one writer at a time, across processes
+        content = LOG.read_text()
+        content = content.replace(
+            "## Log\n\n", "## Log\n\n" + "\n".join(lines) + "\n", 1
+        )
+        tmp = LOG.with_suffix(".md.tmp")      # same directory, same filesystem
+        tmp.write_text(content)
+        os.replace(tmp, LOG)                  # atomic on POSIX
+```
+
+The reader, trimmed from the dashboard's count of today's entries:
+
+```js
+for (const item of log.file.lists) {
+  const datePrefix = item.text.substring(0, 10);
+  if (datePrefix > today) continue;
+  if (datePrefix < today) break;
+  for (const e of Object.keys(cats)) {
+    if (item.text.includes(e)) { cats[e]++; total++; break; }
+  }
+}
+```
+
+The auto-linker sorts its terms longest-first so a full name wins over a first
+name, links only the first occurrence of each term, masks text already inside
+`[[...]]`, and skips any term under four characters or on a stoplist of
+generic words like Home, Office and Today. The term list is cached on disk
+against the newest modification time of the three source folders, so each
+process doesn't re-read thousands of files to write one line.
+
+</Depth>
+
 ## Contracts where the machine meets my editing
 
-Fourteen distinct writers maintain blocks inside pages I also edit by hand: an
+Fourteen distinct writers maintain blocks inside pages I also edit by hand<Depth inline min={2}>: an
 email-activity block on a person's page, a status block on a project page,
-reflection bullets in the daily note. The failure mode: I add a sentence to a
+reflection bullets in the daily note</Depth>. The failure mode: I add a sentence to a
 friend's page inside the machine's section, the next morning's run
 regenerates the block, and my sentence is gone.
+
+<Depth max={1}>
+
+So every machine-written block sits inside a fence, and the fence carries a
+hash, a fingerprint of what the machine last wrote.
+
+</Depth>
+
+<Depth min={2}>
 
 So I fence every AI-written block in HTML comments, and the opening marker
 carries a truncated SHA-1 of the body the machine last wrote:
@@ -98,24 +194,94 @@ carries a truncated SHA-1 of the body the machine last wrote:
 <!-- /email-auto -->
 ```
 
+</Depth>
+
 On the next run the writer re-hashes what's actually there. A mismatch means I
 edited inside the fence, and the writer skips its update rather than clobber
 mine. My edit wins by default; the machine needs an explicit `--force` to take
-a block back. It reads like optimistic concurrency control because it is.
+a block back.<Depth inline min={3}> It reads like optimistic concurrency control because it is.
 The vault's version of a write-write conflict is an AI overwriting a sentence
-I wrote about a friend, which is a worse bug than any lost row.
+I wrote about a friend, which is a worse bug than any lost row.</Depth>
+
+<Depth min={4}>
+
+<VaultBlockWriteChart />
+
+The hash is the first 12 hex characters of a SHA-1 over the body, 48 bits, and
+it only has to answer one question: did the body change since the machine
+wrote it. A block with no stamped hash, left over from before the scheme,
+counts as unedited and gets stamped on its next write. If the helper finds an
+opening marker with no closing marker, it writes nothing rather than guess
+where the block ends, and every file write goes through a temp file and a
+rename, the same as the log.
+
+Every body also has its runs of three or more backticks or tildes broken up
+with zero-width spaces before it is written. That came out of a security
+finding on June 12. The notes app executes JavaScript code fences when it
+renders a page, the HTML comment markers are no boundary, and these blocks
+carry text I didn't write: email subjects, chat messages, pull request titles.
+A fenced block was a place where a stranger's subject line could open a code
+fence on my phone.
+
+The guard is narrower than "every block" suggests. The helper that writes a
+block will overwrite whatever is there. The check for my edits is a separate
+call, and each writer has to make it. As of November 2026, eight of the
+fifteen scripts that write fenced blocks do, the daily reflection, the monthly
+digests, the weekly narratives, the standup and the project status blocks
+among them. The other seven regenerate without looking. Most of those own a
+whole report page that I never edit by hand. One is the email block in the
+example above: it rebuilds itself from its own previous bullet lines and never
+reads the hash, so a sentence I typed there would not survive the morning. The
+contract holds where a writer makes the call.
+
+The registry of marker names lists 21 as of November 2026. It lives in the
+contributor doc and nowhere in the code, because name lists hardcoded in the
+helper had rotted twice.
+
+</Depth>
+
+<Depth min={5}>
+
+The check a guarded writer runs, then the helper, as pseudocode:
+
+```python
+def write_block(path, marker, body, force=False):
+    old_body, stamped = read_block(path, marker)   # (None, None) if a marker is missing
+    edited = stamped is not None and sha1(old_body)[:12] != stamped
+    if edited and not force:
+        return "skipped: user edited the block"
+
+    if opening_marker(path, marker) and not closing_marker(path, marker):
+        return "unchanged"                         # never guess where a block ends
+
+    body  = break_code_fences(body)                # backtick and tilde runs get zero-width spaces
+    block = f"<!-- {marker}:hash={sha1(body)[:12]} -->\n{body}\n<!-- /{marker} -->"
+    replace_or_insert(path, block)                 # before a named heading, else append
+    atomic_write(path)                             # temp file + os.replace
+```
+
+The opening marker is matched with
+`<!--\s*{marker}(?::hash=([0-9a-f]+))?\s*-->`, case-insensitive, so stamped
+and unstamped markers both parse. The helper's tests include a round trip, an
+edit that flips the hash check, an unstamped legacy block, and nine cases for
+the fence neutralizer, covering backtick and tilde fences, lone openers and
+runs of five.
+
+</Depth>
 
 ## Budgets with a hard stop
 
 Six of the scheduled jobs call a language model. Every one of them starts by
 calling `assert_within_budget()`, which reads an append-only spend ledger and
 raises if today's total is over the cap. Not a warning: the job refuses to
-run. The check sits at job start, so a single run can still overshoot; what
+run.<Depth inline min={3}> The check sits at job start, so a single run can still overshoot; what
 it stops is the compounding kind of runaway, tomorrow's run repeating today's
-mistake. Two vendors get two caps and two ledgers (Gemini handles the daily
+mistake.</Depth><Depth inline min={2}> Two vendors get two caps and two ledgers (Gemini handles the daily
 text and audio under $12 a day, Claude runs the podcast's research agents
 under $5 a day) because a shared cap across two billing models hides which
-side is spending.<Note id="2" />
+side is spending.</Depth><Note id="2" />
+
+<Depth min={3}>
 
 For scale: email triage runs about $1.50 a day, the morning podcast about
 $0.40 an episode before its research pass (that pass is what the Claude
@@ -126,23 +292,115 @@ dashboard renders both ledgers as a gauge that turns yellow at 70 percent,
 and the gauge earns its pixels: a stuck retry loop shows up in spend hours
 before it shows up anywhere else.
 
+</Depth>
+
+<Depth min={4}>
+
+The assertion is one comparison: today's spend plus ten cents of headroom,
+against the cap. A job declines to start once the day is within a dime of the
+limit. Out of the box the cap is $1.00 a day, which email triage alone
+exceeds, so on the default the jobs that run after it refuse to start until I
+raise the number on purpose.
+
+The ledger is one JSON line per model call. It records a timestamp, the
+caller, the model, token counts, latency and an estimated cost, and it holds
+no prompt and no response, so the file that tracks spend never contains the
+text of an email. Speech and cover-art generation write to the same ledger,
+so the cap sees media spend too.
+
+A refusal looks different per job. Email triage prints the message and exits 2
+before it touches a mailbox. The podcast exits 3 before it gathers anything.
+The research agents are the exception: when the Claude ledger is over its cap,
+the episode still ships without the research pass.
+
+Reading a whole ledger at every job start only stays cheap while the ledger
+stays short, so the 6 a.m. housekeeping moves spend lines older than 45 days
+into an archive file. It rotates once a day in the quiet window and never on
+write, because the appenders are twenty-plus processes a day. The one escape
+hatch is explicit: a one-time backfill passes `--no-budget-cap` and skips the
+call.
+
+</Depth>
+
+<Depth min={5}>
+
+The check itself, trimmed of its docstring:
+
+```python
+DEFAULT_CAP_USD = 1.00
+DEFAULT_HEADROOM_USD = 0.10
+
+def assert_within_budget(caller, *, daily_cap_usd=None, headroom_usd=DEFAULT_HEADROOM_USD):
+    cap = _cap_from_env(daily_cap_usd if daily_cap_usd is not None else DEFAULT_CAP_USD)
+    spent = daily_spend_usd()
+    if spent + headroom_usd > cap:
+        raise BudgetExceeded(
+            f"{caller}: AI budget exceeded -- spent ${spent:.4f} today, "
+            f"cap ${cap:.2f} (headroom ${headroom_usd:.2f}). "
+            "Set VAULT_AI_BUDGET_USD to override or wait until tomorrow."
+        )
+```
+
+`daily_spend_usd()` walks the ledger once, skips any line that doesn't contain
+today's date as a plain substring before it bothers to parse JSON, then sums
+`est_cost_usd` for entries whose timestamp starts with that date. Malformed
+lines and null costs count as zero. The comparison is strict, and a test pins
+the boundary: $0.90 spent plus $0.10 headroom against a $1.00 cap runs, and
+$0.95 raises. The keys on a ledger line:
+
+```json
+{"ts": "", "caller": "", "model": "", "input_tokens": 0, "output_tokens": 0,
+ "cached_tokens": 0, "latency_ms": 0, "est_cost_usd": 0.0, "route": ""}
+```
+
+The Claude ledger has the same shape of guard in its own module, with its own
+environment variable and its own $5.00 default, and a comment that says never
+to merge the two.
+
+</Depth>
+
 ## Fifteen toasts, all missed
 
 In June the end-of-day git push broke, and the failure handler did what
 failure handlers do: it fired a macOS notification. Fifteen toasts, each one
-on screen for a few seconds, every one of them missed. The vault kept
+on screen for a few seconds, every one of them missed.<Depth inline min={3}> The vault kept
 accumulating unpushed commits on a laptop whose whole backup story was that
 push -- and the laptop is the datacenter whether I like it or not, because
 the message database and the local apps live nowhere else. The push is the
-replication strategy.
+replication strategy.</Depth>
 
 The postmortem rule is now written into the repo's agent contract: toast-only
 notification is banned. A scheduled job that fails writes a 🚨 row into the
-same Activity Log everything else writes to, tagged and deduplicated to once
-per script per day, and the dashboard keeps a standing count of error rows.
+same Activity Log everything else writes to<Depth inline min={3}>, tagged and deduplicated to once
+per script per day, and the dashboard keeps a standing count of error rows</Depth>.<Depth inline max={1}> That log is one I was already going to read.</Depth><Depth inline min={2}>
 Toasts still fire, but nothing depends on me seeing one. The SRE literature
 has said this for a decade -- a page nobody acts on is not monitoring -- and
-it turns out to apply at N=1.<Note id="3" />
+it turns out to apply at N=1.</Depth><Note id="3" />
+
+<Depth min={4}>
+
+One function does all of it. `report_failure` collapses the error detail to a
+single line of at most 200 characters, writes the 🚨 row with enrichment off,
+fires the toast, and records today's date against the script's name in a small
+state file. A second failure from the same script on the same day returns
+early, so an hourly job that fails sixteen times writes one row. Each step is
+wrapped so that a failure to report can't crash the job harder than it already
+crashed. The end-of-day shell script calls the same function, and falls back
+to a bare notification only if that call itself fails. As of November 2026,
+17 files in the scripts folder call it.
+
+The rule covers failures that raise. Four weeks after it landed, the podcast's
+research agents went quiet from July 30 to August 14. The command-line tool
+they shell out to had moved to a new install path, a hardcoded path made every
+preflight check fail, and the failure went into a log file as one line.
+Nothing raised, so nothing reported. A week in, a morning run hung for more
+than nine hours holding the job's lock, and that day's later episode never
+ran. The fixes were a path lookup, a preflight that reports, and a 40-minute
+watchdog.
+
+</Depth>
+
+<Depth min={2}>
 
 One gap: a 🚨 row only exists if the script runs far enough
 to write it. A job that never launches at all -- an unloaded plist, a
@@ -150,6 +408,79 @@ sleeping laptop, an interpreter that won't start -- is the May failure in
 different clothes, and catching it means alerting on the absence of success,
 not just the presence of failure. That freshness check doesn't exist yet.
 It's the next rule this system owes me.
+
+</Depth>
+
+<Depth min={4}>
+
+That was true in July. The check landed on October 11. Every deployed job's
+launchd entry now starts a wrapper, and the wrapper runs the job: it records a
+start, runs the command, and records the finish in a state file. A job counts
+as healthy only once it has a recorded success, and a job the wrapper has
+never seen finish shows as unobserved. The wrapper reads each job's own
+schedule to work out when the next run is due, and a job with no success 90
+minutes past that is overdue. One long overnight job gets eight hours.
+
+Three details came out of earlier incidents. A job that reported a failure and
+then exited zero stays failed. The end-of-day job only counts as a success if
+the remote branch points at the local commit afterward, which is the
+fifteen-toasts failure checked directly. And the dashboard recomputes overdue
+from timestamps on whatever device opens it, so a laptop that never wakes
+can't leave a column of healthy rows on my phone.
+
+A smaller gap is still open. Overdue is a status on a page I have to open, and
+nothing pushes it.
+
+</Depth>
+
+<Depth min={5}>
+
+The launchd entry for the morning sync, with paths shortened. Everything after
+`--` is the command the job ran before the wrapper existed:
+
+```xml
+<key>ProgramArguments</key>
+<array>
+  <string>/path/to/vault/scripts/.venv/bin/python3</string>
+  <string>/path/to/vault/scripts/job_health.py</string>
+  <string>--job</string>
+  <string>sync</string>
+  <string>--</string>
+  <string>/path/to/vault/scripts/.venv/bin/python3</string>
+  <string>/path/to/vault/scripts/sync_vault.py</string>
+</array>
+```
+
+The status ladder, as pseudocode. Later rules win:
+
+```python
+status = "Healthy" if last_success else "Unobserved"
+if last_success and last_failure and last_success > last_failure:
+    status = "Recovered"
+if now > next_due(schedule, after=last_success or monitoring_since) + grace:
+    status = "Overdue"
+if last_failure and (not last_success or last_failure >= last_success):
+    status = "Failed"
+if running:
+    status = "Running" if now - started_at < grace else "Overdue"
+```
+
+The push check is three git calls. Written out as shell:
+
+```sh
+branch=$(git symbolic-ref --short HEAD)
+remote=$(git ls-remote origin "refs/heads/$branch" | cut -f1)
+[ -n "$remote" ] && [ "$remote" = "$(git rev-parse HEAD)" ]
+```
+
+Before a failure's detail is stored, the wrapper reduces it to one of two
+fixed sentences, authentication or everything else, so a token quoted in an
+error message never lands in a file that syncs to my phone. A test feeds it a
+fake secret and asserts the state file doesn't contain it.
+
+</Depth>
+
+<Depth min={2}>
 
 <PullQuote>
   A notification I can dismiss is not an alert. An alert is a row in the log I
@@ -170,6 +501,18 @@ generalized: any dependency that can change without my involvement -- an OS
 permission model, a package manager, a vendor token policy -- is part of the
 system, and the system should assume it will.
 
+</Depth>
+
+<Depth min={2} max={2}>
+
+**The triple failure (June 1).** Three unrelated breakages in one morning: an
+expired mail token, a dashboard filter built on a wrong assumption, and a
+phone app frozen by its own queries.
+
+</Depth>
+
+<Depth min={3}>
+
 **The triple failure (June 1).** Three unrelated breakages in one morning. A
 Gmail OAuth refresh token expired because a Google Cloud project left in
 testing mode caps token lifetime at seven days, a policy I learned from a
@@ -182,6 +525,10 @@ will eventually be false, and mobile is the performance budget that counts.
 Nine query widgets became native database views (Obsidian's Bases), the log
 learned to archive itself, and ten plugins came out that week.
 
+</Depth>
+
+<Depth min={2}>
+
 **The drift (April).** The inventory category list existed in three places: a
 schema file, a Python map, a template picker. They drifted, and 97 item pages
 were mis-categorized before anything visible broke.
@@ -193,18 +540,65 @@ were mis-categorized before anything visible broke.
   schema.
 </Callout>
 
+</Depth>
+
+<Depth min={4}>
+
+**The stranded rebase (November).** A fourth entry, written after this post.
+The end-of-day job recovered from a diverged remote by rebasing. On November
+13 that rebase hit a lock file 12 commits into 40, the abort failed too, and
+the vault sat on an eleven-day-old tree for twelve hours. The 6 a.m. sync then
+committed on top of a detached HEAD. The rule: the push merges and never
+rebases, because a rebase rewrites the working tree once per local commit and
+a merge changes it once. The job now refuses to commit at all while the repo
+is mid-rebase, mid-merge or detached, and after a failed pull it verifies the
+vault is back on the branch at that night's commit.
+
+<VaultGuardLedgerChart />
+
+The test script that carries the drift guard is three commands: compile every
+script, run the test suite, run the taxonomy check. The suite started at 69
+tests on June 11. By October 11 it ran 691.
+
+</Depth>
+
+<Depth min={5}>
+
+The test script, less one line that compiles a subpackage:
+
+```sh
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")"
+PYBIN="${PYBIN:-.venv/bin/python3}"
+"$PYBIN" -m py_compile *.py
+"$PYBIN" -m pytest tests/ -q
+"$PYBIN" check_category_taxonomy.py
+echo "check.sh: OK"
+```
+
+The taxonomy check reads its three copies three ways. It loads the schema
+file's YAML frontmatter, pulls the dict literal out of the Python source with
+a regex and `ast.literal_eval` without importing the script, and captures the
+second array of the template's picker call the same way. Then it compares
+three sets. On a mismatch it prints which slugs appear in only one source,
+then the pairwise differences for the case where two copies agree against the
+third, and exits 1. In October it passed with 25 slugs.
+
+</Depth>
+
 ## A production system with one user
 
-None of this carries an SLA. A skipped podcast episode inconveniences an
+None of this carries an SLA.<Depth inline min={2}> A skipped podcast episode inconveniences an
 audience of exactly one. Call it over-engineering -- on the days everything
-works, I'm tempted to agree.<Note id="4" />
+works, I'm tempted to agree.</Depth><Note id="4" />
 
-But the alternative to discipline here is a system I have to supervise, one
+But the alternative to discipline here is a system I have to supervise<Depth inline min={2}>, one
 where every quiet morning might mean "nothing happened" or might mean
-"nothing was recorded," and I can't tell which without going and looking. The entire return on automating your own life is trust.
+"nothing was recorded," and I can't tell which without going and looking</Depth>. The entire return on automating your own life is trust.<Depth inline min={3}>
 The vault's contributor doc holds one sentence I think about more than any
 dashboard: the unit of work is that the vault stays consistent and the
-automation keeps working. The discipline exists so the next failure gets one
+automation keeps working.</Depth> The discipline exists so the next failure gets one
 morning, not ten.
 
 <Footnotes

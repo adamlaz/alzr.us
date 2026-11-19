@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/wedding-app-load-test-light.svg?raw';
+import darkSvg from '../../assets/diagrams/wedding-app-load-test-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Every step of an upload answered in well under a second"
+  caption="The passing load-test run against a preview deploy: 150 simulated guests, 1,500 files, latency in milliseconds. The gate was a 95th percentile of 800 ms on the server actions."
+>
+  Bar chart of latency in the passing load-test run, in milliseconds. Starting a file: median 76, 95th percentile 122. Gallery copies confirmed: median 126, 95th percentile 188. Original completed: median 139, 95th percentile 202. One PUT to storage: median 193, 95th percentile 293.
+</Chart>

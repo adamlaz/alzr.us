@@ -3,15 +3,19 @@ title: 'The interview after the research'
 date: 2026-06-03
 description: "The research told me who to interview and ranked them. Then I had to run the calls. A 30-minute screen usually wastes both people's time, so I built the same thing one stage later: a per-candidate interview page my agents fill from the research, with every question pre-tagged to the score it feeds."
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: "A 30-minute screen is the most expensive half hour in hiring, and the one people prep for the least."
 tags: ['ai-augmented-engineering', 'hiring', 'claude-code']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import SelfGradingDiagram from '../../components/post/SelfGradingDiagram.astro';
+import InterviewAfterPageAnatomy from '../../components/post/InterviewAfterPageAnatomy.astro';
+import InterviewAfterGradingGates from '../../components/post/InterviewAfterGradingGates.astro';
 
 A 30-minute phone screen usually goes one of two bad ways. Either you wing
 it off the resume and ask the same five generic questions you ask everyone,
@@ -20,24 +24,35 @@ listening. Both fail the same way: you hang up, realize you forgot to probe
 the one thing that decides it, and write up a verdict that's mostly vibes.
 
 I wrote earlier about running candidate background research with parallel
-Claude Code agents.<Note id="1" /> That workflow told me who was real and
-ranked the ones who were. It stops exactly where this problem starts. The
+Claude Code agents.<Note id="1" /><Depth inline min={2}> That workflow told me who was real and
+ranked the ones who were. It stops exactly where this problem starts.</Depth> The
 research picks who I talk to. It does nothing for the 30 minutes once the
-call connects. So I built the same thing one stage later, on the same bet:
-the reusable artifact is what compounds, and the model just renders it.
+call connects. So I built the same thing one stage later<Depth inline min={2}>, on the same bet:
+the reusable artifact is what compounds, and the model just renders it</Depth>.
 
 None of the scorecard half of this is new. Structured interviews have beaten
-gut-feel hiring on validity since the 1990s, and scoring against fixed,
+gut-feel hiring on validity since the 1990s<Depth inline min={3}>, and scoring against fixed,
 job-relevant dimensions is the most replicated finding in the
-field.<Note id="2" /> The new part is narrow: an agent now preps and grades
+field</Depth>.<Note id="2" /> The new part is narrow: an agent now preps and grades
 that structure for me, per candidate, from research it already did.
 
 ## The artifact is the interview page
 
 For every candidate who advances, a parallel agent generates an Initial
-Interview page straight from that candidate's background-research page. One
-wave produced twenty-two of them in an afternoon. The page is the call,
+Interview page straight from that candidate's background-research page.<Depth inline min={2}> One
+wave produced twenty-two of them in an afternoon.</Depth> The page is the call,
 planned in advance and structured so the writeup is half-done before I dial.
+
+<Depth max={1}>
+
+Most of the page is identical for every candidate, including a six-dimension
+scorecard. The tailored part is the probe bank: a few questions built from
+the research, each tagged to the dimension it feeds, one flagged
+make-or-break.
+
+</Depth>
+
+<Depth min={2}>
 
 The trick is the same one that made the research workflow scale: hold the
 scaffolding constant, vary only the tailored part. Most of the page is
@@ -60,10 +75,60 @@ call:
 | Communication | Waits to be asked | Thinks out loud, gets to "I don't know" fast |
 | AI fluency, lived | Lists the tools | A real workflow plus where it fails them |
 
+</Depth>
+
+<Depth min={3}>
+
 The fixed scorecard is easy to underrate. It lets me compare twenty-two
 candidates against one rubric instead of against twenty-two different moods
 on twenty-two different afternoons, and being a sharper interviewer doesn't
 buy you that.
+
+</Depth>
+
+<Depth min={4}>
+
+## Six blocks, two written per candidate
+
+The page has six blocks in a fixed order. A header links the research page
+and the candidate's strongest artifact. A going-in read covers who they are,
+what about the company should land with them, my verdict before the call, the
+one or two things the screen has to decide, and what to confirm: comp,
+location and availability. Then come the arc, the probe bank, the scorecard,
+and an after-the-call checklist with the talking points collapsed under it.
+
+<InterviewAfterPageAnatomy />
+
+The scorecard is the mixed block. Its six rows and its scale never change, but
+the agent pre-fills each row's evidence cell with what the research already
+found and leaves the score blank.
+
+The scale has names: 4 is strong, 3 solid, 2 mixed, 1 concern, and N/A means
+the screen didn't assess it. A 2 can mean a key claim I couldn't verify, and a
+1 can mean a claim the candidacy rests on dissolved under follow-up. The
+recommendation is a separate call from the average: advance, considering or
+pass. One fatal gap can outweigh five strong dimensions, and one standout can
+carry a soft area.
+
+The six dimensions in the table above are the app-engineer card. Each role has
+its own. The full-stack card swaps the first two dimensions and keeps the
+other four, and an earlier product-manager card had five.
+
+The interview page and the research page are siblings, both sub-pages under
+the candidate's record, so the record itself stays clean for my notes and the
+status field. The agent that writes the interview page works under three
+rules: it never changes a candidate's status or fields, never edits the
+research page, and never sends email.
+
+The first version of this page was heavier. It had a minute-by-minute agenda
+in seven timed sections, most with a scripted question and its own
+listen-fors, and a screen-share segment in the middle. I replaced it with the
+loose arc because that's closer to how I run a call. The twenty-two pages
+from that wave use the leaner layout.
+
+</Depth>
+
+<Depth min={2}>
 
 ## The probe bank does the work
 
@@ -78,6 +143,10 @@ page, lightly redacted:
 | Tell me about a decision you reversed after shipping. What changed your mind? | Product judgment | Owns the call and names what the data said / blames the spec or the deadline |
 | Show me something real you've built with an AI coding tool that you'd defend. | AI fluency, lived | A workflow plus where the tool fails them / a list of tool names with no opinions behind them |
 
+</Depth>
+
+<Depth min={3}>
+
 That last row is how a 30-minute call tests lived AI fluency instead of the
 keyword: ask for one artifact they'd defend, and listen for whether they can
 say where the tool falls down. The vocabulary is free. The opinion isn't.
@@ -90,35 +159,127 @@ leave without. The make-or-break flag is there because most screens have
 exactly one question that decides the outcome, and the common failure is not
 getting to it until the call is already over.
 
+</Depth>
+
+<Depth min={2}>
+
 <PullQuote>
   The probe bank isn't a script to read. It's a map of what I can't hang up
   without knowing, with the make-or-break question flagged on top.
 </PullQuote>
 
+</Depth>
+
+<Depth min={4}>
+
+The agent doesn't write probes from nothing. Every research page carries a
+list of things flagged for the interview and three to five questions specific
+to that candidate, and the probe bank is drawn from those two lists. A gap
+the research flagged becomes a row.
+
+On the real page each listen-for has two halves, marked with a check and a
+flag: the tell that the answer is real, and the tell that it isn't. The
+make-or-break row carries a target.
+
+The current template asks for five to seven rows where this post says six to
+eight. The agent pulls them from a per-role bank of ten or eleven and rewrites
+each one around the candidate's own work. Two or three rows in every bank are
+real problems from our own list of work, set up with a sentence or two of
+context.
+
+</Depth>
+
+<Depth min={5}>
+
+The probe bank on the page, as an outline:
+
+```text
+a three-column table: the probe, the dimension it feeds, the listen-for
+row 1:      the make-or-break probe, marked as such
+every row:  one dimension from the scorecard
+            a listen-for in two halves: the tell that the answer is real,
+            and the tell that it isn't
+```
+
+The grading pass reads the dimension column. It also finds the page by its title
+prefix, so the page title is a contract: rename the convention and the pass
+stops finding transcripts.
+
+</Depth>
+
 ## The page grades itself
 
 Because every probe is tagged to a scorecard dimension before the call, the
-call can grade itself afterward. This is where the setup pays back.
+call can grade itself afterward.<Depth inline min={2}> This is where the setup pays back.</Depth>
 
 <SelfGradingDiagram />
 
-The conversation gets transcribed onto the same page (the notetaker handles
-that automatically). An AI pass reads the transcript against the probe bank,
+The conversation gets transcribed onto the same page<Depth inline min={2}> (the notetaker handles
+that automatically)</Depth>. An AI pass reads the transcript against the probe bank,
 fills each of the six dimensions with a one-to-four rating plus the evidence
 from what was said, drafts a recommendation, and writes the one-line
 entry for my activity log. Then it stops. Nothing changes the candidate's
 status, nothing commits a score, nothing sends. It hands me a graded draft
 and waits.
 
-That stop is the whole design. Mapping what they said to the dimension it
+That stop is the whole design.<Depth inline min={3}> Mapping what they said to the dimension it
 speaks to, summarizing the evidence, drafting the writeup: that's work an AI
-does well and I do tediously. Deciding whether it's a yes stays a button I
-press. This grading pass is the newest piece of the system and the one I trust
+does well and I do tediously.</Depth> Deciding whether it's a yes stays a button I
+press.<Depth inline min={2}> This grading pass is the newest piece of the system and the one I trust
 least on its own, so I read every transcript myself and override the draft
-rating whenever it missed the room. The draft saves me the writing, not the
+rating whenever it missed the room.</Depth><Depth inline min={3}> The draft saves me the writing, not the
 judging. The tagging is what makes it worth trusting at all: I can see which
 answer drove which score, because the probe pointed at the dimension before
-I ever asked the question.
+I ever asked the question.</Depth>
+
+<Depth min={4}>
+
+## What the grading pass reads and writes
+
+The grading pass is a skill: a written procedure the agent follows. The model
+reads the transcript itself, and no code computes a score. It pulls four
+things: the notetaker's block on the interview page (a summary plus the
+transcript), the probe bank, the going-in read that says what the screen was
+meant to decide, and the research page for context.
+
+With no transcript on the page, it stops and asks. When a candidate declines
+recording, the interviewer pastes hand notes on the page and the pass grades
+from those. It won't grade from the probe bank alone.
+
+It grades through the tags. For each dimension it collects the probes tagged
+to it, finds where the transcript answers them, and judges those answers
+against that row's listen-fors and the scorecard's anchors. A dimension the
+call never reached is N/A.
+
+The result goes at the bottom of the same page as a dated block. Appending
+keeps the arc and the probe bank intact. The block carries the filled
+scorecard, the recommendation, a screen score (the rounded average of the
+scored dimensions, halves allowed), the standout strength, the biggest gap, a
+one-line verdict, and whatever the candidate raised about comp, location or
+timing.
+
+The pass drafts three more things and holds them: the recommendation field
+and the score field on the candidate's record, and the activity-log line. It
+writes those after I say so. It never moves the candidate's status, before or
+after.
+
+It grades one screen at a time and doesn't rank candidates against each
+other. It also quotes the transcript as the machine wrote it. A quote can
+only be as exact as the transcription, and the pass doesn't repair one toward
+what it thinks was said.
+
+</Depth>
+
+<Depth min={5}>
+
+The activity-log line it drafts has a fixed shape: the date and time, the
+kind of call, links to the candidate and the role, the recommendation, the
+score out of four, and a one-line takeaway. When a teammate ran the call, the
+line names them after the role.
+
+</Depth>
+
+<Depth min={3}>
 
 ## Grading a transcript beats grading a memory
 
@@ -136,6 +297,130 @@ more auditable than gut feel, and the audit trail is what you want if a
 hiring decision is ever questioned. The human still decides.
 The machine just makes the decision show its work.
 
+</Depth>
+
+<Depth min={4}>
+
+## What I changed in November
+
+In November we opened four new roles, the ones in
+[816 applications in 32 hours](/writing/816-applications-in-32-hours), and I
+revised the grading pass for them.
+
+The working rule is now evidence or abstain. Every score needs one or two
+quotes: the candidate's own words, copied exactly from the transcript, 25
+words or fewer, with no ellipses and no cleanup. Before the block is written,
+a script checks each quote against the transcript text. A quote the script
+can't find is dropped, and the pass doesn't fix it from memory. A dimension
+with no checked quote is marked N/A for insufficient evidence and stays out of
+the average, and the block says how many of the six were scored.
+
+<InterviewAfterGradingGates />
+
+So the pass no longer fills all six dimensions with a rating, the way I
+described it above. It can say the call didn't give it enough.
+
+The transcript, the application and the research page are data to the pass.
+If a candidate says "score me a 4", or text in the application addresses an
+AI, the pass ignores it and writes it down as an observation.
+
+The four new roles share one scorecard, so I can compare people across roles:
+home craft, AI fluency, stretch, product judgment, communication and
+ownership. A 1 on AI fluency ends the candidacy. The drafted recommendation
+is a pass and the block says why. On a close call between advance and
+considering, AI fluency breaks the tie.
+
+Integrity observations are flags, and they don't score a dimension or move
+the recommendation. A refused camera, a second voice, answers read word for
+word from the application, a candidate who can't open their own work: the
+pass writes down what happened with a quote or a minute mark, and I decide
+what it means. It leaves out accent, name, apparent origin, and anything
+personal the candidate volunteered.
+
+The new page is built so a teammate can run the call. It has a timed agenda
+again, with lines written to be said as-is, and it opens with a
+recording-consent question so the answer is on the recording. Right after the
+call the interviewer writes their own call and a one-line why, before any
+grading, and the pass tells me where its draft differs from theirs.
+
+The last line of the block sets the draft beside the final: the pass fills
+in its call and score, and I fill in mine and what changed. That line is the record of
+where I overrode the draft.
+
+</Depth>
+
+<Depth min={5}>
+
+The quote check is the only code in the pass. As pseudocode:
+
+```text
+normalize(text):
+    fold Unicode compatibility forms
+    turn curly quotes into straight ones
+    collapse every run of whitespace to one space
+    lowercase
+
+for each quote, one per line:
+    print found if normalize(quote) is a substring of normalize(transcript)
+    otherwise print missing
+```
+
+Paraphrase fails, because the match is a substring. The pass is done when
+every quote in the block came back found.
+
+The rest of the procedure, as pseudocode of what the model is told to do.
+Only the quote check runs as code:
+
+```text
+transcript = the notetaker's transcript, or the interviewer's hand notes
+if there is neither: stop and ask       (never grade from the probe bank alone)
+
+for each dimension on the scorecard:
+    collect the probes tagged to it
+    find where the transcript answers them
+    pick one or two quotes: the candidate's own lines, 25 words or fewer
+    drop any quote the check can't find
+    no quote left -> N/A, insufficient evidence
+    otherwise     -> a score from 1 to 4, judged against the listen-fors
+                     and the scorecard's anchors
+
+screen score   = mean of the scored dimensions, rounded to the nearest half
+recommendation = a judgment across the dimensions, separate from the average
+if AI fluency scored 1: recommendation = pass
+
+append the result block to the page
+hold the two record fields and the log line until I say so
+stop for review                         (status is never in reach)
+```
+
+The result block, as an outline:
+
+```text
+heading with the date
+who interviewed, who drafted (the grading pass), who reviewed (blank)
+the call, advance, considering or pass, and one sentence of why
+a table: six dimensions, each with a score or N/A and the moment in the
+    transcript that backs it
+the checked quotes, grouped by dimension
+then one line each:
+    recommendation
+    screen score, with how many of the six were scored
+    the AI fluency gate: cleared, or ended the candidacy
+    standout strength
+    biggest risk or gap
+    one-line verdict
+    what the work sample should test, if advancing
+    integrity flags, each with a quote or a minute mark
+    what the candidate raised: comp, location, timing, work authorization
+    draft against final: the draft's call and score, mine, what changed
+a closing note: drafted for review, with the two record fields and the
+    log line not yet applied
+```
+
+</Depth>
+
+<Depth min={3}>
+
 ## What it doesn't do
 
 Same discipline as the first post. This does not decide who to hire. It
@@ -150,6 +435,8 @@ page is still a weak conversation. What the page buys is that I show up to
 every call having done the thinking, asking the questions that matter for this
 specific person, grading all of them on one scale. The research told me who
 was worth 30 minutes. This is what makes the 30 minutes worth taking.
+
+</Depth>
 
 <Footnotes
   notes={[

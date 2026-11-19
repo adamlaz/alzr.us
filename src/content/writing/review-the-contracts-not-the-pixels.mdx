@@ -3,6 +3,7 @@ title: "Review the contracts, not the pixels"
 date: 2026-10-30
 description: "How a one-page agent build brief, mock-backed adapters, and required CI let our product manager own a plant-floor inspection station while I worked on the seams."
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: "Once agents write the code, my job moves to the brief, the contracts, and the checks -- and that is what let a product manager own the front end."
 tags:
@@ -13,6 +14,9 @@ tags:
 ---
 
 import BeforeAfter from '../../components/post/BeforeAfter.astro';
+import ContractsBudgetDrift from '../../components/post/ContractsBudgetDrift.astro';
+import ContractsPortsDiagram from '../../components/post/ContractsPortsDiagram.astro';
+import Depth from '../../components/post/Depth.astro';
 import Figure from '../../components/post/Figure.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import GuardrailStackDiagram from '../../components/post/GuardrailStackDiagram.astro';
@@ -26,13 +30,31 @@ I run engineering at a consumer product that helps families preserve their memor
 
 We built that station in four days, and it launched while I was out of the office. Over the first month, our product manager shipped 19 pull requests to that repo, most of them self-merged on green CI, while I worked on the contracts.
 
+<Depth max={2}>
+
+A contract here is the agreed shape of what the station sends to, or reads from, another system: the order lookup, the video files, the saved results. Green CI means every automated check on a change has passed.
+
+</Depth>
+
 ## Ten days on the seams, four days to the floor
 
 Our product manager wrote the requirements doc ten days before anyone touched the UI. We spent those ten days deciding which service owned each piece of state: where a box's tape list comes from, where digitized files live, where verdicts are saved so stations share history, and what triggers a recapture.
 
+<Depth max={1}>
+
+With the boundaries settled, I wrote a one-page brief for a coding agent on a Sunday night. One of our engineers handed it to the agent the next morning, and the station went live that Friday.
+
+</Depth>
+
+<Depth min={2}>
+
 Once those boundaries were settled, I wrote the build plan and an "Agent Build Brief" on Sunday night. Monday morning, one of our engineers handed it to a coding agent, and the v1 front-end pull request opened before 10 AM: 41 files running end to end on local fixtures.
 
 Tuesday and Wednesday I added CI gates (format, unit tests, build, and browser tests) and wired the real adapters and back-end endpoints. Then a family emergency put me on a plane. The station still went live on Friday without me in the building and entered daily floor use the next Monday.
+
+</Depth>
+
+<Depth min={2}>
 
 <Figure
   caption="The keyboard flow in mock mode on the redesigned branch: scan sample order 1001, press Enter to start, jump across the video with A/S/D/F, press V to pass the first tape, then press W, 3 (Blue screen), and Enter to fail the second."
@@ -53,15 +75,23 @@ Tuesday and Wednesday I added CI gates (format, unit tests, build, and browser t
   </video>
 </Figure>
 
+</Depth>
+
 ## What went into the brief
 
+<Depth min={2}>
+
 Handed a product doc with open UI choices and staging dependencies, the agent would have guessed at the boundaries and written two thousand lines of code it couldn't run.
+
+</Depth>
 
 The Sunday-night brief opened with two lines:
 
 > Who this is for- [our engineer], and the coding agent [he] hands it to. Every decision in here is already made. If something reads as a choice, treat it as a bug in this document and ask rather than picking.
 >
 > Target- something reviewable tomorrow.
+
+<Depth min={2}>
 
 Then it set six rules:
 
@@ -72,9 +102,62 @@ Then it set six rules:
 5. **No database, no auth.** Locked floor network; the inspection API is the durable record.
 6. **Do not build a design system, do not pull in a component library.** On day one, we didn't know which controls would survive real boxes.
 
+</Depth>
+
+<Depth max={1}>
+
+Then it set six rules. Two carry this story. Every outside system sits behind an adapter with a mock, so the whole station runs on local sample orders with no network. And no design system or component library on day one.
+
+</Depth>
+
+<Depth min={3}>
+
 The brief ended with acceptance checks the agent had to run itself in mock mode: scanning sample order `1001`, grading both tapes, and checking that a failed tape blocks the order-passed notification.
 
 Building v1 also caught a bug in my brief. I had used the playback URL as the file's ID in the saved record. While wiring the media adapter, the engineer and the agent noticed that production issues expiring signed URLs. Reopening an order an hour later, or comparing a recapture against Round 1, would see a different string for the same file. They split the contract into a permanent storage reference and a temporary playback link.
+
+</Depth>
+
+<Depth min={4}>
+
+## How the adapters are wired
+
+The brief named four outside systems. The station now has five ports, because the QA review page needed to read saved results back. Two face the order and media services, an order lookup and a media locator. Two face the inspection API, a sink that saves results and a reader that fetches them. The fifth is a sink for notifications. Each is an interface in one types file, with a mock and a real adapter behind it.
+
+<ContractsPortsDiagram />
+
+One environment variable picks the set. It defaults to mock, and anything other than the two known modes is an error. A single function builds all five adapters at once, so a station can never run a real order lookup against a mock inspection sink. Real mode has no defaults and never falls back to mock. It needs every setting filled in, and each base URL has to be a bare `https` address: no embedded credentials, no query string, no fragment. The page header prints the mode, so a station on mocks says so on screen.
+
+The mocks keep state the way the real services do. The inspection sink appends each result to a file, once per event ID. The media mock gives every sample capture a storage version and adds one when a recapture is simulated. The notify mock appends the rendered Slack message to a log.
+
+The real adapters share one HTTP helper. Each call has a 15-second budget that covers its retries, or 30 seconds for media. An adapter has to mark a call as repeatable before the helper will retry it, and then only after a network failure, a rate-limit response or a server error. The helper won't follow a redirect, so the bearer token is only ever sent to the host in the config. A Slack post gets one attempt, since a request that timed out may have posted anyway.
+
+The fix for my brief's bug lives in the media port. A located file carries a permanent reference, a playback link, and a storage version when the back end reports one. A saved result keeps the reference and the version, never the link. Before each save the server checks the file again, and a refresh signs a new link for that same file or reports it missing.
+
+</Depth>
+
+<Depth min={5}>
+
+The composition root and the media port, as pseudocode:
+
+```text
+adapters():
+    if mode == "real": return all five real adapters
+    else:              return all five mock adapters      # never a mix
+
+locate(order, barcodes) -> per barcode, one of:
+    ready       { storage reference, playback link, optional version }
+    missing | ambiguous | restricted                      # kept distinct
+    # if the media service itself fails, that is an error, not a "missing"
+
+refresh(order, barcode, reference, version?):
+    sign a fresh link for the same file; with a version, for that same capture
+    a different file is never substituted
+```
+
+</Depth>
+
+<Depth min={3}>
 
 ## Reviewing the app without a staging deploy
 
@@ -87,6 +170,10 @@ When the v1 pull request opened Monday morning, the PM didn't need a staging dep
 
 We cut rack number and the recapture checkbox, added autoplay, and merged v1. Friday it was on the floor.
 
+</Depth>
+
+<Depth min={2}>
+
 ## Floor loops in a single afternoon
 
 Once the station was in daily use on Monday, the PM started shipping code with Claude Code. His first pull request opened that day: a read-only QA review page where a lead could inspect failed orders, symptoms, and notes against the mock reader. I approved it with two commits on top.
@@ -95,7 +182,13 @@ On Wednesday, he filed eight issues from inspecting real orders: autoplay that s
 
 > Merging this myself since it's just UI changes on the station.
 
+</Depth>
+
+<Depth min={3}>
+
 That night we shipped recapture rounds and `"Passed with exception"`. When a failed tape comes back from a second capture pass, the station shows Round 1's failure, plays the new file, and lets the inspector pass it or record an exception. The PM built the UI flow. I walked his branch through three capture rounds in mock mode, pushed 12 commits on top between 6 PM and midnight, and shipped the back-end change alongside it.
+
+</Depth>
 
 ## Green CI for the screen, human review for the contracts
 
@@ -103,29 +196,121 @@ If the PM had to wait on me for every button label or shortcut change, floor fix
 
 > Reviewers requested automatically. No approval is required to merge; green CI is.
 
-Green CI is required on `main`; human approval isn't. A full CI run takes about two minutes. I'm a code owner only on the adapters and CI config. Anything on the screen self-merges on green checks, and every pull request has a four-box `"Station impact"` checklist: no change to the live station, needs a station update, changes what goes to an external service, or needs an upstream change first.
+Green CI is required on `main`; human approval isn't. A full CI run takes about two minutes. I'm a code owner only on the adapters and CI config. Anything on the screen self-merges on green checks<Depth inline min={2}>, and every pull request has a four-box `"Station impact"` checklist: no change to the live station, needs a station update, changes what goes to an external service, or needs an upstream change first</Depth>.
 
 <ReviewLanesDiagram />
 
+<Depth min={4}>
+
+The code-owners file has three rules. Our PM is requested on every change, and I'm added on the adapters directory and the CI directory. Branch protection requires the CI job and allows neither a force push nor deleting the branch. It asks for no approval.
+
+CI is one job with five steps: install, a formatting check, the unit tests, a type check and build, then the browser tests. The job is capped at 15 minutes and the browser step at 8. Pushing again cancels the run already going, and a failed run uploads the browser report and traces.
+
+The browser tests drive Chrome against the built bundle on a single worker. Three local servers start for them, each with a throwaway data folder: one station set up with a single inspector, one with eleven so the name picker has names to show, and one for QA review. Chrome is there because the test clips are H.264 and the Chromium that comes with the test runner can't play them. That choice cost one hung run. The runner image already ships Chrome, but the installer reinstalled it through the package manager on every run, and one of those installs stalled until the job hit its time limit. CI now installs Chrome only when it's missing, with a five-minute cap.
+
+</Depth>
+
+<Depth min={5}>
+
+The review rules and the CI job, as pseudocode:
+
+```text
+code owners:
+    everything            -> PM requested as reviewer
+    real adapters, CI     -> PM and me requested
+    a merge needs green CI and no approval
+
+ci job (15-minute cap; pushing again cancels the current run):
+    install dependencies
+    check formatting
+    run unit tests
+    type-check and build
+    install Chrome only if missing (5-minute cap)   # the runner's own Chromium can't play the test clips
+    run browser tests (8-minute cap)
+```
+
+</Depth>
+
 Mocks can still drift from production. When a pull request touches a contract, I check out the branch and push commits directly instead of leaving comments.
+
+<Depth min={2}>
 
 In week four, the PM added multi-station sync so stations read each other's saved results from the inspection API. Walking his branch, I found the mock accepting state transitions that production rejects. I pushed one commit with six fixes:
 
 > The mock now refuses what [the back end] refuses... A couple of our tests were passing on states prod can't reach.
 
+</Depth>
+
 <PullQuote>
   If the mock accepts a payload that production rejects, the test suite is lying to the person merging the pull request.
 </PullQuote>
 
+<Depth min={4}>
+
+The back end keeps three rules that a second station can break. It holds a single inspection for each tape, stores any one revision of that inspection only once, and won't let a tape's round number go backwards. A save that breaks one comes back as a conflict. Before that commit the mock sink appended whatever it was handed, and one review test saved two inspections of the same tape, a state production can't hold.
+
+The rest of the commit taught the station to live with those refusals:
+
+- If a save went through but its reply never arrived, the station works out that it landed and keeps the result as its own.
+- When the back end refuses a revision, the station drops it along with any correction waiting behind it, and takes the back end's copy.
+- The Slack post for a round belongs to whichever station saved that round's last result.
+- A summary for an earlier round that shows up late can't leave a newer round looking as if its summary never went out.
+- A tape that joins an order partway through a round gets saved into that round once another station has reinspected it.
+- When a result saved at this station is replaced by another station's, the inspector gets a warning.
+
+The commit touched nine files, and 220 of its 387 added lines were multi-station tests.
+
+A station reads an order back from the inspection API on every lookup and at the start of every recapture round, and the API's copy wins. When the API is unreachable, the station refuses to open an order it holds no saves for, because starting that order fresh would create a second inspection for each tape. The limits are written down in the architecture doc. One of them: when two stations save the same revision of a tape in the same millisecond, the station whose save lost takes the saved result for its own.
+
+</Depth>
+
+<Depth min={5}>
+
+The mock sink after that commit, as pseudocode:
+
+```text
+record(inspection):
+    saves = everything saved so far
+    if this event id is already saved: return             # saved once
+    tape = saves for the same order and tape
+    refused = tape has a different inspection id
+              or tape already has this revision
+              or tape is already in a later round
+    if refused: raise conflict                            # the same refusal the real back end gives
+    append the record, once per event id
+```
+
+</Depth>
+
+<Depth min={3}>
+
 The next day, he opened a large QA-review pull request. Looking at the diff, I wrote: *"Most of what needs to change is in the three contracts, not the station."* That one stayed open while we sorted out the contracts underneath it.
+
+</Depth>
+
+<Depth min={2}>
 
 ## Out of the office on both sides
 
 Once I was on that plane, I was told I didn't need to work at all. For the station's UI, I really didn't. The PM was shipping floor fixes in minutes without me.
 
+</Depth>
+
+<Depth min={3}>
+
 I needed the distraction, and building like this is fun. A couple of years ago, checking in for an hour from out of town meant answering messages or sitting in a meeting. You couldn't build something in the margins of a hard week and then shut your laptop. With coding agents and a repo that runs on local mocks, I could open my laptop when I wanted a break, wire a contract or tighten a test suite in an hour, and close it again without holding anyone up.
 
 Back-end work ran the same way. Right after building the QA review page on mocks, the PM filed an issue with the exact read endpoint his page needed. The issue was the contract. When I had a quiet window, I picked it up with an agent, shipped the endpoint the next day, and shipped watched-ranges the day after.
+
+</Depth>
+
+<Depth min={2} max={2}>
+
+Across weeks two and three, our schedules barely overlapped. I was in and out the first two weeks, and the PM left on a planned two-week break right after. On the first Sunday of his break, I hardened the repo across six pull requests.
+
+</Depth>
+
+<Depth min={3}>
 
 Across weeks two and three, our schedules barely overlapped. I was in and out the first two weeks, and the PM left on a planned two-week break right after. On the first Sunday of his break, I hardened the repo across six pull requests:
 
@@ -136,19 +321,59 @@ Across weeks two and three, our schedules barely overlapped. I was in and out th
 5. **Keyboard shortcuts defined in one file**, so the UI and the key listener can't drift apart.
 6. **A split README**, with separate docs for engineers, whoever installs a station, and whoever runs one.
 
+</Depth>
+
+<Depth min={4}>
+
+Before the launcher change, an operator cleared a leftover lock file by hand and ran the dependency install by hand after an update. Now the lock records which process holds it and when that process started. If the process is gone, or the lock is older than the computer's last boot, the lock is stale, and the launcher claims it and prints a line saying so. It also stores a hash of the dependency lockfile and reinstalls when the hash changes. A clean install deletes the installed packages first, so the launcher checks that the package registry answers within five seconds before it starts one. With no connection it keeps the old packages and tries again at the next launch.
+
+The browser tests had shared ten sample orders, and some depended on what an earlier test had saved. One of them failed whenever it ran on its own, and repeating each test twice failed 12 of them. Each test now creates its own order through the mock lookup, which builds one from a key that says how many tapes it has. The same change removed nine fixed waits that added up to 11.1 seconds.
+
+A unit test holds the shortcut file to the code. It loads the source of each page's key handler as text, collects every key the handler compares against, and asserts that list equals the keys the shortcut file defines. A shortcut with no handler fails, and so does a handler with no shortcut.
+
+</Depth>
+
+<Depth min={5}>
+
+The launcher's stale-lock decision, as pseudocode:
+
+```text
+verdict(lock, now, booted_at):
+    started = lock's recorded start time, else the file's write time
+    if started is more than 5 minutes before boot: stale   # restarted; the old PID may be someone else's
+    if lock records no PID:
+        stale only if it was written more than 10 seconds ago
+    if the PID is another running process: held
+    otherwise: stale                                       # not running
+```
+
+</Depth>
+
+<Depth min={2}>
+
 When the PM got back in week four, he shipped 11 pull requests in eight days without a catch-up meeting: digitizer notes, recapture slip printing with our engineer, an interactive training lab, and floor polish.
 
-In the first month, 46 of the PM's 47 commits carried a Claude co-author trailer. He self-merged 14 of his 19 pull requests in a median of five minutes. The other five touched a contract with the back end; I pushed commits onto each one and merged them myself. In all, 15 of my own pull requests merged; I approved 3 of his and pushed 19 commits onto 6 of his branches.
+</Depth>
+
+In the first month, 46 of the PM's 47 commits carried a Claude co-author trailer. He self-merged 14 of his 19 pull requests in a median of five minutes. The other five touched a contract with the back end; I pushed commits onto each one and merged them myself.<Depth inline min={2}> In all, 15 of my own pull requests merged; I approved 3 of his and pushed 19 commits onto 6 of his branches.</Depth>
+
+<Depth min={2}>
 
 <PrSwimlaneDiagram />
 
+</Depth>
+
 ## "It looks very much like a Claude artifact"
 
-At the end of week four, the PM shared the new training lab (`"the tool teaches the job"`). A product leader on our team looked at the screens and said the UI `"looks very much like a Claude artifact"`: too much text, few glyphs or big buttons, lots of tracked all-caps eyebrow labels, and too dense. The target was `"highly visual, low cognitive overhead, more like kiosks for checking in at the airport or ordering a Jamba juice"`, backed by written rules and automated benchmarks.
+At the end of week four, the PM shared the new training lab (`"the tool teaches the job"`). A product leader on our team looked at the screens and said the UI `"looks very much like a Claude artifact"`<Depth inline min={2}>: too much text, few glyphs or big buttons, lots of tracked all-caps eyebrow labels, and too dense</Depth>.<Depth inline min={2}> The target was `"highly visual, low cognitive overhead, more like kiosks for checking in at the airport or ordering a Jamba juice"`, backed by written rules and automated benchmarks.</Depth>
+
+<Depth min={3}>
 
 The PM pushed back on one point: the station runs on keyboard muscle memory at floor speed, so anyone redesigning it needed to take the training first and keep the keys, flows, and saves untouched.
 
-My day-one rule -- *"Do not build a design system, do not pull in a component library"* -- got v1 live in four days, and five weeks later its absence was why the screen looked like an AI artifact. Every pull request had invented another bordered card, caption, and tracked uppercase header. Auditing the old tape screen turned up **148 words**, **34 controls**, **26 keycaps**, every shortcut printed twice, and **more than 25 tracked all-caps labels**.
+</Depth>
+
+My day-one rule -- *"Do not build a design system, do not pull in a component library"* -- got v1 live in four days, and five weeks later its absence was why the screen looked like an AI artifact.<Depth inline min={2}> Every pull request had invented another bordered card, caption, and tracked uppercase header.</Depth> Auditing the old tape screen turned up **148 words**, **34 controls**, **26 keycaps**, every shortcut printed twice, and **more than 25 tracked all-caps labels**.
 
 <BeforeAfter
   beforeSrc="/images/writing/review-the-contracts-not-the-pixels/09-tape-playing.before.png"
@@ -160,12 +385,20 @@ My day-one rule -- *"Do not build a design system, do not pull in a component li
   caption="Drag the slider or toggle Before / After (click Zoom for full screen): the tape screen dropped from 148 UI words and 34 controls to 8 words, with the video frame taking over 60% of the screen."
 />
 
-That Sunday -- one day, 29 commits, 212 files -- I reversed the day-one rule. We built a 14-piece station kit adapted from our app's design system (shadcn-based, with React-free variant recipes so server-rendered pages never load React) and a component gallery showing every piece in every state. We moved the station, QA review, and training onto the kit, deleted the legacy CSS, and enforced four rules in browser tests:
+That Sunday -- one day, 29 commits, 212 files -- I reversed the day-one rule. We built a 14-piece station kit<Depth inline min={2}> adapted from our app's design system</Depth><Depth inline min={3}> (shadcn-based, with React-free variant recipes so server-rendered pages never load React)</Depth><Depth inline min={2}> and a component gallery showing every piece in every state</Depth>. We moved the station, QA review, and training onto the kit, deleted the legacy CSS, and enforced four rules in browser tests:
 
-- **A 15-word target per state, with each state locked to its exact count.** Every state asks one question and shows only its answers.<Note id="1" /> A browser helper counts visible words and fails the build if a state goes over its budget; the two states over 15, a re-scanned order and a recapture tape, say why in the test file. On the tape screen, the back arrow and `Esc` lost their text labels, the note box folded behind `Note (N)`, and the duplicate shortcut footer was deleted.
-- **Video takes at least 60% of the screen (55% after the floor fixes below), with nothing smaller than 20 px.** Small text is hard to read at arm's length.<Note id="2" /> Browser tests check the video area and call `getComputedStyle()` to ban type under 20 px and tracked all-caps labels.
-- **`Pass` and `Fail` get equal weight, with one keycap per control.** Rare defects get missed more often when most tapes pass,<Note id="3" /> and a huge green `Pass` button would make passing the reflex. All four verdicts sit in an even 2x2 grid with custom icons. Key presses flash for `120 ms` and saves play a short tone per outcome.
-- **No `"Are you sure?"` dialogs, and barcode scans can't trigger shortcuts.** Confirm dialogs teach people to double-tap `Enter`, so saves happen immediately and `Z` undoes the last tape. A barcode scanner types its whole code a few milliseconds per character, then `Enter`; a timing guard treats four or more keys under `30 ms` apart as a scan and puts back whatever they touched, symptoms `1` through `8` included.
+- **A 15-word target per state, with each state locked to its exact count.**<Depth inline min={2}> Every state asks one question and shows only its answers.</Depth><Note id="1" /><Depth inline min={3}> A browser helper counts visible words and fails the build if a state goes over its budget; the two states over 15, a re-scanned order and a recapture tape, say why in the test file. On the tape screen, the back arrow and `Esc` lost their text labels, the note box folded behind `Note (N)`, and the duplicate shortcut footer was deleted.</Depth>
+- **Video takes at least 60% of the screen<Depth inline min={2}> (55% after the floor fixes below)</Depth>, with nothing smaller than 20 px.**<Depth inline min={2}> Small text is hard to read at arm's length.</Depth><Note id="2" /><Depth inline min={3}> Browser tests check the video area and call `getComputedStyle()` to ban type under 20 px and tracked all-caps labels.</Depth>
+- **`Pass` and `Fail` get equal weight, with one keycap per control.**<Depth inline min={2}> Rare defects get missed more often when most tapes pass,</Depth><Note id="3" /><Depth inline min={2}> and a huge green `Pass` button would make passing the reflex.</Depth><Depth inline min={3}> All four verdicts sit in an even 2x2 grid with custom icons. Key presses flash for `120 ms` and saves play a short tone per outcome.</Depth>
+- **No `"Are you sure?"` dialogs, and barcode scans can't trigger shortcuts.**<Depth inline min={3}> Confirm dialogs teach people to double-tap `Enter`, so saves happen immediately and `Z` undoes the last tape. A barcode scanner types its whole code a few milliseconds per character, then `Enter`; a timing guard treats four or more keys under `30 ms` apart as a scan and puts back whatever they touched, symptoms `1` through `8` included.</Depth>
+
+<Depth max={2}>
+
+Adding one word to the tape screen now fails the build.
+
+</Depth>
+
+<Depth min={3}>
 
 <BeforeAfter
   beforeSrc="/images/writing/review-the-contracts-not-the-pixels/10-tape-fail-symptom-picked.before.png"
@@ -179,7 +412,15 @@ That Sunday -- one day, 29 commits, 212 files -- I reversed the day-one rule. We
 
 Once we finished trimming copy across every state (giving Round 2 a few extra words to show what failed in Round 1), we locked each state's ceiling in CI to its exact count. That night, adding one word to the `8`-word tape screen or the `3`-word fail picker broke the build.
 
+</Depth>
+
+<Depth min={2}>
+
 <WordsPerStateDiagram />
+
+</Depth>
+
+<Depth min={3}>
 
 Training moved onto the actual station screen too, replacing its old three-column layout. A one-line coach strip sits next to the transport bar, shows the next key and progress pips, and pulses a ring on the live button. When a trainee catches a defect, it jumps to the fault timestamp and explains what they saw (`"Right: torn lines from your first D press"`). CI caps the coach strip at 12 words on a single line.
 
@@ -205,7 +446,15 @@ We also replaced the old pause screen with a single overlay shared by the statio
   caption="The pause overlay shared by the station and training: built from the same single shortcut definition as the live controls and checked in CI so every row fits on one line at 20 px or larger."
 />
 
+</Depth>
+
+<Depth min={2}>
+
 The redesign sat on a branch for four days. Then the PM merged main into it, worked through it himself, and opened a pull request against my branch: nine commits of fixes, among them a 4:3 video frame, clocks that no longer jitter, a wider tape list, and a rebuilt name picker. The commits changed `DESIGN.md` and the browser benchmarks along with the code, and where a word budget went up, the reason went into the test file: the ready screen now asks who digitized each format, so its ceiling went from `3` words to `16`.
+
+</Depth>
+
+<Depth min={3}>
 
 <Figure
   src="/images/writing/review-the-contracts-not-the-pixels/09-tape-playing.today.png"
@@ -213,7 +462,89 @@ The redesign sat on a branch for four days. Then the PM merged main into it, wor
   caption="The tape screen after the PM's fixes: a 4:3 frame, the tape list by number, and who digitized each format under it."
 />
 
+</Depth>
+
+<Depth min={2}>
+
 He left one call for me. The video rule said 60% of the screen, but a 4:3 tape in a 4:3 frame the full height of its column is 55%; the old number had been counting black bars. He moved the rule to 55% in `DESIGN.md`, the research doc and the benchmark, and wrote `"This one is your call, Laz."` Even the pixel question reached me as a one-line rule change, with his reasoning attached. I said yes and merged it the next day.
+
+</Depth>
+
+<Depth min={4}>
+
+## How a browser test counts words
+
+The benchmark file loads each state at 1920x1080 and walks every visible text node on the page. If a dialog is open, it walks only the frontmost one. It skips screen-reader-only text, the toast, keycaps, and anything that is order data: order numbers, tape numbers, formats, names, clocks and counts. A word has to contain a letter and can't start with a digit, so `10s` and `15%` read as measurements. A visible placeholder counts. The eight symptom names have their own count, capped at two words a tile.
+
+The same walk checks the other rules. It reads each element's computed font size and fails anything under 20 px. It flags a label when its letter spacing is over 2% of its font size, when CSS uppercases it, or when two all-caps words sit in a row. It fails any control with a keyboard shortcut and no visible keycap, and any screen that scrolls where it isn't a list. Video share is the video element's box divided by the viewport.
+
+The budgets took three commits that Sunday. The first version of the benchmark set each budget to the count at the time: 21 for Exception, 25 for a round-two tape. The trim commit cut the copy and parked every budget at 99 while I measured, so for five hours a new word would have passed. The lock commit at 9:17 PM set each budget to its count.
+
+Then the floor fixes moved them.
+
+<ContractsBudgetDrift />
+
+The fail states grew when the verdict buttons kept their labels after Fail. The ready screen went from 3 words to 16 because it now asks who digitized each format and tells the inspector where to find that on the label. Each raise sits in the test file next to a comment giving the reason. The video rule's arithmetic is there too: a 4:3 frame the full height of its column is 1239 by 929 pixels, 55.5% of a 1920x1080 screen.
+
+</Depth>
+
+<Depth min={5}>
+
+The budgets at merge, and the two rules that decide what counts as a word and what counts as shouting, as pseudocode:
+
+```text
+word budget per state:
+    scan 9, ready 16, tape 10, fail 10, other-needs-note 17, exception 17,
+    can't-inspect 17, result 15, already-inspected 17, round-ready 28, round-tape 20
+
+words(text):
+    split on whitespace
+    keep tokens that contain a letter and don't start with a digit   # "10s" and "15%" read as numbers
+
+caps rule (keycaps and order data are exempt):
+    fail on uppercase transforms
+    fail on letter spacing above 2% of the font size
+    fail on two all-caps words in a row                              # a lone acronym is allowed
+```
+
+</Depth>
+
+<Depth min={4}>
+
+## What the scan guard does with a barcode
+
+Keys act as they arrive, and the guard never delays one. At the first key of a fast burst it records the state of the form. If the burst reaches four keys and then ends in Enter, the guard eats the Enter, sets the verdict, symptoms and note back to what it recorded, and shows a toast telling the inspector the scan was ignored.
+
+Some actions can't be undone by restoring a form. Passing saves the tape, and once focus is in the note box the remaining characters of the barcode get typed into it. The station holds those two back when the key that triggers them comes in fast behind a key that isn't one of its shortcuts, such as a dash or a zero. A single fast key still acts, because simulated keys in the browser tests come in at scanner speed too. The known limit is a barcode whose first character is V: that one can still pass the tape. Order numbers are all digits, so the Enter rule handles them completely.
+
+The guard's own browser test failed in CI, and the fix landed the next morning. The test typed its barcode with the test runner's keyboard helper. That helper sends a key only after the page has finished with the previous one, and on a slow runner the gaps grew past 30 ms. The test now dispatches each key over the browser's DevTools protocol and stamps it 8 ms after the one before, the way a real scanner's key events come with their own arrival times.
+
+</Depth>
+
+<Depth min={5}>
+
+The guard's key handler, as pseudocode. The station hands the guard a way to record and restore its state, and a test for which keys are shortcuts:
+
+```text
+fast gap = 30 ms; a scan is at least 4 keys
+
+on each key press (key, its timestamp):
+    fast = it came within the gap of the previous key
+    if not fast:
+        start a new burst and record the station's state
+    if key is Enter:
+        if fast and the burst has 4 or more keys:
+            put back the recorded state      # undoes what the barcode's characters changed
+            report a scan                    # the station drops this Enter
+        otherwise: report an ordinary key
+    if key is a single character:
+        count it in the burst
+        the key is suspect if it was fast and an earlier key in the burst wasn't a shortcut
+        if this key isn't a shortcut: remember that for the rest of the burst
+    report an ordinary key
+```
+
+</Depth>
 
 ## Owning the seams
 

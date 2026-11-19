@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/writing-voice-draft-dashes-light.svg?raw';
+import darkSvg from '../../assets/diagrams/writing-voice-draft-dashes-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Agent-drafted emails used my two dashes far more often than I do"
+  caption="About 45 work emails I wrote by hand against 65 hiring emails agents drafted for me, June through August 2026."
+>
+  Paired bars showing the share of work emails carrying each mark. A tight dash: 15 percent of the emails I wrote by hand,
+  52 percent of the agent-drafted ones. A double dash: 32 percent of mine, 62 percent of the drafts. A word from the flag
+  list: 2 percent of mine, 11 percent of the drafts.
+</Chart>

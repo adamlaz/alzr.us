@@ -3,16 +3,21 @@ title: 'CAD by conversation'
 date: 2026-07-08
 description: "A pool-light collar, a rod-holder gift, a tri-color pun sign, nine sizes of hole plug, and a drawer of custom Gridfinity bins -- a month of household parts that came out of conversations with Claude writing OpenSCAD, with the failure that taught each one written down."
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: "The model can't hold the printed part, and I can't write geometry fast enough to matter. Between us there's a workflow."
 tags: ['ai-augmented-engineering', 'craft', '3d-printing']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import Figure from '../../components/post/Figure.astro';
 import RenderLoopDiagram from '../../components/post/RenderLoopDiagram.astro';
+import CadConvDrawerPlates from '../../components/post/CadConvDrawerPlates.astro';
+import CadConvFilamentChart from '../../components/post/CadConvFilamentChart.astro';
+import CadConvRimProfile from '../../components/post/CadConvRimProfile.astro';
 
 The white ASA collar that snaps around my pool's floating light began as a
 pencil sketch and exactly two measurements: 110 millimeters across the light
@@ -30,23 +35,28 @@ discipline I didn't expect to need.
 ## The geometry is text
 
 OpenSCAD is CAD as source code: a part is a program, and the program compiles
-to a solid.<Note id="1" /> No sketching, no mouse, no feature tree -- a
+to a solid.<Note id="1" /><Depth inline max={1}> A language model can't drag a
+mouse across a 3D surface, but it writes and revises text fluently.</Depth><Depth inline min={2}> No sketching, no mouse, no feature tree -- a
 `cylinder()` here, a `difference()` there, variables for every dimension that
-might change.
+might change.</Depth>
+
+<Depth min={2}>
 
 For an AI pair, that property is the entire ballgame. A language model has no
 eyes on a B-rep surface and no cursor to drag a fillet with. It does have
 fluency in structured text: emitting it, revising it, holding its rules in
-its head. Code-CAD converts "model this" into a text-transformation problem.
+its head. Code-CAD converts "model this" into a text-transformation problem.<Depth inline min={3}>
 And the side effects are the point: the part is parametric by default,
-diffable in git, and re-generatable for as long as the library holds still.
+diffable in git, and re-generatable for as long as the library holds still.</Depth>
 One dimension on the collar is still a guess -- the skimmer throat is modeled
 at 225 millimeters because I haven't fished the real number out of the deck
 yet -- and when I do, the fix is editing one variable and reprinting, not
 remodeling.
 
-The geometry was always text, of course; OpenSCAD predates the AI that now
-writes it by fifteen years. What changed is who writes it. The unit of
+</Depth>
+
+The geometry was always text, of course<Depth inline min={2}>; OpenSCAD predates the AI that now
+writes it by fifteen years</Depth>. What changed is who writes it. The unit of
 iteration used to be my evening with a manual, and now it's a sentence. The
 heavy lifting rides on BOSL2, the community geometry library that gives
 OpenSCAD real fillets, edge rounding, and attachment semantics.<Note id="2" />
@@ -54,9 +64,45 @@ Claude reaches for library constructs I wouldn't have found in a week of
 docs, and it also invents plausible-looking arguments that don't exist.
 Which is why the whole workflow hangs on a loop.
 
+<Depth min={4}>
+
+The collar file is 242 lines and exposes 29 values to OpenSCAD's Customizer,
+each with a comment and most with a slider range. Two of them are
+measurements. The others are choices: a 4 mm wall, 0.4 mm of clearance around
+the brim, five arms, a 12 mm outer ring. Every other dimension is derived from
+those 29, so changing `light_d` moves the bore, the shelf, the lid opening and
+the snap posts together.
+
+</Depth>
+
+<Depth min={5}>
+
+The derived block, verbatim:
+
+```scad
+cavity_d     = light_d + 2 * clearance;     // bore that hugs the brim
+shelf_id     = light_d - 2 * bottom_lip;    // light rests on this ring
+lid_id       = light_d - 2 * top_lip;       // open hole through the lid
+wall_od      = cavity_d + 2 * wall;         // OD of brim wall + lid ring
+shelf_z      = flange_h;                    // top of the cup shelf
+brim_top_z   = shelf_z + brim_h;            // top edge of the brim
+lid_top_z    = brim_top_z + roof;           // top face of the lid (assembled)
+post_inner_r = wall_od / 2 + post_gap;      // inner face of the posts
+```
+
+With the measured 110 and 25, that is a 110.8 mm bore inside a 118.8 mm hub, a
+100 mm opening through the shelf, and a lid whose top face sits 33 mm above
+the build plate.
+
+</Depth>
+
+<Depth min={2}>
+
 For caps, plugs, rings, shims, brackets, and bins, code-CAD driven by
 conversation is now the fastest tool I own -- a claim I would not have
 believed in May.
+
+</Depth>
 
 ## The loop
 
@@ -64,14 +110,16 @@ The workflow is a conversation with a compiler in the middle:
 
 <RenderLoopDiagram />
 
-The collar went through five shapes in one evening, every step a single ask.
+The collar went through five shapes in one evening, every step a single ask.<Depth inline min={2}>
 A solid two-half clamp bolted together. Then a top-and-bottom clamshell that
 snapped instead of bolting. Then the solid cup opened into a spoked frame.
 Then fillets and brim windows. Then the frame's posts re-rooted so each arm
 anchors into the hub wall. None of them was a spec. Claude edits the source, renders it headless
 (`openscad -o check.png`), and reads the picture back itself; I look at the
-same image with different questions. The artifact under all of it stays
-plain text -- these lines are verbatim from the model file:
+same image with different questions.</Depth><Depth inline min={3}> The artifact under all of it stays
+plain text -- these lines are verbatim from the model file:</Depth>
+
+<Depth min={3}>
 
 ```scad
 /* [Light measurements] */
@@ -90,6 +138,8 @@ part = "bottom"; // [assembled, bottom, lid, both_flat]
 One `openscad -o cup.stl -D 'part="bottom"' collar.scad` later, the cup is
 sitting in the slicer.
 
+</Depth>
+
 <Figure
   src="/images/writing/cad-by-conversation/collar-assembled.png"
   alt="OpenSCAD render of the assembled skimmer light collar: a wide spoked outer ring surrounding a cylindrical windowed hub with small gabled windows, capped by a gray lid ring hooked over the snap posts."
@@ -97,6 +147,8 @@ sitting in the slicer.
   height={860}
   caption="The picture we both look at: the assembled collar, straight off openscad. Windowed hub, spokes out to the too-wide ring, lid hooked by the posts."
 />
+
+<Depth min={2}>
 
 Two constraints I had to state like requirements, because no render would
 ever surface them: both parts print flat with no supports, and the little
@@ -107,13 +159,98 @@ gabled windows in the brim are self-supporting at 45 degrees.
   and it settles the argument faster than either of us can talk.
 </PullQuote>
 
+</Depth>
+
+<Depth min={4}>
+
+## How the collar holds together
+
+The cup is three modules in one union: a hub, a frame and five snap posts. The
+hub is a cylinder with the brim cavity bored out of it, leaving a shelf that
+laps 5 mm under the light. The frame is a wheel 2 mm thick: the 225 mm outer
+ring, 12 mm wide, joined to the hub by five 10 mm spokes, with every corner of
+the 2D footprint rounded to a 4 mm fillet before it is extruded. The lid is a
+single BOSL2 `tube()`, a flat ring 4 mm thick that laps 3 mm over the top of
+the brim.
+
+Each post is a cantilever that stands 0.6 mm clear of the hub wall, so the two
+don't fuse on the bed, and ends in a hook that laps 3 mm over the lid. Its
+root bites 2 mm into the hub wall, which is what the fifth shape of the
+evening changed. The posts pull the lid down and trap the 25 mm brim between
+it and the shelf.
+
+The no-supports requirement shows up as geometry in two places. Each brim
+window is a 16 mm slot topped by a gable that narrows to a point over 8 mm of
+height, a 45-degree roof the printer can build with nothing under it. The
+underside of each hook is a 45-degree ramp for the same reason. Three windows
+sit in each gap between arms, 15 in all, and the wall under every post stays
+solid.
+
+My notes list three numbers still to lock. One is the skimmer throat width
+behind `collar_od`. The second is `frame_h`, the wheel thickness, which trades
+stiffness against material at 225 mm across. The third is the feel of the
+snap, tuned through `hook_d` and `post_root` after a few cycles on the test
+print.
+
+</Depth>
+
+<Depth min={5}>
+
+The window cutter, verbatim. The `prismoid` is the gable: full window width at
+its base, 0.2 mm at its peak, half the window width tall.
+
+```scad
+/* one window: vertical slot with a 45-deg gable roof (self-supporting) */
+module window_cutter() {
+    xc    = (cavity_d / 2 + wall_od / 2) / 2;
+    depth = wall + 6;                       // through the wall, with margin
+    z0    = shelf_z + win_base;
+    zt    = brim_top_z - win_top - win_w / 2;
+    move([xc, 0, (z0 + zt) / 2])
+        cuboid([depth, win_w, zt - z0], rounding = win_round, edges = "Z");
+    move([xc, 0, zt])
+        prismoid(size1 = [depth, win_w], size2 = [depth, 0.2], h = win_w / 2, anchor = BOTTOM);
+}
+```
+
+One `part` variable selects what the file emits: `assembled` for the picture
+above, `bottom` and `lid` for the two STLs, `both_flat` to lay both out on one
+plate. Curves render at `$fn = 160`. The two exports:
+
+```sh
+openscad -o cup.stl -D 'part="bottom"' collar.scad
+openscad -o lid.stl -D 'part="lid"' collar.scad
+```
+
+</Depth>
+
 ## Compiles clean, fails as an object
 
 Render-and-eyeball exists because the model reliably produces geometry that
-compiles and still fails as an object. Its recurring failure class is
-composition: parts that meet but don't join. The drawer-organizer bins made
+compiles and still fails as an object.<Depth inline min={2}> Its recurring failure class is
+composition: parts that meet but don't join.</Depth> The drawer-organizer bins made
 it a trilogy, three versions in two days, every one of them passing the
 renders and failing in the slicer.
+
+<Depth max={1}>
+
+The worst of the three left a visible step where each finger dip met the bin's
+rim. The rim had been assembled from separate pieces that touched without
+joining.
+
+</Depth>
+
+<Depth min={2} max={2}>
+
+The deep one was version 3: visible steps where the finger dips met the rim,
+because the rim was composited from separate segments meeting at tangent
+seams. The fix that stuck was to rebuild the rim as one closed path swept in a
+single pass, dips included, so no junction exists to fail. The rule went into
+the project notes as *make seams impossible instead of patching them*.
+
+</Depth>
+
+<Depth min={3}>
 
 Version 2.1: the interior corner fillets notched the rolled rim by a
 millimeter at each corner, because the rim bead only covered the midline of
@@ -130,6 +267,10 @@ millimeters of height. Bounding-box checks to a hundredth of a millimeter
 proved each rebuild matched the intended envelope -- code equivalence, not
 print precision.
 
+</Depth>
+
+<Depth min={2}>
+
 <Figure
   src="/images/writing/cad-by-conversation/bin-v3-hero.png"
   alt="OpenSCAD render of a long rectangular drawer bin with a rounded rolled rim and a scooped finger dip at each end."
@@ -138,14 +279,113 @@ print precision.
   caption="Bin v3: the rolled rim and both finger dips are one continuous swept path. No junctions left to fail."
 />
 
-Three catches, zero caught by a render. Renders aren't useless (they killed
+</Depth>
+
+Three catches, zero caught by a render.<Depth inline min={2}> Renders aren't useless (they killed
 four collar shapes in one evening), but composition failures hide in exactly
-the places a pretty picture glosses over. The
+the places a pretty picture glosses over.</Depth> The
 slicer's layer preview prices every mistake in grams and hours, shows the
 step the render forgave, and doesn't care how nice the code reads. Model
 proposes, render persuades, slicer decides.
 
+<Depth min={4}>
+
+## What each slicer catch changed
+
+The stock Gridfinity generator only makes boxes, so the bin bodies were custom
+from version 2 on: a rolled rim, a finger dip in each end wall, a filleted
+interior, and feet built to the published Gridfinity profile so they seat in
+the plates like stock bins.
+
+Version 2 ran one bead along the midline of a 2 mm wall. The interior corner
+fillets made the wall wider than 2 mm at the corners, and the bead didn't
+cover the extra. Version 2.1 added a cap that followed the wall and the
+fillets, which held the crest at 42.00 mm all the way around. The rim was now
+three kinds of piece, a swept bead, the cap and separate arcs for the dips,
+each relying on exact tangency where it met the next.
+
+Version 3 threw that out. One closed 3D path now runs the whole rim, and one
+circle is swept along it. Two supporting changes made a single bead
+sufficient. The wall became a uniform 2 mm: outer corners at a 6 mm radius,
+with the interior corner fillet and the floor fillet both 4 mm and cut by the
+same sphere, so 6 minus the wall is exactly 4 and no corner is fatter than the
+bead. And the dips changed from circular arcs to a cosine curve 56 mm wide and
+13 mm deep, which meets the straight rim with zero slope, so no crease marks
+where a dip ends.
+
+Version 3.1 was a consequence of version 3. The body now had 6 mm corners and
+the feet kept the Gridfinity profile's 3.75 mm, which left about 0.9 mm of
+foot showing at each bottom corner. The body's corner radius now starts at
+3.75 where it meets the foot and reaches 6 at a height of 11 mm, where the
+interior fillet is fully developed. The straight faces stay vertical and the
+corners ease out at about 8.5 degrees. The feet didn't change, because by then
+the printed grid had already proven the socket fit.
+
+After each rebuild the STL bounding boxes were checked against the math: 83.5
+mm wide, 167.5, 209.5 or 251.5 mm long depending on the model, 42.00 mm tall.
+
+</Depth>
+
+<Depth min={5}>
+
+<CadConvRimProfile />
+
+The whole rim is these lines. The path follows the wall midline, gets
+resampled so no segment is longer than 0.6 mm, and drops by `dipz` only on the
+two end walls:
+
+```scad
+function dipz(x) = abs(x) < dip_hw ? dip_d / 2 * (1 + cos(180 * x / dip_hw)) : 0;
+
+rim_mid_2d = subdivide_path(
+    rect([ox - wall, oy - wall], rounding = r_body - bead_r),
+    maxlen = 0.6, closed = true);
+
+rim_path = [for (p = rim_mid_2d)
+    [p.x, p.y,
+     wall_top - (abs(p.y) > (oy - wall) / 2 - 0.01 ? dipz(p.x) : 0)]];
+
+module rim_bead() {
+    path_sweep(circle(r = bead_r), rim_path, closed = true);
+}
+```
+
+Order matters in the assembly. The dip cutters come out of the walls first and
+the bead is unioned last, so the bead caps the cut edge:
+
+```scad
+union() {
+    difference() {
+        union() {
+            feet();
+            body_shell();
+        }
+        cavity();
+        dip_cutter();
+    }
+    rim_bead();
+}
+```
+
+The version 3.1 fix is a `hull()` between two thin slices, one with the foot's
+corner radius and one with the body's:
+
+```scad
+module body_shell() {
+    hull() {
+        translate([0, 0, 4.74]) linear_extrude(0.01) rrect(ox, oy, 3.75);
+        translate([0, 0, blend_top]) linear_extrude(0.01) rrect(ox, oy, r_body);
+    }
+    translate([0, 0, blend_top])
+        linear_extrude(wall_top - blend_top) rrect(ox, oy, r_body);
+}
+```
+
+</Depth>
+
 ## A month of parts
+
+<Depth min={2}>
 
 | Part | The input | Material | Where it stands |
 | --- | --- | --- | --- |
@@ -154,6 +394,10 @@ proposes, render persuades, slicer decides.
 | "BEWARE of DOUG" sign | 1 reference photo of the classic enamel sign | tri-color PLA | print files ready, inlay + raised variants |
 | Hole plugs, 9 sizes | calipers on chair + door-frame holes | PLA | nine STLs on one batch plate |
 | Silverware drawer kit | tape measure: 337 x 450 x 75 mm | PLA | grid printed and fitted; bins sliced, gated on one fork |
+
+</Depth>
+
+<Depth min={3}>
 
 **The rod-holder insert** -- a gift for a fishing buddy -- dropped the sketch
 entirely: modeled from three reference photos and four parametric inputs, an
@@ -164,6 +408,27 @@ the snap). And it carries my favorite trick of the batch: the model ships a
 `part="cutaway"` half-section whose only job is letting both of us see the
 internal bore and slot in a render -- an inspection fixture, living in the
 same file as the part.
+
+</Depth>
+
+<Depth min={4}>
+
+Four inputs drive the whole insert: the rod shaft diameter, the cone's
+diameter at its wide top and at its narrow base, and its height. The printed
+one is 10, 51, 40 and 60 mm. The bore is the rod plus 0.4 mm of clearance on
+each side, 10.8 mm, and the slot neck is 90 percent of the bore, which pinches
+a 10 mm rod by 0.28 mm on its way in. My notes say to drop that factor toward
+0.8 if the rod doesn't hold, and to set it to 1.0 for rigid PLA: an open slot
+with no snap. For the snap version they name PETG or TPU 95A.
+
+It prints narrow end down with no supports. The six grip flutes around the top
+are cut by vertical cylinders placed at the top radius, so they bite only
+where the cone is wide and fade out above the zone that wedges into the
+holder.
+
+</Depth>
+
+<Depth min={3}>
 
 **The sign.** A friend named Doug was always going to receive a "BEWARE of
 DOUG" sign in the style of the classic black-and-red enamel original, and
@@ -185,6 +450,56 @@ It also surfaced the best gotcha of the month: OpenSCAD's fast preview
 mis-colors intersected geometry, so the field flashed red until we forced the
 full CGAL render. The fast picture lies a little.
 
+</Depth>
+
+<Depth min={4}>
+
+The sign is 150 by 105 mm and 3 mm thick. The body is solid black from top to
+bottom and the white and red exist only in the skin, so at a 0.20 mm layer
+height the printer swaps filament across five layers and prints the other ten
+in one color. The file exports as a single 3MF with the three colors baked in
+per region, with three STLs on shared coordinates as the fallback.
+
+The mis-colored preview has a specific cause. The rounded outer edge comes
+from intersecting every color region with one rounded envelope, and
+OpenSCAD's fast preview draws that intersection in the wrong color. The
+`--render` flag on the command line, or F6 in the app, computes the exact
+geometry per color.
+
+The positions of "of" and "DOUG" come from glyph widths measured once and
+typed into the file as constants, so it opens in any OpenSCAD build without
+turning on an experimental text-measuring feature.
+
+</Depth>
+
+<Depth min={5}>
+
+The slicer settings my notes recommend for the sign:
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| Layer height | 0.20 mm, or 0.16 for sharper letters | the color band is 1.0 mm, five layers at 0.20 |
+| Orientation | inlay face down, raised face up | both are the as-imported orientation |
+| Walls / top / bottom | 3 / 4 / 4 | clean show faces |
+| Infill | 15% gyroid | it's a plaque |
+| Supports | off | nothing overhangs |
+| Flush into objects and infill | on | sends the purge into the black body |
+| Prime tower | on | required for the swaps, and small here |
+
+The export and the two preview renders:
+
+```sh
+openscad -D 'style="inlay"' -o beware_of_doug_inlay.3mf beware_of_doug.scad
+openscad --render -D 'style="raised"' --camera=0,0,0,58,0,22,460 --autocenter \
+  --imgsize=1100,800 -o preview_raised_hero.png beware_of_doug.scad
+openscad --render -D 'style="inlay"' --projection=o --camera=0,0,-300,0,0,0 \
+  --viewall --autocenter -o preview_inlay_front.png beware_of_doug.scad
+```
+
+</Depth>
+
+<Depth min={3}>
+
 **The hole plugs** replaced a 290-piece assortment of stick-on hole covers
 whose drawer never once contained the size I needed. The replacement is a
 parametric generator in the well-worn customizer style: barbed push-plug,
@@ -193,19 +508,123 @@ however many you ask for. Nine sizes between 8.5 and 15 millimeters, laid
 out on one plate, matched to the actual holes in the Adirondack chairs and a
 sliding-door frame instead of to a kit manufacturer's guess.
 
-**The drawer kit** ran the loop at furniture scale. The Gridfinity project
+</Depth>
+
+<Depth min={4}>
+
+The generator takes a hole diameter, a wall thickness, a head scale, a head
+thickness and a plug depth. At the file's defaults the head is 1.25 times the
+hole diameter and 0.8 mm thick, the plug wall is 1 mm, and the retention ribs
+come from a sawtooth profile stepped every 0.5 mm. The whole plug is one 2D
+profile revolved around its axis, with an optional slot cut through the shank.
+The nine sizes are 8.5, 8.8, 9, 10.5, 10.8, 11, 13.5, 14 and 15 mm: three
+groups of three.
+
+</Depth>
+
+**The drawer kit** ran the loop at furniture scale.<Depth inline max={2}> The grid needed no
+modeling, because the Gridfinity project already ships a baseplate generator.
+Custom work started only at the bins, and those are the three slicer failures
+above.</Depth><Depth inline min={3}> The Gridfinity project
 already ships a parametric baseplate generator, so the grid itself needed
 zero modeling -- tape-measure numbers in, plates out, split two-by-two for a
 256-millimeter bed. An eight-by-ten grid of 42-millimeter units covers 336
 by 420; the generator fuses the leftover ~30 millimeters (29 after clearance) onto
 the rear plates as fit-to-drawer padding, and the assembled set lands within a millimeter of
-the drawer on both axes.<Note id="3" /> The custom work started only when
+the drawer on both axes.</Depth><Note id="3" /><Depth inline min={3}> The custom work started only when
 the bins wanted rolled rims and finger dips the stock generator doesn't do,
 which is what produced the trilogy above. The full kit budgets over a
 kilogram of filament, so the slicer's grams-and-hours pricing stopped being
 abstract; the grid went first and doubled as the calibration test, and the
 bins sit sliced awaiting one over-length fork that decides which column
-layout prints.
+layout prints.</Depth>
+
+<Depth min={4}>
+
+<CadConvDrawerPlates />
+
+Two generator calls made the grid. Both ask for a 4 by 5 plate in the thin 5
+mm style with magnet holes off. The rear call adds a target length of 239 mm
+and a flag that pushes all 29 mm of padding to one edge. Two copies of each
+cover the drawer, one plate per print job, and the grid pitch continues across
+the seams, so a bin can sit astride two plates. The first job was one front
+plate plus a single-cell test bin, checked in the drawer before the other
+three plates ran. Everything prints in PLA on the stock 0.20 mm profile with
+no supports.
+
+The bin kit is three models, all two cells wide and 42 mm tall with no
+stacking lip: four 2x5 bins, two 2x6 and two 2x4. Those eight bins cover all
+80 cells in four columns, and three bins fit the bed side by side, so the kit
+is three print jobs.
+
+The fork decides one column. A 2x5 bin is about 205 mm long inside at the top
+and 198 at the floor. If the longest dinner fork runs over 200 mm, the fork
+column flips to a 2x6 and a 2x4: the same models at different print counts,
+with nothing to re-render. A knife or serving piece over 245 mm means
+rendering a 2x7 and pairing it with a 2x3 to keep the column at ten cells.
+
+The pad strip got a part too. A rail 28.5 mm deep and 37.2 mm tall sits on the
+pad behind the bins, in two pieces because 335 mm won't fit the bed even on
+the diagonal. The long piece keeps a slot about 251 mm long for chopsticks and
+skewers. Its height is arithmetic: bins nest 4.75 mm into the 5 mm plates and
+top out 42.25 mm off the drawer floor, and the rail on its 5 mm pad lands at
+42.2. The first rail missed that and stood 4.75 mm proud of the bins until a
+polish pass the same day caught it.
+
+<CadConvFilamentChart />
+
+Printed solid, the fifteen pieces would weigh about 1.8 kg. My notes budget
+1.2 to 1.4 kg once the slicer applies sparse infill, with the bins alone
+landing around a full 1 kg spool.
+
+</Depth>
+
+<Depth min={5}>
+
+The grid is two calls to the stock baseplate generator, plus one to the stock
+bin generator for the test bin. From the build script, with paths shortened:
+
+```sh
+# style_plate=0 -> thin plate (5mm, the drawer style). No magnets in a drawer.
+common=(-D style_plate=0 -D enable_magnet=false)
+
+openscad -o baseplate-front-4x5.stl \
+  -D gridx=4 -D gridy=5 "${common[@]}" \
+  "$REPO/gridfinity-rebuilt-baseplate.scad"
+
+# fity=1 pushes the 29mm pad to one edge -- that edge goes against the back wall.
+openscad -o baseplate-rear-4x5-pad.stl \
+  -D gridx=4 -D gridy=5 -D distancey=239 -D fity=1 "${common[@]}" \
+  "$REPO/gridfinity-rebuilt-baseplate.scad"
+
+# Socket fit check before designing custom bins. Plain 1x1x3u, flat base, no tab.
+openscad -o test-bin-1x1x3.stl \
+  -D gridx=1 -D gridy=1 -D gridz=3 \
+  -D refined_holes=false -D style_tab=5 -D scoop=0 \
+  "$REPO/gridfinity-rebuilt-bins.scad"
+
+for len in 4 5 6; do
+  openscad -o "bin-2x${len}.stl" -D gy="$len" cutlery-bin.scad
+done
+```
+
+The script ends by printing the sizes every STL should measure: plates 168 x
+210 x 5 and 168 x 239 x 5, the test bin 41.5 square, bins 83.5 x 167.5, 209.5
+or 251.5 x 42, rails 255 and 80 x 28.5 x 37.2. It needs OpenSCAD's snapshot
+build, whose Manifold backend renders each plate in seconds.
+
+</Depth>
+
+<Depth max={2}>
+
+Two of the five builds now wait on a number only I can go get: the width of
+the skimmer throat for the collar, and the length of one fork for the
+silverware bins. The critical path of the whole workflow is me, holding a tape
+measure.
+
+</Depth>
+
+<Depth min={3}>
 
 Rules the month wrote into the project notes: search the model libraries
 before modeling anything (the printer's own desiccant containers were a
@@ -218,12 +637,32 @@ And the bottleneck is no longer modeling. Two of the five builds sit
 gated on a number only I can go get, which makes the critical path of the
 whole workflow me, holding a tape measure.
 
+</Depth>
+
+<Depth min={4}>
+
+The search rule has an order in my notes: the printer maker's own model
+library first, because its files carry print profiles, then three other
+public libraries. The material rule has a number behind it. PLA starts to
+warp at about 55°C, which is why a closed car or full Florida sun destroys
+it, and the printer's chamber heats to 65°C, which is why it prints ASA
+comfortably. Flexible filament
+feeds from an external spool, because flexibles jam the multi-material unit.
+
+</Depth>
+
+<Depth min={2}>
+
 ## The inputs keep getting thinner
 
 Look at the input column again: a sketch, then photos, then a single
 reference image, then bare numbers off a tape measure. The loop holds as the
 input thins: three photos or two tape-measure numbers still come back as a
 shape, and judging the shape is the same job at every thickness.
+
+</Depth>
+
+<Depth min={3}>
 
 The month started in FreeCAD: I hand-modeled replacement card-table inserts
 and a solar-light plate one feature at a time with a mouse. Real parts, fine
@@ -238,6 +677,8 @@ plus the print-ready
 [cup](/models/cad-by-conversation/skimmer-light-collar-cup.stl) and
 [lid](/models/cad-by-conversation/skimmer-light-collar-lid.stl) STLs. Flat,
 support-free, ASA recommended if it lives outside.
+
+</Depth>
 
 The collar's first print has been snapping on and off the pool light since
 June while one last number decides its final width. The sketch and every

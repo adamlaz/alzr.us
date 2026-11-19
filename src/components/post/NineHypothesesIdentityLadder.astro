@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/nine-hypotheses-identity-ladder-light.svg?raw';
+import darkSvg from '../../assets/diagrams/nine-hypotheses-identity-ladder-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Six rules, tried in order, decide whether two accounts are one person"
+  caption="The first rule that matches wins. Only a fuzzy match can log a confidence under 0.9."
+>
+  Six matching rules in the order the resolver tries them, with the confidence it logs for each. Same account ID, same email and same normalized name each log 1.0. A known alias logs 0.95. The same first and last name logs 0.9. A fuzzy string match needs a score of 82 or more out of 100 and logs that score divided by 100, so it can land anywhere from 0.82 up. Any merge logged under 0.9 goes to a review list.
+</Chart>

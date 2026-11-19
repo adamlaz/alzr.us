@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/giving-brief-first-evening-light.svg?raw';
+import darkSvg from '../../assets/diagrams/giving-brief-first-evening-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Seven more commits in the 90 minutes after the first one"
+  caption="The kit repo's git log for its first evening, 8 commits. Filled dots are fixes found by running it; squares are the read and write paths added for runs with nobody at the keyboard."
+>
+  Timeline of one evening's 8 commits. The first commit lands at 9:41 PM. A wording change follows at 9:51 PM. Two
+  paths for headless runs land at 9:54 and 10:02 PM. Two permission fixes land at 10:25 and 10:56 PM. Two rules for
+  unattended runs land at 11:07 and 11:11 PM.
+</Chart>

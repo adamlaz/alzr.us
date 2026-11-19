@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="208" viewBox="0 0 420 208">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#1c1d24">
+
+<text x="0" y="34" font-size="30" font-weight="500" fill="#2f3eb0" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">27.7%</text>
+<text x="104" y="32" font-size="15" font-weight="600">epics finished</text>
+<path d="M0 59 L412 59" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<rect x="0" y="46" width="114.1" height="26" rx="3" fill="#2f3eb0"/>
+<text x="0" y="92" font-size="13.5" fill="#55565f">of roughly 480 opened in the trailing 12 months</text>
+<text x="0" y="138" font-size="30" font-weight="500" fill="#1c1d24" font-family="'Fraunces Variable', 'Iowan Old Style', Georgia, serif">89.4%</text>
+<text x="104" y="136" font-size="15" font-weight="600">marked High priority</text>
+<path d="M0 163 L412 163" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<rect x="1" y="151" width="366.3" height="24" rx="3" fill="none" stroke="#1c1d24" stroke-width="1.8"/>
+<text x="0" y="196" font-size="13.5" fill="#55565f">of open engineering issues</text>
+</g>
+</svg>

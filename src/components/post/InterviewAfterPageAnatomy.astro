@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/interview-after-page-anatomy-light.svg?raw';
+import darkSvg from '../../assets/diagrams/interview-after-page-anatomy-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Two of the six blocks are written per candidate"
+  caption="The interview page, top to bottom. Filled blocks are the agent's per-candidate work. The scorecard keeps its fixed rows and gets its evidence cells pre-filled from the research."
+>
+  The six blocks of the interview page in order. Header: links to the research. The read: written per candidate. How I
+  run it: the same on every page. Probe bank: written per candidate. Scorecard: fixed rows, with evidence pre-filled per
+  candidate. After the call: the same on every page.
+</Chart>

@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/discovery-tier-counts-light.svg?raw';
+import darkSvg from '../../assets/diagrams/discovery-tier-counts-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Of 6,690 hits across 49 runs, 83 tiered likely"
+  caption="Summed from the tier counts each run saved, late July to mid-November 2026. Counts only."
+>
+  Bar chart out of 6,690 username hits from 49 saved research runs. 6,218 landed in noise: a bare hit, or metadata that
+  matched nothing. 389 landed in possible: the name in free text or the handle, or a location match. 83 landed in
+  likely: first and last name in a structured name field.
+</Chart>

@@ -3,11 +3,13 @@ title: 'One frame from a four-gigabyte video'
 date: 2026-07-10
 description: "How a tiny ffmpeg service behind an edge worker turned 'a thumbnail at any timestamp of any video' from a years-old wish into a two-second URL, and what a suddenly-free capability does to a product conversation."
 draft: false
+depth: true
 ogTreatment: default
 pullQuote: "Auto-selection doesn't find the best frame. It filters out garbage."
 tags: ['infrastructure', 'media', 'craft']
 ---
 
+import Depth from '../../components/post/Depth.astro';
 import PullQuote from '../../components/post/PullQuote.astro';
 import Figure from '../../components/post/Figure.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
@@ -15,30 +17,71 @@ import Note from '../../components/post/Note.astro';
 import FrameAnatomyDiagram from '../../components/post/FrameAnatomyDiagram.astro';
 import FrameRequestDiagram from '../../components/post/FrameRequestDiagram.astro';
 import AutoRejectionDiagram from '../../components/post/AutoRejectionDiagram.astro';
+import OneFrameSeekTimesChart from '../../components/post/OneFrameSeekTimesChart.astro';
+import OneFrameBlueThresholdChart from '../../components/post/OneFrameBlueThresholdChart.astro';
 
-A video, any timestamp, 640 pixels wide: one customer's home video, thirty minutes in. Click and a JPEG of that moment comes back in about two seconds, minted on demand from a multi-gigabyte file. The link carries an expiring signature; in an hour it's dead. A founder who has wanted this capability for years, and had quietly filed it under impossible, replied with the exploding-head emoji. Then the ideas started, and they haven't stopped.
+A video, any timestamp, 640 pixels wide: one customer's home video, thirty minutes in. Click and a JPEG of that moment comes back in about two seconds, minted on demand from a multi-gigabyte file.<Depth inline min={3}> The link carries an expiring signature; in an hour it's dead.</Depth><Depth inline min={2}> A founder who has wanted this capability for years, and had quietly filed it under impossible, replied with the exploding-head emoji. Then the ideas started, and they haven't stopped.</Depth>
 
 ## The problem that kept not getting solved
 
-I run engineering at a consumer product that helps families preserve their memories. Behind it sits an archive of home video that is nothing like web video: the files run to gigabytes each, the recordings run to hours, and there are millions of them in private object storage. The longest one I've tested runs 4.8 GB and six hours forty minutes of somebody's life.
+I run engineering at a consumer product that helps families preserve their memories.<Depth inline max={1}> Its archive is millions of home videos, each one gigabytes and hours long.</Depth><Depth inline min={2}> Behind it sits an archive of home video that is nothing like web video: the files run to gigabytes each, the recordings run to hours, and there are millions of them in private object storage.</Depth><Depth inline min={3}> The longest one I've tested runs 4.8 GB and six hours forty minutes of somebody's life.</Depth>
+
+<Depth max={1}>
+
+For years, every route to one primitive, a picture from a specific instant inside one of those videos, failed the same audit:
+
+</Depth>
+
+<Depth min={2}>
 
 Half the product ideas on our wall need the same primitive: a picture from a specific instant inside one of those videos. A clip needs a cover image. A "moments" email wants the frame where the birthday cake shows up. A scrubber wants a preview under your thumb as you drag. And for years, every route to that primitive failed the same audit:
 
-1. Pre-render everything. Thumbnails for every second of every video means billions of images, almost none of which anyone would ever look at.
-2. Cut frames on demand, the naive way. Download a 4 GB file to produce a 30 KB image -- a hundred-thousand-to-one ratio of bytes read to bytes served, and tens of seconds per thumbnail.
-3. Buy it. Cloudflare sells frame extraction off the shelf, but it caps input at 100 MB and ten minutes<Note id="1" /> -- our median video blows past both. A hosted media-transformation service we piloted earlier this year could handle the files, but it never beat the two seconds you just saw, and it priced the job in the thousands of dollars a month.
+</Depth>
 
-So the feature sat in the someday pile, looking like a big-company problem that wanted a big-company system.
+1. Pre-render everything.<Depth inline max={1}> That means billions of images almost nobody would look at.</Depth><Depth inline min={2}> Thumbnails for every second of every video means billions of images, almost none of which anyone would ever look at.</Depth>
+2. Cut frames on demand, the naive way. Download a 4 GB file to produce a 30 KB image<Depth inline min={2}> -- a hundred-thousand-to-one ratio of bytes read to bytes served, and tens of seconds per thumbnail</Depth>.
+3. Buy it. Cloudflare sells frame extraction off the shelf, but it caps input at 100 MB and ten minutes<Note id="1" /> -- our median video blows past both.<Depth inline min={3}> A hosted media-transformation service we piloted earlier this year could handle the files, but it never beat the two seconds you just saw, and it priced the job in the thousands of dollars a month.</Depth>
+
+So the feature sat in the someday pile<Depth inline min={3}>, looking like a big-company problem that wanted a big-company system</Depth>.
 
 ## Three facts about files
 
-Video files carry a map. An MP4 -- what our masters are -- contains an index, the moov atom, recording where every moment of the video lives in the file, down to the byte.<Note id="2" /> Read the index and you know which slice of a 4 GB file holds minute 133.
+Video files carry a map. An MP4<Depth inline min={3}> -- what our masters are --</Depth> contains an index, the moov atom, recording where every moment of the video lives in the file, down to the byte.<Note id="2" /><Depth inline min={2}> Read the index and you know which slice of a 4 GB file holds minute 133.</Depth>
 
-Video is keyframes plus diffs. Every so often -- a second or a few, depending on the encode -- the file stores a complete picture; the frames between only describe what changed. To render any instant, you jump to the nearest keyframe before it and decode forward a fraction of a second.
+Video is keyframes plus diffs. Every so often<Depth inline min={3}> -- a second or a few, depending on the encode --</Depth> the file stores a complete picture; the frames between only describe what changed.<Depth inline min={2}> To render any instant, you jump to the nearest keyframe before it and decode forward a fraction of a second.</Depth>
 
-Storage speaks byte ranges. HTTP has let clients request an arbitrary slice of a file since the nineties.<Note id="3" /> Nothing obliges you to read the four gigabytes you don't need.
+Storage speaks byte ranges. HTTP has let clients request an arbitrary slice of a file since the nineties.<Note id="3" /><Depth inline min={2}> Nothing obliges you to read the four gigabytes you don't need.</Depth>
+
+<Depth max={2}>
+
+Put the three together and a program reads the index, jumps to the complete picture just before the moment it wants, and fetches only the few megabytes around it.
+
+</Depth>
+
+<Depth min={3}>
 
 ffmpeg composes all three when you pass the seek before the input -- `-ss` ahead of `-i` -- which tells it to consult the index and jump, rather than read the file front to back. Pointed at a signed storage URL, it fetches the index, does the math, range-reads the few megabytes around the target keyframe, and emits one JPEG.
+
+</Depth>
+
+<Depth min={5}>
+
+The whole timecode path is one command. For the request at the top of this post, thirty minutes in at 640 wide, it reads:
+
+```sh
+ffmpeg -nostdin \
+  -protocol_whitelist https,tls,tcp,crypto \
+  -ss 1800.000 \
+  -i "$SIGNED_URL" \
+  -frames:v 1 \
+  -vf scale=640:-2 \
+  -q:v 4 \
+  -f mjpeg pipe:1
+```
+
+`scale=640:-2` keeps the aspect ratio and forces an even height, which the JPEG encoder needs. `-q:v 4` is on ffmpeg's own 2-to-31 scale, where lower is sharper; 4 lands near 82 on the 0-to-100 scale most people know from JPEG. `-f mjpeg pipe:1` sends the single frame to stdout, so nothing touches disk. The binary is a static ffmpeg 7.1 build, pinned by image digest so a rebuild can't change it.
+
+</Depth>
 
 <FrameAnatomyDiagram />
 
@@ -46,25 +89,115 @@ ffmpeg composes all three when you pass the seek before the input -- `-ss` ahead
   A four-gigabyte video costs about as much to read as a large photo, if you know exactly where to look.
 </PullQuote>
 
-I measured it on the worst file we have, the 4.8 GB six-hour-forty tape: 1.9 to 3.0 seconds per frame, end to end, including the network -- against a warm container; the first request after an idle spell pays a couple of seconds more while it wakes. And that's with our current masters storing the index at the tail of the file, which costs an extra round trip to the tail before the seek can start. New encodes will write the index up front -- one flag at transcode time<Note id="4" /> -- and the same request should land well under a second. The encode pipeline is part of the feature: index placement, steady keyframe spacing, and a modest bitrate are what keep a frame read photo-sized.
+I measured it on the worst file we have, the 4.8 GB six-hour-forty tape: 1.9 to 3.0 seconds per frame, end to end, including the network<Depth inline min={3}> -- against a warm container; the first request after an idle spell pays a couple of seconds more while it wakes</Depth>.<Depth inline max={1}> Today the index sits at the end of each file.</Depth><Depth inline min={2}> And that's with our current masters storing the index at the tail of the file, which costs an extra round trip to the tail before the seek can start.</Depth> New encodes will write the index up front -- one flag at transcode time<Note id="4" /> -- and the same request should land well under a second.<Depth inline min={3}> The encode pipeline is part of the feature: index placement, steady keyframe spacing, and a modest bitrate are what keep a frame read photo-sized.</Depth>
+
+<Depth min={4}>
+
+## Three seeks, one file
+
+The measurement was three seeks into that one file with a local ffmpeg over a residential connection, before there was a service to measure: ten seconds in, 200 minutes in and 380 minutes in.
+
+<OneFrameSeekTimesChart />
+
+The plan carried a stop line: more than ten seconds a frame, or more than 100 MB read to get one, and the approach was off. The slowest seek came in at under a third of it. Seek time grew by about a second between the start of the file and the far end.
+
+I probed three masters and they had one shape: H.264 at 720x480, AAC audio, about 1.6 Mbps, 29.97 frames a second, in an MP4 container with the index at the end, three of three. At 1.6 Mbps a second of video is about 200 KB, so a read that lands near the right keyframe stays small.
+
+What I measured was a single timecode seek from outside the service. A full request through the service does more work than that, and takes longer.
+
+</Depth>
+
+<Depth min={2}>
 
 ## The service is boring on purpose
 
-The whole thing is one small service and one route. An edge worker is the single front door for all customer media; every URL it honors is signed and expiring. Frame requests go to a scale-to-zero container running pinned ffmpeg, which holds a read-only storage credential and answers only to the worker. Extracted frames cache at the edge -- the worker verifies the signature, then drops it from the cache key and snaps timestamps to the whole second, so two people asking for the same moment share one extraction and the second look is instant. No database, no queue, no pre-processing job crawling the archive. When nobody asks for frames, it costs nothing; when everybody does, the edge cache answers most of them, and the compute bill stays in single-digit dollars a month even at millions of requests.
+The whole thing is one small service and one route. An edge worker is the single front door for all customer media; every URL it honors is signed and expiring. Frame requests go to a scale-to-zero container running pinned ffmpeg, which holds a read-only storage credential and answers only to the worker.<Depth inline min={3}> Extracted frames cache at the edge -- the worker verifies the signature, then drops it from the cache key and snaps timestamps to the whole second, so two people asking for the same moment share one extraction and the second look is instant.</Depth> No database, no queue, no pre-processing job crawling the archive.<Depth inline min={3}> When nobody asks for frames, it costs nothing; when everybody does, the edge cache answers most of them, and the compute bill stays in single-digit dollars a month even at millions of requests.</Depth>
 
 <FrameRequestDiagram />
 
 None of that is clever. The cleverness budget went into finding the facts.
 
+</Depth>
+
+<Depth min={4}>
+
+## What one request does
+
+The worker checks the signature, then normalizes the request before it looks anything up. It floors the timestamp to the whole second and rounds the width up to one of a few fixed sizes, with a default if none is given. The cache key is the path plus those two values. The signature isn't in it, so a link signed for one viewer warms the cache for the next.
+
+A hit never reaches the container. A miss becomes one authenticated call to the service.
+
+The service signs its own short-lived, read-only storage URL and runs ffprobe on it before ffmpeg. The probe is there so the service can clamp the timestamp against what the file itself says. Ask for a moment past the end and the seek backs off 500 ms from the end, because an input seek at or past the last frame emits nothing. You get the last frame.
+
+The ffmpeg call has a shorter timeout than the worker gives the whole request, so the service's timeout fires first, and the worker retries once on a server error. A finished frame stays at the edge for weeks, and the browser is told to keep it for much less. Failures cache too. A video with no usable frame won't grow one, so that answer holds for hours; a server error holds for about a minute. The edge cache won't store an error response, so the worker stores an empty success response that records the failure and the intended status, and replays the real status on a hit.
+
+ffmpeg will open whatever a media file points it at, so every call carries a protocol whitelist of `https,tls,tcp,crypto`, and a crafted file can't make it read a local path or reach an internal host. ffmpeg also prints its input URL in error output, so the service strips the query string from any URL before it logs, and the storage signature stays out of the logs.
+
+ffmpeg runs as a subprocess per request and it's CPU-heavy, which is why this is its own service with its own scaling and its own read-only credential. It never holds a write key.
+
+## Scale-to-zero ended with the first consumer
+
+The cost sentence above describes the service as it launched. Once web thumbnails were the first real consumer, a cache miss was something a customer waited on, and cold starts were most of that wait. Production now keeps a warm pool, so I pay for idle instances and the first look at a video doesn't wait on a container boot. Non-production still scales to zero.
+
+</Depth>
+
+<Depth min={5}>
+
+The cache key, as pseudocode of the worker's logic:
+
+```text
+moment = "auto" if the caller asked for auto,
+         otherwise the timestamp floored to the whole second
+width  = the smallest allowed size that fits the requested width,
+         or the default if none was given
+
+key = video path + moment + width      (the signature is left out)
+if moment is "auto": key = key + the selection version
+```
+
+Only the auto key carries a version. A numeric frame is reproducible byte for byte, so its key never needs one. An auto frame depends on the rejection thresholds, and the edge holds frames for weeks, so every change to selection ships with a version bump. A retired version is never reused.
+
+The probe that runs before every extraction:
+
+```sh
+ffprobe -v error \
+  -protocol_whitelist https,tls,tcp,crypto \
+  -show_entries format=duration:stream=width,height \
+  -select_streams v:0 \
+  -of json "$SIGNED_URL"
+```
+
+</Depth>
+
 ## at=auto mode
+
+<Depth max={1}>
+
+All of this runs as one small service. Ask it for `at=auto` in place of a timestamp and it picks the frame. Old tapes open on dead signal, a blue screen or black, so it checks the opening 15 seconds, drops those frames and picks from the rest.
+
+</Depth>
+
+<Depth min={2} max={2}>
+
+Ask for `at=auto` in place of a timestamp and the service picks the frame. Old tapes open on dead signal, a blue screen or black, so it checks the opening 15 seconds, drops those frames and picks from the rest.
+
+</Depth>
+
+<Depth min={3}>
 
 `at=auto` exists because picking the right timestamp is hard, and most videos don't have a single obvious frame. The service samples the opening 15 seconds at 2 frames per second, runs signalstats to detect blue screens (ULOW Cb) and near-black frames (YHIGH luma), rejects dead frames, and picks a representative thumbnail from the survivors.
 
 The rejection thresholds come from calibrating on real tapes. Saturated leaders run ULOW ~217, VCR OSD blue screens run ~166-167, and real content tops around 114. We run at 160, so the service drops uniformly blue frames while keeping content.
 
-Near-black detection uses YHIGH -- the 90th-percentile luma -- to catch dead-signal black frames.<Note id="5" /> The threshold is 32 (TV black 16 plus analog noise headroom). Real content runs YHIGH 110-214, so the filter drops only dead frames.
+</Depth>
+
+Near-black detection uses YHIGH -- the 90th-percentile luma -- to catch dead-signal black frames.<Note id="5" /><Depth inline max={2}> A frame is dropped only when nine-tenths or more of it sits near black.</Depth><Depth inline min={3}> The threshold is 32 (TV black 16 plus analog noise headroom). Real content runs YHIGH 110-214, so the filter drops only dead frames.</Depth>
+
+<Depth min={3}>
 
 If the opening window exhausts, it seeks once to mid-tape and retries against a three-second window. If that also fails, the service returns a precondition-failed error with a machine-readable reason, and the caller shows a placeholder.
+
+</Depth>
 
 <Figure
   src="/images/writing/one-frame-from-a-four-gigabyte-video/rejected-frames.png"
@@ -72,17 +205,115 @@ If the opening window exhausts, it seeks once to mid-tape and retries against a 
   caption="Synthetic test fixtures through the at=auto filter: blue tape leader, dead-signal black, near-black fade, a stand-in good frame, and SMPTE bars. The filter rejects the blue and black frames; the bars and the good frame survive."
 />
 
+<Depth min={2}>
+
 <AutoRejectionDiagram />
+
+</Depth>
+
+<Depth min={3}>
 
 One ffmpeg pass does extraction and rejection simultaneously. The service returns a representative thumbnail in the same round-trip as a manual timecode.
 
+</Depth>
+
+<Depth min={4}>
+
+## How the cutoffs were set
+
+`at=auto` first shipped with no rejection. It ran ffmpeg's `thumbnail` filter over the opening 15 seconds, and a blue leader followed by a real scene already landed on the scene. The gap was a window where every candidate was blue. Then the filter returned blue.
+
+Both tests read numbers that ffmpeg's `signalstats` filter attaches to each frame. ULOW is the 10th-percentile value of the blue-difference channel, so about 90 percent of a frame has to be strongly blue before it reads high. A blue screen with a 15 percent strip of content across it drops from 240 to 130 and stays.
+
+<OneFrameBlueThresholdChart />
+
+The first cutoff was 180, set on one tape and 121 samples: blue leader at 217 to 218, content at 36 and then 109 to 112. The first day of real traffic turned up a second kind of blue, a VCR's on-screen channel display, at 166 to 167. It sat under 180 and auto kept it. The cutoff went to 160 that day. That move also put solid purple and solid cyan on the dropped side. A screen of solid navy or magenta was already there, and I accepted that when I set the first cutoff: a navy screen makes as bad a poster as a bright blue one.
+
+signalstats reads raw decoded values, so the same blue reads 240 in TV range and 255 in full range. I left the cutoffs calibrated on TV-range sources and didn't normalize.
+
+The black test came next. True black and fades read YHIGH 16 to 25. The saturated blue leader reads 19, so both tests catch it.
+
+The mid-tape retry is a three-second window centered on the midpoint, and only a video longer than 15 seconds gets one. The two ffmpeg calls split a time budget that fits inside the worker's timeout.
+
+Auto costs more than a timecode, because it decodes a 15-second window where a timecode decodes a fraction of a second. It is the same round trip, and a longer one.
+
+</Depth>
+
+<Depth min={5}>
+
+The auto call, with production's cutoffs filled in:
+
+```sh
+ffmpeg -nostdin \
+  -protocol_whitelist https,tls,tcp,crypto \
+  -ss 0.000 -t 15.000 \
+  -i "$SIGNED_URL" \
+  -vf "fps=2,signalstats,\
+metadata=mode=select:key=lavfi.signalstats.ULOW:value=159:function=less,\
+metadata=mode=select:key=lavfi.signalstats.YHIGH:value=33:function=greater,\
+thumbnail=30,scale=640:-2,format=yuvj420p,showinfo" \
+  -frames:v 1 -q:v 4 -f mjpeg pipe:1
+```
+
+The cutoffs are 160 and 32, and the graph says 159 and 33. On ffmpeg 7.1 and 8.1.2, `metadata`'s `less` and `greater` both measured inclusive: `value=180:function=less` keeps 179 and 180 and drops 181. So the graph interpolates one below the blue cutoff and one above the black one, and the tests pin both boundaries.
+
+`thumbnail=30` is the window in frames. The filter picks from one batch, and its default batch of 100 frames at source frame rate covers about 3.3 seconds. Downsampling to 2 fps and sizing the batch to the window, `max(2, ceil(window_ms * 2 / 1000))`, makes the first batch span all 15. The floor of 2 is there because `thumbnail` refuses a batch of 1. A review before the merge caught that: a 15.5-second video with an all-blue opening would have hit a 500 ms retry window, a batch of 1, and a failed filter init in place of a placeholder.
+
+When every frame is rejected, ffmpeg exits 0 with zero bytes on stdout and a warning that the output file is empty. The service treats that as "no usable frame in this window" and moves on to the retry. `showinfo` prints the chosen frame's timestamp to stderr; input seeking resets timestamps to about zero at the window start, so the service adds the window's start back before reporting where the frame came from.
+
+The retry logic, as pseudocode:
+
+```text
+try the opening window: the first 15 seconds
+    a frame survived -> return it
+
+the video is no longer than 15 seconds -> fail, "no usable frame"
+
+retry window = 3 seconds, or whatever is left after the opening if that is less
+the retry window is under half a second -> fail, "no usable frame"
+
+center the retry window on the midpoint of the video,
+    kept clear of the opening and inside the end
+    a frame survived -> return it
+    otherwise -> fail, "no usable frame"
+```
+
+The tests run real ffmpeg against synthetic fixtures built to the sampled envelopes: ULOW 179 kept and 180 dropped at the default cutoff, YHIGH 33 kept and 32 dropped, and a frame with a dim 15 percent strip kept. Customer tapes are for local validation only and never get committed. The fixture that proves auto reaches real content is 3 seconds of black, 3 of color bars and 12 of a test pattern:
+
+```sh
+ffmpeg -f lavfi -i 'color=c=black:s=160x120:r=30:d=3' \
+  -f lavfi -i 'smptebars=s=160x120:r=30:d=3' \
+  -f lavfi -i 'testsrc2=s=160x120:r=30:d=12' \
+  -filter_complex '[0:v][1:v][2:v]concat=n=3:v=1:a=0,format=yuv420p[v]' \
+  -map '[v]' -c:v libx264 -preset fast -crf 32 -movflags +faststart \
+  fixture.mp4
+```
+
+</Depth>
+
 ## What it unlocked
 
-The Slack thread after that link was the best part. Within hours the ideas moved past cover images and scrubber previews: grab ten frames from a video, let a model pick the most interesting one -- a face, say -- and make that the cover. Then the bigger question: how many frames do you actually need to understand what's in an hour of home video? One per second is 3,600 images; one per ten seconds is 360, and probably closer to enough. Suddenly we're sketching AI analysis of the whole archive as a bounded, priceable batch job, because sampling a video no longer means reading it. Extraction is no longer the expensive part; the model calls are.
+<Depth inline min={2}>The Slack thread after that link was the best part. Within hours the ideas moved past cover images and scrubber previews: grab ten frames from a video, let a model pick the most interesting one -- a face, say -- and make that the cover.</Depth><Depth inline min={3}> Then the bigger question: how many frames do you actually need to understand what's in an hour of home video? One per second is 3,600 images; one per ten seconds is 360, and probably closer to enough. Suddenly we're sketching AI analysis of the whole archive as a bounded, priceable batch job, because sampling a video no longer means reading it. Extraction is no longer the expensive part; the model calls are.</Depth>
+
+<Depth max={1}>
+
+A founder who had filed this under impossible for years got the link, and the product ideas started the same afternoon.
+
+</Depth>
+
+<Depth min={3}>
 
 Encoders that place keyframes at scene cuts have even left hints about where to sample -- the file already marks the moments where the picture changes. Every idea in that thread used to open with "well, first we'd have to read the whole video," and die there. The primitive changed price, and the conversation changed shape the same afternoon.
 
-The someday pile is mostly problems priced under an old assumption. The assumption here was that video is opaque -- that you get frames out of it the way you got them out of a VHS deck, by rolling through. The file format has disagreed since before some of our customers' tapes were recorded. The remaining work is one flag: write the index to the front of every new encode, and two seconds becomes half of one.
+</Depth>
+
+<Depth min={2} max={2}>
+
+Every idea in that thread used to open with "well, first we'd have to read the whole video," and die there. The primitive changed price, and the conversation changed shape the same afternoon.
+
+</Depth>
+
+The someday pile is mostly problems priced under an old assumption. The assumption here was that video is opaque -- that you get frames out of it the way you got them out of a VHS deck, by rolling through. The file format has disagreed since before some of our customers' tapes were recorded.<Depth inline min={3}> The remaining work is one flag: write the index to the front of every new encode, and two seconds becomes half of one.</Depth>
 
 <Footnotes
   notes={[

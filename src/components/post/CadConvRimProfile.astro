@@ -1,0 +1,17 @@
+---
+import lightSvg from '../../assets/diagrams/cad-conv-rim-profile-light.svg?raw';
+import darkSvg from '../../assets/diagrams/cad-conv-rim-profile-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="The finger dip is one cosine curve in the rim path"
+  caption="One end wall of the v3 bin, to scale, plotted from the model's own dip function. The curve meets the straight rim with zero slope at both ends, so the swept bead has no corner to cross."
+  maxWidth={460}
+>
+  Elevation of one end wall of the bin, 83.5 millimeters wide. The rim crest sits at 42 millimeters. In the middle of
+  the wall the rim drops in a cosine curve 56 millimeters wide and 13 millimeters deep, flat where it leaves and
+  rejoins the straight rim. The interior floor is at 7 millimeters.
+</Chart>

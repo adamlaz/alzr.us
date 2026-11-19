@@ -1,0 +1,14 @@
+---
+import lightSvg from '../../assets/diagrams/nine-hypotheses-commitment-light.svg?raw';
+import darkSvg from '../../assets/diagrams/nine-hypotheses-commitment-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="About a quarter of the epics finished while nine in ten open issues were marked High"
+  caption="Epic completion over the trailing 12 months, against the priority mix of open engineering issues."
+>
+  Two bars on a zero to 100 percent scale. 27.7 percent of the roughly 480 epics opened in the trailing 12 months were finished. 89.4 percent of open engineering issues were marked High priority.
+</Chart>

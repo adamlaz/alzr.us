@@ -1,0 +1,16 @@
+---
+import lightSvg from '../../assets/diagrams/tasks-ai-evening-log-light.svg?raw';
+import darkSvg from '../../assets/diagrams/tasks-ai-evening-log-dark.svg?raw';
+import Chart from './Chart.astro';
+---
+
+<Chart
+  lightSvg={lightSvg}
+  darkSvg={darkSvg}
+  title="Four fixes and two releases in the 74 minutes after the first commit"
+  caption="The theme repo's git log for its first evening, 11 commits. Squares are the automated release commits."
+>
+  Timeline of one evening's 11 commits. The first commit lands at 9:24 PM. Four fixes follow at 9:41, 9:45, 9:48 and
+  9:55 PM. Automated release commits land at 9:43 and 10:22 PM. Four documentation and showcase-site changes land at
+  10:07, 10:21, 10:25 and 10:38 PM.
+</Chart>

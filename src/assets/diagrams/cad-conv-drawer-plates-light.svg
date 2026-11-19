@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="333.4" viewBox="0 0 420 333.4">
+<g font-family="'Inter Variable', system-ui, sans-serif" font-size="15" fill="#1c1d24">
+
+<text x="6" y="16" font-size="13.5" fill="#55565f">back wall of the drawer</text>
+<rect x="6" y="30" width="201.6" height="17.4" rx="2" fill="#aab1e2" stroke="#2f3eb0" stroke-width="1.5"/>
+<path d="M31.2 47.4 L31.2 299.4" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M56.4 47.4 L56.4 299.4" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M81.6 47.4 L81.6 299.4" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M106.8 47.4 L106.8 299.4" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M132 47.4 L132 299.4" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M157.2 47.4 L157.2 299.4" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M182.4 47.4 L182.4 299.4" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M6 72.6 L207.6 72.6" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M6 97.8 L207.6 97.8" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M6 123 L207.6 123" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M6 148.2 L207.6 148.2" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M6 173.4 L207.6 173.4" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M6 198.6 L207.6 198.6" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M6 223.8 L207.6 223.8" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M6 249 L207.6 249" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<path d="M6 274.2 L207.6 274.2" fill="none" stroke="#e3e2de" stroke-width="1" stroke-linecap="round"/>
+<rect x="6" y="30" width="201.6" height="269.4" rx="2" fill="none" stroke="#1c1d24" stroke-width="1.5"/>
+<path d="M106.8 30 L106.8 299.4" fill="none" stroke="#1c1d24" stroke-width="2" stroke-linecap="round"/>
+<path d="M6 173.4 L207.6 173.4" fill="none" stroke="#1c1d24" stroke-width="2" stroke-linecap="round"/>
+<text x="223.6" y="43" font-size="14" font-weight="600" fill="#2f3eb0">29 mm pad</text>
+<text x="223.6" y="61" font-size="13.5" fill="#55565f">solid strip, no sockets</text>
+<text x="223.6" y="102" font-size="15" font-weight="600">Rear pair</text>
+<text x="223.6" y="120" font-size="13.5" fill="#55565f">4 x 5 cells + pad</text>
+<text x="223.6" y="138" font-size="13.5" font-family="'Geist Mono Variable', ui-monospace, monospace">168 x 239 mm</text>
+<text x="223.6" y="228" font-size="15" font-weight="600">Front pair</text>
+<text x="223.6" y="246" font-size="13.5" fill="#55565f">4 x 5 cells</text>
+<text x="223.6" y="264" font-size="13.5" font-family="'Geist Mono Variable', ui-monospace, monospace">168 x 210 mm</text>
+<text x="6" y="321.4" font-size="14">336 x 449 mm assembled, in a 337 x 450 mm drawer</text>
+</g>
+</svg>
