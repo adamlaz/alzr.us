@@ -35,13 +35,15 @@ not worth doing well. That gap is the whole post.
 
 This time the theme is the best one I've ever made, and it took the same one
 evening. The difference is that none of the colors are typed by hand.<Depth inline max={1}> They
-come from the stylesheet the product itself ships.</Depth>
+come from the stylesheet the product itself ships, and each build checks the
+result against a schema, a contract written with the Zod library.</Depth>
 
 <Depth min={2}>
 
 They sync from the app's live design-system tokens, the same stylesheet the
 product itself ships, with a newer AI-accent palette layered in from the design
-team's Figma.<Depth inline min={3}> The whole path runs at build time:</Depth>
+team's Figma.<Depth inline min={2} max={2}> Each build checks the result against a schema, a
+contract written with the Zod library.</Depth><Depth inline min={3}> The whole path runs at build time:</Depth>
 
 </Depth>
 
@@ -108,38 +110,19 @@ so the link uses a slightly darker version at about 5.3:1.
 
 <Depth min={5}>
 
-The sync, trimmed to its logic. It runs once for `:root` and once for `.dark`:
+The sync, as pseudocode. It runs once for the light block and once for the
+dark block:
 
-```ts
-// CSS custom property -> token key. Only these nine are synced.
-const WANTED: Record<string, string> = {
-    '--background': 'background',
-    '--foreground': 'foreground',
-    '--card': 'card',
-    '--secondary': 'secondary',
-    '--primary': 'primary',
-    '--primary-foreground': 'primaryForeground',
-    '--muted': 'muted',
-    '--accent': 'accent',
-    '--link': 'link',
-}
+```text
+wanted = the nine custom properties the theme maps:
+         background, foreground, card, secondary, primary,
+         primary foreground, muted, accent, link
 
-function extractBlock(css: string, selector: string): Record<string, string> {
-    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const block = new RegExp(`${escaped}\\s*\\{([\\s\\S]*?)\\n\\}`).exec(css)
-    if (!block || !block[1]) {
-        throw new Error(`Could not find "${selector} { … }" block.`)
-    }
-
-    const out: Record<string, string> = {}
-    const decl = /(--[\w-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g
-    let m: RegExpExecArray | null
-    while ((m = decl.exec(block[1])) !== null) {
-        const key = WANTED[m[1]!]
-        if (key) out[key] = m[2]!.toLowerCase()
-    }
-    return out
-}
+find this mode's block in the stylesheet; if it's missing: stop with an error
+for each declaration in the block whose value is a plain hex color:
+    if its property is in wanted: keep it, lowercased
+    otherwise: skip it
+return the colors found for this mode
 ```
 
 The source is a local path, a raw URL, or a sibling checkout of the app, in
@@ -174,48 +157,27 @@ chrome, so there's no screenshot to take.
 
 <Depth min={5}>
 
-The contract, trimmed. What it rejects: a color channel outside 0-255, a tint
-outside -1 to 1, a manifest version other than 3, a version string that isn't
-one to four dot-separated integers.
+The contract, as pseudocode. What it rejects: a color channel outside 0-255,
+a tint outside -1 to 1, a manifest version other than 3, a version string that
+isn't one to four dot-separated integers.
 
-```ts
-const RgbSchema = z.tuple([
-    z.number().int().min(0).max(255),
-    z.number().int().min(0).max(255),
-    z.number().int().min(0).max(255),
-])
+```text
+color      three integers, each 0 to 255
+tint       three numbers, each -1 to 1 (-1 means no change)
 
-/** HSL tint: three floats in [-1, 1]; -1 means "no change". */
-const TintSchema = z.tuple([
-    z.number().min(-1).max(1),
-    z.number().min(-1).max(1),
-    z.number().min(-1).max(1),
-])
+theme      colors: any key -> color           required
+           tints, images, properties          optional
 
-export const ThemeSchema = z.object({
-    colors: z.record(z.string(), RgbSchema),
-    tints: z.record(z.string(), TintSchema).optional(),
-    images: z.record(z.string(), z.string()).optional(),
-    properties: z
-        .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
-        .optional(),
-})
-
-export const ThemeManifestSchema = z.object({
-    $schema: z.string().optional(),
-    manifest_version: z.literal(3),
-    name: z.string().min(1),
-    version: z.string().regex(/^\d{1,5}(\.\d{1,5}){0,3}$/),
-    description: z.string().optional(),
-    icons: z.record(z.string(), z.string()).optional(),
-    theme: ThemeSchema,
-})
+manifest   manifest version: exactly 3
+           name: not empty
+           version: one to four dot-separated integers
+           description, icons, schema link    optional
+           theme: as above
 ```
 
-`colors` is an open record on purpose. The list of 23 known keys lives beside
-the schema and only drives the warning. The build ends with
-`z.toJSONSchema(ThemeManifestSchema)`, which writes the file editors use for
-autocomplete.
+The color map is open on purpose. The list of 23 known keys lives beside the
+schema and only drives the warning. The build ends by generating a JSON schema
+from the same contract, the file editors use for autocomplete.
 
 Versions are `YYYY.WW.NNN`: ISO year, ISO week, and a three-digit counter
 within the week, read from the existing git tags. Chrome wants plain integers,
@@ -249,56 +211,31 @@ laptop never gets the theme.
 
 <Depth min={5}>
 
-The extension ID is the SHA-256 of the public key, first 16 bytes, with each
-hex digit remapped from `0-f` to `a-p`:
+The extension ID comes from the public key, as pseudocode:
 
-```ts
-function extensionId(pem: string): string {
-    const der = createPublicKey(pem).export({ type: 'spki', format: 'der' })
-    const hash = createHash('sha256').update(der).digest().subarray(0, 16)
-    return [...hash]
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('')
-        .split('')
-        .map((c) => String.fromCharCode(97 + Number.parseInt(c, 16)))
-        .join('')
-}
+```text
+take the public key in its DER encoding
+hash it with SHA-256 and keep the first 16 bytes
+write those bytes as 32 hex digits
+swap each digit for a letter: 0 becomes a, 1 becomes b, up to f becomes p
 ```
 
-The update manifest is one `<app>` per variant. The package URL carries no
-version; the `version` attribute tells Chrome when to fetch again. IDs and
-host are placeholders here:
+The update manifest follows Chrome's documented update format, with one entry
+per variant:
 
-```xml
-<?xml version='1.0' encoding='UTF-8'?>
-<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
-  <app appid='DARK_EXTENSION_ID'>
-    <updatecheck codebase='https://HOST/dark.crx' version='VERSION' />
-  </app>
-  <app appid='LIGHT_EXTENSION_ID'>
-    <updatecheck codebase='https://HOST/light.crx' version='VERSION' />
-  </app>
-</gupdate>
+```text
+dark variant     extension ID, package URL, current version
+light variant    extension ID, package URL, current version
 ```
 
-And the JSON policy for the third install mode:
+The package URL carries no version; the version attribute tells Chrome when to
+fetch again.
 
-```json
-{
-    "ExtensionSettings": {
-        "DARK_EXTENSION_ID": {
-            "installation_mode": "normal_installed",
-            "update_url": "https://HOST/updates.xml",
-            "override_update_url": true
-        },
-        "LIGHT_EXTENSION_ID": {
-            "installation_mode": "allowed",
-            "update_url": "https://HOST/updates.xml"
-        }
-    }
-}
-```
-
+The JSON policy for the third install mode is one `ExtensionSettings` entry
+per extension ID. The dark theme's entry sets `installation_mode` to
+`normal_installed`, points `update_url` at the self-hosted update manifest and
+sets `override_update_url` to true. The light theme's entry sets
+`installation_mode` to `allowed`, with the same update URL.
 `override_update_url` tells Chrome to use the self-hosted URL instead of also
 checking the Web Store. Changing `normal_installed` to `force_installed` makes
 the dark theme mandatory.
@@ -327,8 +264,8 @@ when I trigger it. A weekly schedule sits in the workflow file, commented out.
 
 The whole release is one script chain, and CI runs the same five steps:
 
-```sh
-npm run build && npm run preview && npm run pack && npm run update-xml && npm run site
+```text
+build -> preview -> pack -> update manifest -> site
 ```
 
 The publish job runs on any push to main whose commit message starts with the

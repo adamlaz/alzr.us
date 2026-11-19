@@ -372,7 +372,7 @@ replication strategy.</Depth>
 The postmortem rule is now written into the repo's agent contract: toast-only
 notification is banned. A scheduled job that fails writes a 🚨 row into the
 same Activity Log everything else writes to<Depth inline min={3}>, tagged and deduplicated to once
-per script per day, and the dashboard keeps a standing count of error rows</Depth>.<Depth inline min={2}>
+per script per day, and the dashboard keeps a standing count of error rows</Depth>.<Depth inline max={1}> That log is one I was already going to read.</Depth><Depth inline min={2}>
 Toasts still fire, but nothing depends on me seeing one. The SRE literature
 has said this for a decade -- a page nobody acts on is not monitoring -- and
 it turns out to apply at N=1.</Depth><Note id="3" />

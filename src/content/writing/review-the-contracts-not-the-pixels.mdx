@@ -30,9 +30,9 @@ I run engineering at a consumer product that helps families preserve their memor
 
 We built that station in four days, and it launched while I was out of the office. Over the first month, our product manager shipped 19 pull requests to that repo, most of them self-merged on green CI, while I worked on the contracts.
 
-<Depth max={1}>
+<Depth max={2}>
 
-A contract here is the agreed shape of what the station sends to, or reads from, another system: the order lookup, the video files, the saved results.
+A contract here is the agreed shape of what the station sends to, or reads from, another system: the order lookup, the video files, the saved results. Green CI means every automated check on a change has passed.
 
 </Depth>
 
@@ -42,7 +42,7 @@ Our product manager wrote the requirements doc ten days before anyone touched th
 
 <Depth max={1}>
 
-With the boundaries settled, I wrote a one-page brief for a coding agent on a Sunday night.
+With the boundaries settled, I wrote a one-page brief for a coding agent on a Sunday night. One of our engineers handed it to the agent the next morning, and the station went live that Friday.
 
 </Depth>
 
@@ -122,17 +122,17 @@ Building v1 also caught a bug in my brief. I had used the playback URL as the fi
 
 ## How the adapters are wired
 
-The brief named four outside systems. The station now has five ports, because the QA review page needed to read saved results back: order lookup, media locator, inspection sink, inspection reader, and notify sink. Each is an interface in one types file, with a mock and a real adapter behind it.
+The brief named four outside systems. The station now has five ports, because the QA review page needed to read saved results back. Two face the order and media services, an order lookup and a media locator. Two face the inspection API, a sink that saves results and a reader that fetches them. The fifth is a sink for notifications. Each is an interface in one types file, with a mock and a real adapter behind it.
 
 <ContractsPortsDiagram />
 
-One environment variable picks the set. It defaults to mock, and any value other than `mock` or `real` is an error. A single function builds all five adapters at once, so a station can never run a real order lookup against a mock inspection sink. Real mode has no defaults and no fallback to mock: every setting is required, and each base URL must be plain `https` with no credentials, query or fragment. The page header prints the mode, so a mock station says `MOCK MODE` on screen.
+One environment variable picks the set. It defaults to mock, and anything other than the two known modes is an error. A single function builds all five adapters at once, so a station can never run a real order lookup against a mock inspection sink. Real mode has no defaults and never falls back to mock. It needs every setting filled in, and each base URL has to be a bare `https` address: no embedded credentials, no query string, no fragment. The page header prints the mode, so a station on mocks says so on screen.
 
 The mocks keep state the way the real services do. The inspection sink appends each result to a file, once per event ID. The media mock gives every sample capture a storage version and adds one when a recapture is simulated. The notify mock appends the rendered Slack message to a log.
 
-The real adapters share one HTTP helper. A call gets 15 seconds in total, retries included, and 30 for media. It retries only the calls an adapter marks safe to repeat, and only on a network error, a 429 or a 5xx. It refuses redirects, so a bearer token goes nowhere but the configured host. Slack posts are never retried automatically, because a timeout can still mean the message posted.
+The real adapters share one HTTP helper. Each call has a 15-second budget that covers its retries, or 30 seconds for media. An adapter has to mark a call as repeatable before the helper will retry it, and then only after a network failure, a rate-limit response or a server error. The helper won't follow a redirect, so the bearer token is only ever sent to the host in the config. A Slack post gets one attempt, since a request that timed out may have posted anyway.
 
-The fix for my brief's bug lives in the media port. A located file carries a permanent reference, a playback link, and a storage version when the back end reports one. A saved result keeps the reference and the version, never the link. The server re-checks the file before every save, and a refresh re-signs exactly that file or answers "missing".
+The fix for my brief's bug lives in the media port. A located file carries a permanent reference, a playback link, and a storage version when the back end reports one. A saved result keeps the reference and the version, never the link. Before each save the server checks the file again, and a refresh signs a new link for that same file or reports it missing.
 
 </Depth>
 
@@ -148,11 +148,11 @@ adapters():
 locate(order, barcodes) -> per barcode, one of:
     ready       { storage reference, playback link, optional version }
     missing | ambiguous | restricted                      # kept distinct
-    # a provider failure raises instead, so it is never read as "missing"
+    # if the media service itself fails, that is an error, not a "missing"
 
 refresh(order, barcode, reference, version?):
-    re-sign exactly this file (and exactly this capture, when a version is given)
-    never select a different file
+    sign a fresh link for the same file; with a version, for that same capture
+    a different file is never substituted
 ```
 
 </Depth>
@@ -202,11 +202,11 @@ Green CI is required on `main`; human approval isn't. A full CI run takes about 
 
 <Depth min={4}>
 
-The code-owners file has three rules. Our PM is requested on every change, and I'm added on the adapters directory and the CI directory. Branch protection requires the CI job and blocks force pushes and branch deletion. It asks for no approval.
+The code-owners file has three rules. Our PM is requested on every change, and I'm added on the adapters directory and the CI directory. Branch protection requires the CI job and allows neither a force push nor deleting the branch. It asks for no approval.
 
-CI is one job with five steps: install, a formatting check, the unit tests, a type check and build, then the browser tests. The job is capped at 15 minutes and the browser step at 8. A newer push cancels the run it replaces, and a failed run uploads the browser report and traces.
+CI is one job with five steps: install, a formatting check, the unit tests, a type check and build, then the browser tests. The job is capped at 15 minutes and the browser step at 8. Pushing again cancels the run already going, and a failed run uploads the browser report and traces.
 
-The browser tests run in Chrome against the built bundle, on one worker, with three local servers that each get a throwaway data folder: a station with one inspector, a station with eleven for the name picker, and a QA review station. They use Chrome because the test runner's bundled Chromium can't play the H.264 test clips. That choice cost one hung run. The runner image already ships Chrome, but the installer reinstalled it through the package manager on every run, and one install hung until the job timed out. CI now installs Chrome only when it's missing, with a five-minute cap.
+The browser tests drive Chrome against the built bundle on a single worker. Three local servers start for them, each with a throwaway data folder: one station set up with a single inspector, one with eleven so the name picker has names to show, and one for QA review. Chrome is there because the test clips are H.264 and the Chromium that comes with the test runner can't play them. That choice cost one hung run. The runner image already ships Chrome, but the installer reinstalled it through the package manager on every run, and one of those installs stalled until the job hit its time limit. CI now installs Chrome only when it's missing, with a five-minute cap.
 
 </Depth>
 
@@ -218,14 +218,14 @@ The review rules and the CI job, as pseudocode:
 code owners:
     everything            -> PM requested as reviewer
     real adapters, CI     -> PM and me requested
-    approval is not required to merge; green CI is
+    a merge needs green CI and no approval
 
-ci job (15-minute cap; a newer push cancels the run in progress):
+ci job (15-minute cap; pushing again cancels the current run):
     install dependencies
     check formatting
-    run service and HTTP tests
+    run unit tests
     type-check and build
-    install Chrome only if missing (5-minute cap)   # bundled Chromium can't play the fixture clips
+    install Chrome only if missing (5-minute cap)   # the runner's own Chromium can't play the test clips
     run browser tests (8-minute cap)
 ```
 
@@ -247,20 +247,20 @@ In week four, the PM added multi-station sync so stations read each other's save
 
 <Depth min={4}>
 
-The back end keeps three rules that a second station can break. A tape has one inspection, each revision of it is saved once, and its round number never goes down. A save that breaks one comes back as a conflict. Before that commit the mock sink appended whatever it was handed, and one review test saved two inspections of the same tape, a state production can't hold.
+The back end keeps three rules that a second station can break. It holds a single inspection for each tape, stores any one revision of that inspection only once, and won't let a tape's round number go backwards. A save that breaks one comes back as a conflict. Before that commit the mock sink appended whatever it was handed, and one review test saved two inspections of the same tape, a state production can't hold.
 
 The rest of the commit taught the station to live with those refusals:
 
-- A save whose reply was lost is recognized as delivered and stays this station's.
-- A refused revision and any correction queued behind it give way to the back end's copy together.
-- The station that saved a round's last result owns its Slack post.
-- A late summary for an earlier round no longer makes a later round look unsent.
-- A tape added to an order mid-round is saved in that round once another station has reinspected it.
-- The inspector sees a warning when another station's result replaced one saved here.
+- If a save went through but its reply never arrived, the station works out that it landed and keeps the result as its own.
+- When the back end refuses a revision, the station drops it along with any correction waiting behind it, and takes the back end's copy.
+- The Slack post for a round belongs to whichever station saved that round's last result.
+- A summary for an earlier round that shows up late can't leave a newer round looking as if its summary never went out.
+- A tape that joins an order partway through a round gets saved into that round once another station has reinspected it.
+- When a result saved at this station is replaced by another station's, the inspector gets a warning.
 
 The commit touched nine files, and 220 of its 387 added lines were multi-station tests.
 
-A station reads an order back from the inspection API each time it looks one up or starts a recapture round, and the API's copy wins. If the API can't answer, an order this station has never saved in won't open, because inspecting it from scratch would start a second inspection of every tape. The limits are written down in the architecture doc. One of them: if two stations save the same revision of a tape within one millisecond, the loser is mistaken for the winner.
+A station reads an order back from the inspection API on every lookup and at the start of every recapture round, and the API's copy wins. When the API is unreachable, the station refuses to open an order it holds no saves for, because starting that order fresh would create a second inspection for each tape. The limits are written down in the architecture doc. One of them: when two stations save the same revision of a tape in the same millisecond, the station whose save lost takes the saved result for its own.
 
 </Depth>
 
@@ -275,7 +275,7 @@ record(inspection):
     tape = saves for the same order and tape
     refused = tape has a different inspection id
               or tape already has this revision
-              or tape holds a later round than this one
+              or tape is already in a later round
     if refused: raise conflict                            # the same refusal the real back end gives
     append the record, once per event id
 ```
@@ -325,11 +325,11 @@ Across weeks two and three, our schedules barely overlapped. I was in and out th
 
 <Depth min={4}>
 
-Before the launcher change, an operator cleared a leftover lock file by hand and ran the dependency install by hand after an update. Now the lock records the launcher's process ID and start time. A lock is stale when that process is gone or when the lock predates the computer's last boot, and the launcher takes a stale one over with a printed note. It also stores a hash of the dependency lockfile and reinstalls when the hash changes. A clean install deletes the installed packages first, so the launcher checks that the package registry answers within five seconds before it starts one. With no connection it keeps the old packages and tries again at the next launch.
+Before the launcher change, an operator cleared a leftover lock file by hand and ran the dependency install by hand after an update. Now the lock records which process holds it and when that process started. If the process is gone, or the lock is older than the computer's last boot, the lock is stale, and the launcher claims it and prints a line saying so. It also stores a hash of the dependency lockfile and reinstalls when the hash changes. A clean install deletes the installed packages first, so the launcher checks that the package registry answers within five seconds before it starts one. With no connection it keeps the old packages and tries again at the next launch.
 
-The browser tests had shared ten sample orders and leaned on each other's results. One test failed when run alone, and running every test twice failed 12 of them. Each test now creates its own order through the mock lookup, which builds one from a key that says how many tapes it has. Nine fixed sleeps, 11.1 seconds in total, came out in the same change.
+The browser tests had shared ten sample orders, and some depended on what an earlier test had saved. One of them failed whenever it ran on its own, and repeating each test twice failed 12 of them. Each test now creates its own order through the mock lookup, which builds one from a key that says how many tapes it has. The same change removed nine fixed waits that added up to 11.1 seconds.
 
-A unit test holds the shortcut file to the code. It reads each page's key handler as text, collects every key the handler compares against, and asserts that list equals the keys the shortcut file defines. A shortcut with no handler fails, and so does a handler with no shortcut.
+A unit test holds the shortcut file to the code. It loads the source of each page's key handler as text, collects every key the handler compares against, and asserts that list equals the keys the shortcut file defines. A shortcut with no handler fails, and so does a handler with no shortcut.
 
 </Depth>
 
@@ -474,17 +474,17 @@ He left one call for me. The video rule said 60% of the screen, but a 4:3 tape i
 
 ## How a browser test counts words
 
-The benchmark file loads each state at 1920x1080 and walks every visible text node on the page, or on the top dialog when one is open. It skips screen-reader-only text, the toast, keycaps, and order data such as order and tape numbers, formats, names, clocks and counts. A word has to contain a letter and can't start with a digit, so `10s` and `15%` read as measurements. A visible placeholder counts. The eight symptom names are counted apart, at most two words a tile.
+The benchmark file loads each state at 1920x1080 and walks every visible text node on the page. If a dialog is open, it walks only the frontmost one. It skips screen-reader-only text, the toast, keycaps, and anything that is order data: order numbers, tape numbers, formats, names, clocks and counts. A word has to contain a letter and can't start with a digit, so `10s` and `15%` read as measurements. A visible placeholder counts. The eight symptom names have their own count, capped at two words a tile.
 
 The same walk checks the other rules. It reads each element's computed font size and fails anything under 20 px. It flags a label when its letter spacing is over 2% of its font size, when CSS uppercases it, or when two all-caps words sit in a row. It fails any control with a keyboard shortcut and no visible keycap, and any screen that scrolls where it isn't a list. Video share is the video element's box divided by the viewport.
 
-The budgets took three commits that Sunday. The first version of the benchmark set each budget to the count at the time: 21 for Exception, 25 for a round-two tape. The trim commit cut the copy and left every budget at 99 while I measured, so for five hours a new word would have passed. The lock commit at 9:17 PM set each budget to its count.
+The budgets took three commits that Sunday. The first version of the benchmark set each budget to the count at the time: 21 for Exception, 25 for a round-two tape. The trim commit cut the copy and parked every budget at 99 while I measured, so for five hours a new word would have passed. The lock commit at 9:17 PM set each budget to its count.
 
 Then the floor fixes moved them.
 
 <ContractsBudgetDrift />
 
-The fail states grew when the verdict buttons kept their labels after Fail. The ready screen went from 3 words to 16 because it now asks who digitized each format and where on the label to read it. Each raise sits in the test file next to a comment giving the reason. The video rule's arithmetic is there too: a 4:3 frame as tall as its column is 1239 by 929 pixels, 55.5% of a 1920x1080 screen.
+The fail states grew when the verdict buttons kept their labels after Fail. The ready screen went from 3 words to 16 because it now asks who digitized each format and tells the inspector where to find that on the label. Each raise sits in the test file next to a comment giving the reason. The video rule's arithmetic is there too: a 4:3 frame the full height of its column is 1239 by 929 pixels, 55.5% of a 1920x1080 screen.
 
 </Depth>
 
@@ -501,10 +501,10 @@ words(text):
     split on whitespace
     keep tokens that contain a letter and don't start with a digit   # "10s" and "15%" read as numbers
 
-caps rule, outside keycaps and order data:
+caps rule (keycaps and order data are exempt):
     fail on uppercase transforms
     fail on letter spacing above 2% of the font size
-    fail on two all-caps words in a row                              # one acronym is a name
+    fail on two all-caps words in a row                              # a lone acronym is allowed
 ```
 
 </Depth>
@@ -513,35 +513,35 @@ caps rule, outside keycaps and order data:
 
 ## What the scan guard does with a barcode
 
-Keys act as they arrive, and the guard never delays one. When a run of fast keys starts, it notes the form's state. An Enter that ends a run of four or more fast keys is swallowed, the verdict, symptoms and note go back to how they were, and a toast says "Scan ignored: finish this tape first".
+Keys act as they arrive, and the guard never delays one. At the first key of a fast burst it records the state of the form. If the burst reaches four keys and then ends in Enter, the guard eats the Enter, sets the verdict, symptoms and note back to what it recorded, and shows a toast telling the inspector the scan was ignored.
 
-Some actions can't be undone by restoring a form. Passing saves the tape, and moving focus into the note sends the rest of the code there. The station holds those back when their key arrives fast after a key it has no use for, such as a dash or a zero. One fast key on its own still acts, because the browser tests' simulated keys arrive as fast as a scanner's. The known limit is a code that starts with V, which can still pass the tape. Order numbers are all digits, and the Enter rule covers those in full.
+Some actions can't be undone by restoring a form. Passing saves the tape, and once focus is in the note box the remaining characters of the barcode get typed into it. The station holds those two back when the key that triggers them comes in fast behind a key that isn't one of its shortcuts, such as a dash or a zero. A single fast key still acts, because simulated keys in the browser tests come in at scanner speed too. The known limit is a barcode whose first character is V: that one can still pass the tape. Order numbers are all digits, so the Enter rule handles them completely.
 
-The guard's own browser test failed in CI, and the fix landed the next morning. The test typed its barcode with the test runner's keyboard helper, which waits for the page to handle each key before sending the next, and on a slow runner the keys spread past 30 ms. The test now sends each key through the browser's DevTools protocol with its own timestamp, 8 ms after the last, the way a scanner's keys carry the time they arrived.
+The guard's own browser test failed in CI, and the fix landed the next morning. The test typed its barcode with the test runner's keyboard helper. That helper sends a key only after the page has finished with the previous one, and on a slow runner the gaps grew past 30 ms. The test now dispatches each key over the browser's DevTools protocol and stamps it 8 ms after the one before, the way a real scanner's key events come with their own arrival times.
 
 </Depth>
 
 <Depth min={5}>
 
-The guard's key handler, as pseudocode. The station supplies the snapshot and restore, and tells the guard which keys it has a use for:
+The guard's key handler, as pseudocode. The station hands the guard a way to record and restore its state, and a test for which keys are shortcuts:
 
 ```text
-GAP = 30 ms, MIN_KEYS = 4
+fast gap = 30 ms; a scan is at least 4 keys
 
-on keydown(key, time):
-    fast = time - last_time <= GAP
+on each key press (key, its timestamp):
+    fast = it came within the gap of the previous key
     if not fast:
-        reset the run and take a snapshot of the station's state
+        start a new burst and record the station's state
     if key is Enter:
-        if fast and run >= MIN_KEYS:
-            restore the snapshot                 # undo whatever the scan's characters touched
-            return "scan"
-        return "key"
+        if fast and the burst has 4 or more keys:
+            put back the recorded state      # undoes what the barcode's characters changed
+            report a scan                    # the station drops this Enter
+        otherwise: report an ordinary key
     if key is a single character:
-        run += 1
-        suspect = fast and an earlier key in this run was not a shortcut
-        if key is not a shortcut: mark the run as foreign
-    return "key"
+        count it in the burst
+        the key is suspect if it was fast and an earlier key in the burst wasn't a shortcut
+        if this key isn't a shortcut: remember that for the rest of the burst
+    report an ordinary key
 ```
 
 </Depth>

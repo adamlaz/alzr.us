@@ -28,7 +28,7 @@ grew.
 I'm hiring for a senior mobile role. Sixty-four candidates now, across
 five waves<Depth inline min={3}>: the first three rounds in the spring, a handful of one-offs,
 then two larger sweeps as the applications piled up</Depth>. Each one
-gets real public-footprint work before a calendar invite goes out<Depth inline min={3}>: resume
+gets real public-footprint work before a calendar invite goes out<Depth inline min={2}>: resume
 cross-reference, GitHub search, App Store verification, conference and
 podcast checks, employer-city sanity tests, and a Sherlock OSINT sweep for
 username discovery across 400+ sites</Depth>. Twenty-five minutes per candidate,
@@ -38,7 +38,7 @@ a normal week. Done in parallel through Claude Code, it does.
 ## The shape of the workflow
 
 For each candidate I spin up one general-purpose agent with `run_in_background:
-true`.<Note id="1" /> Each agent gets the same brief<Depth inline min={2}>: candidate identity, resume path,
+true`.<Note id="1" /> Each agent gets the same brief<Depth inline max={1}>, a written set of instructions that says who the candidate is and what to check</Depth><Depth inline min={2}>: candidate identity, resume path,
 the full application content, the curated Sherlock dump, the role-specific
 signals to chase, and the sub-page template to fill out</Depth>. I launch the whole
 wave in a single message and let them work.
@@ -161,39 +161,22 @@ for the role, pass-grade, or neutral.
 
 <Depth min={5}>
 
-The page skeleton the agents fill in, lightly redacted:
+The page layout the agents fill in, as an outline:
 
-```markdown
-# Background Research -- [Name]
+```text
+title: the candidate's name
+first line: date compiled, one-sentence verdict
 
-*Compiled YYYY-MM-DD* -- [1-sentence headline verdict]
-
-## Sources reviewed
-- [be specific: what loaded vs. was blocked]
-
-## Resume vs. cover letter
-- [Voice consistency, dates aligned, specifics that cross-reference]
-
-## Confirmed
-- [strong / medium / weak tag per claim]
-
-## Surfaced (not in resume / cover letter)
-- [Side projects, talks, articles, public code]
-- [If nothing surfaced, say so explicitly]
-
-## [Role-specific evaluation block]
-
-## Flagged for interview
-- [Inconsistencies, gaps, things worth probing]
-
-## Interview questions (derived from research)
-- [3-5 concrete, candidate-specific questions]
-
-## Internet personality
-- [How they show up publicly. Quietness IS a signal, in either direction]
-
-## Public footprint summary
-[1-2 sentences honest assessment]
+1. sources reviewed       each one marked loaded or blocked
+2. resume vs cover letter same voice, dates line up, details cross-reference
+3. confirmed              one tag per claim: strong, medium or weak
+4. surfaced               side projects, talks, articles, public code;
+                          if nothing turned up, the page says so
+5. role evaluation        the block that changes with the role
+6. flagged for interview  inconsistencies and gaps worth probing
+7. interview questions    three to five, specific to this candidate
+8. internet personality   how they show up in public; quiet counts
+9. footprint summary      one or two honest sentences
 ```
 
 LinkedIn answers most automated fetches with an HTTP 999, so the agents
@@ -224,13 +207,11 @@ a verdict, and two or more independent red flags make a pass-grade page.
 
 <Depth min={5}>
 
-The top of the agent definition:
+The agent definition's tool grant, as an outline:
 
-```yaml
----
-name: candidate-researcher
-tools: WebSearch, WebFetch, Read, Glob, Grep
----
+```text
+allowed: web search, web fetch, read a file, list files by pattern, search file contents
+absent:  shell, file writes, file edits
 ```
 
 </Depth>
@@ -289,39 +270,16 @@ this sample size routing got more granular than pass or fail.
 The file-size check was my lead tell in the spring. The two smallest
 fabricated resumes in the first rounds were 8.5 and 8.9 KB. By August,
 hiring for a different role, it caught nothing. In a wave of 54 candidates
-a colleague had already screened by hand, about a third were
-fabrication-pattern applications, and every resume in the wave ran between
-65 and 360 KB. I demoted the check. It still gets a glance, since an 8.7 KB
-file is still a flag, but I never lead with it and a big file clears
-nobody.
+a colleague had already screened by hand, every resume ran between 65 and
+360 KB, the fabricated ones included. I demoted the check. It still gets a
+glance, since an 8.7 KB file is still a flag, but I never lead with it and
+a big file clears nobody.
 
 <ParallelAgentsFileSize />
 
-Five checks caught the August fabrications:
-
-- Every bullet carries a specific percentage in the same verb-led
-  structure. Real careers have bullets with no number at all.
-- The long-answer essay repeats the resume's bullets, with the same
-  metrics and the same phrasing. A real answer tells a story the resume
-  doesn't.
-- The candidate's own links contradict the resume: a claimed senior GitHub
-  history on an account that holds only forks and test repos, or a
-  portfolio repo missing the projects the resume names.
-- The chronology is impossible: a tenure that starts before the company
-  was founded, or a technology used years before it existed.
-- The same name carries mutually exclusive employment histories on
-  different platforms.
-
-A sixth only shows up when I compare applications from the same batch. Two
-of them shared an intro sentence template and an identical niche skill
-cluster: one from a verified, real engineer who had used a resume-tailoring
-service, the other a full fabrication. The tell flags the application, and
-the research still has to judge the person.
-
-The posting itself turned into a signal. Its exact library list came back
-verbatim in fake resumes as a bare skills cluster. I kept the specific
-stack in the posting on purpose: a real candidate tells a story about one
-of those libraries and what broke, and a generator lists the names.
+The checks that replaced it read what the application says and compare it
+with the candidate's own public record. That takes longer than listing a
+directory. I'm leaving the specifics out of a public post.
 
 </Depth>
 
@@ -513,10 +471,10 @@ plus city counts as one at most.
 
 <Depth min={5}>
 
-The Sherlock call in the wrapper script today:
+The Sherlock call the wrapper script makes today:
 
 ```sh
-sherlock --print-found --timeout 5 --folderoutput "$S_DIR" "${USERNAMES[@]}"
+sherlock --print-found --timeout 5 --folderoutput "$OUT_DIR" "${HANDLES[@]}"
 ```
 
 A non-zero exit doesn't stop the run. The wrapper carries on with whatever
@@ -593,36 +551,29 @@ looks wrong.
 
 The morning check and the nightly guard loop, as pseudocode:
 
-```python
-IN_SCOPE = {"New", "Screened", "Interview Requested", "Interview Scheduled",
-            "Take-Home", "Considering", "Offer"}    # plus rows with no status yet
-PREFIX = "background research"
+```text
+has a research page (candidate):
+    list the pages under the candidate's record
+    on a rate-limit response: wait as long as it asks, try again, four tries at most
+    on any other error: answer "no"            (this can over-report the gap)
+    answer "yes" if any page title starts with the agreed prefix, ignoring case
 
-def has_research_page(candidate_page):
-    for _ in range(4):                              # retry only on rate limits
-        resp = list_child_blocks(candidate_page)
-        if resp.status != 429:
-            break
-        sleep(resp.retry_after + 0.5)
-    if not resp.ok:
-        return False                                # can over-report "missing"
-    return any(b.type == "child_page" and b.title.lower().startswith(PREFIX)
-               for b in resp.blocks)
+morning check:
+    for each candidate in an active status, or with no status yet:
+        report the ones with no research page
+    create nothing, start nothing
 
-def needs_research(row):                            # research starts at Screened
-    return not row.has_research and row.status not in (None, "New")
-
-def nightly(queue, concurrency=4, per_candidate_usd=6.00, timeout_min=45,
-            max_total_usd=150, max_consecutive_failures=3):
-    take_lock_or_exit()
-    spent, failures = 0.0, 0
-    for result in run_pool(queue, concurrency):     # one headless run per row id
-        ok = has_research_page(result.page)         # the page, never the exit code
-        spent += result.cost
-        failures = 0 if ok else failures + 1
-        if spent + per_candidate_usd > max_total_usd or failures >= max_consecutive_failures:
-            stop_dispatching()                      # the rest wait for tomorrow
-            report_failure()
+nightly job:
+    queue = candidates a person has screened who have no research page
+    take the lock, or exit if another run holds it
+    run the queue four at a time, one headless research run per candidate,
+        each capped at $6 and 45 minutes
+    after each run:
+        researched = has a research page       (the page, never the exit code)
+        add the run's cost to the night's total
+        a success resets the failure count; a miss adds one
+        if the next run could pass $150 for the night, or three have failed in a row:
+            stop dispatching, report the failure, leave the rest for tomorrow
 ```
 
 </Depth>
@@ -644,7 +595,7 @@ Apple TV launch to show for it) rank well above an equally-real
 generalist.</Depth> Once the fakes are gone, the workflow's job is to
 surface that rare signal and rank on it.
 
-AI fluency is the same story one level up.<Depth inline min={2}> It has become a resume keyword
+AI fluency is the same story one level up.<Depth inline max={1}> Most candidates claim it, and few have a public artifact behind the claim.</Depth><Depth inline min={2}> It has become a resume keyword
 the way "agile" was: most candidates claim a CLAUDE.md, skills files, a
 daily Claude-and-Cursor habit, with no public artifact behind it. The rare
 one has an actual config file checked into a repo you can read.</Depth> Treat the
@@ -683,21 +634,13 @@ caught that one, and only the full research did.
 
 <Depth min={5}>
 
-The checklist has eight checks now, in this order: uniform metrics on every
-bullet, an essay that paraphrases the resume, artifacts that contradict the
-claims, impossible chronology, conflicting identities across platforms,
-three or more of the posting's phrases repeated verbatim, an intro under
-100 words or an empty long answer, and a senior claim with no public
-footprint at all. The decision, as pseudocode:
+The decision at the end of the checklist, as pseudocode:
 
-```python
-def triage(application):
-    flags = count_red_flags(application)        # one flag per check at most
-    if flags >= 2:
-        return "pass"                           # skip the dig; I sign off first
-    if flags == 0 and strong_everywhere(application):
-        return "direct to interview"            # rare; usually an internal referral
-    return "research"
+```text
+count the red flags, one per check at most
+two or more flags                 -> pass, once I sign off; the dig never runs
+no flags and strong on every check -> straight to an interview (rare, usually an internal referral)
+anything else                     -> full research
 ```
 
 </Depth>

@@ -191,19 +191,17 @@ context.
 
 <Depth min={5}>
 
-The probe bank as it sits on the page:
+The probe bank on the page, as an outline:
 
-```markdown
-## Probe bank
-
-| Probe | Dim | Listen for |
-|---|---|---|
-| 🎯 [make-or-break probe] | AI fluency | ✅ [] · 🚩 [] |
-| [probe] | [dim] | ✅ [] · 🚩 [] |
-| [probe] | [dim] | ✅ [] · 🚩 [] |
+```text
+a three-column table: the probe, the dimension it feeds, the listen-for
+row 1:      the make-or-break probe, marked as such
+every row:  one dimension from the scorecard
+            a listen-for in two halves: the tell that the answer is real,
+            and the tell that it isn't
 ```
 
-The grading pass reads the `Dim` column. It also finds the page by its title
+The grading pass reads the dimension column. It also finds the page by its title
 prefix, so the page title is a contract: rename the convention and the pass
 stops finding transcripts.
 
@@ -274,14 +272,10 @@ what it thinks was said.
 
 <Depth min={5}>
 
-The activity-log line it drafts has a fixed shape:
-
-```text
-YYYY-MM-DD HH:MM 💼 30-min screen with [[Name]] for [[Role]] -- [advance/considering/pass], score N/4. [one-line takeaway] #work #hiring
-```
-
-When a teammate ran the call, the line adds "run by" and their name after the
-role.
+The activity-log line it drafts has a fixed shape: the date and time, the
+kind of call, links to the candidate and the role, the recommendation, the
+score out of four, and a one-line takeaway. When a teammate ran the call, the
+line names them after the role.
 
 </Depth>
 
@@ -318,8 +312,8 @@ quotes: the candidate's own words, copied exactly from the transcript, 25
 words or fewer, with no ellipses and no cleanup. Before the block is written,
 a script checks each quote against the transcript text. A quote the script
 can't find is dropped, and the pass doesn't fix it from memory. A dimension
-with no checked quote scores "N/A, insufficient evidence" and stays out of the
-average, and the block says how many of the six were scored.
+with no checked quote is marked N/A for insufficient evidence and stays out of
+the average, and the block says how many of the six were scored.
 
 <InterviewAfterGradingGates />
 
@@ -349,104 +343,78 @@ recording-consent question so the answer is on the recording. Right after the
 call the interviewer writes their own call and a one-line why, before any
 grading, and the pass tells me where its draft differs from theirs.
 
-The last line of the block is "Draft vs final": the pass fills in its call
-and score, and I fill in mine and what changed. That line is the record of
+The last line of the block sets the draft beside the final: the pass fills
+in its call and score, and I fill in mine and what changed. That line is the record of
 where I overrode the draft.
 
 </Depth>
 
 <Depth min={5}>
 
-The quote check is the only code in the pass. This is the script from the
-skill, with two comments added:
+The quote check is the only code in the pass. As pseudocode:
 
-```python
-import re, sys, unicodedata
+```text
+normalize(text):
+    fold Unicode compatibility forms
+    turn curly quotes into straight ones
+    collapse every run of whitespace to one space
+    lowercase
 
-def norm(s):
-    s = unicodedata.normalize("NFKC", s)
-    for a, b in (("‘", "'"), ("’", "'"), ("“", '"'), ("”", '"')):
-        s = s.replace(a, b)
-    return re.sub(r"\s+", " ", s).strip().lower()
-
-t = norm(open(sys.argv[1]).read())          # the transcript
-for q in open(sys.argv[2]).read().splitlines():   # one quote per line
-    if q.strip():
-        print(("FOUND   " if norm(q) in t else "MISSING ") + q)
+for each quote, one per line:
+    print found if normalize(quote) is a substring of normalize(transcript)
+    otherwise print missing
 ```
 
-It folds Unicode forms, curly quotes, whitespace and case, then looks for
-the quote as a substring. Paraphrase fails. The pass is done when every
-quote in the block printed `FOUND`.
+Paraphrase fails, because the match is a substring. The pass is done when
+every quote in the block came back found.
 
-The rest of the procedure, as pseudocode of what the skill tells the model to
-do:
+The rest of the procedure, as pseudocode of what the model is told to do.
+Only the quote check runs as code:
 
-```python
-# Pseudocode. The model follows this as written instructions; only
-# check_quote() runs as code.
-def grade_screen(page):
-    transcript = page.transcript or page.hand_notes
-    if not transcript:
-        return ask_for_transcript()        # never grade from the probe bank alone
+```text
+transcript = the notetaker's transcript, or the interviewer's hand notes
+if there is neither: stop and ask       (never grade from the probe bank alone)
 
-    for dim in SCORECARD:
-        probes  = [p for p in page.probe_bank if p.dim == dim]
-        answers = find_answers(transcript, probes)
-        quotes  = pick_quotes(answers, per_dim=(1, 2), max_words=25,
-                              candidate_lines_only=True)
-        quotes  = [q for q in quotes if check_quote(q, transcript) == "FOUND"]
-        if not quotes:
-            score[dim] = "N/A -- insufficient evidence"
-        else:
-            score[dim] = judge(answers, listen_fors(probes), ANCHORS[dim])  # 1-4
+for each dimension on the scorecard:
+    collect the probes tagged to it
+    find where the transcript answers them
+    pick one or two quotes: the candidate's own lines, 25 words or fewer
+    drop any quote the check can't find
+    no quote left -> N/A, insufficient evidence
+    otherwise     -> a score from 1 to 4, judged against the listen-fors
+                     and the scorecard's anchors
 
-    scored         = [s for s in score.values() if s != "N/A -- insufficient evidence"]
-    screen_score   = round_to_half(mean(scored))
-    recommendation = overall_call(score)   # a judgment, separate from the average
-    if score["AI fluency"] == 1:
-        recommendation = "Pass"
+screen score   = mean of the scored dimensions, rounded to the nearest half
+recommendation = a judgment across the dimensions, separate from the average
+if AI fluency scored 1: recommendation = pass
 
-    page.append(result_block(score, quotes, recommendation, screen_score))
-    hold(record_fields(recommendation, screen_score), log_line())
-    stop_for_review()                      # status is never in reach
+append the result block to the page
+hold the two record fields and the log line until I say so
+stop for review                         (status is never in reach)
 ```
 
-The result block, with our field names taken out:
+The result block, as an outline:
 
-```markdown
-## Post-screen result -- YYYY-MM-DD
-
-**Interviewer:** [name] · **Drafted by:** the grading pass · **Reviewed by:** ___
-
-**[Advance / Considering / Pass].** [One sentence: the call and the why.]
-
-| Dimension | Score (1-4 or N/A) | Evidence |
-|---|---|---|
-| Home craft | | [the moment in the transcript that backs it] |
-| AI fluency (decides) | | |
-| Stretch | | |
-| Product judgment | | |
-| Communication | | |
-| Ownership | | |
-
-**Quotes** (verbatim, each checked against the transcript):
-- **Home craft:** "[]" · "[]"
-- **AI fluency:** "[]"
-
-- **Recommendation:** [Advance / Considering / Pass]
-- **Screen score:** [N] / 4 ([k] of 6 scored; N/A left out)
-- **AI fluency gate:** [cleared, scored N / ended the candidacy, scored 1]
-- **Standout strength:**
-- **Biggest risk / gap:**
-- **One-line verdict:**
-- **Work sample steer (if advancing):**
-- **Integrity flags:** [none / what was observed, with a quote or minute mark]
-- **Open items the candidate raised:** comp expectations · location · timing · work authorization
-- **Draft vs final:** draft [call], [N]/4 · my final ___ · what changed ___
-
-> Drafted for review. Not yet applied: the recommendation field, the score
-> field and the activity-log line.
+```text
+heading with the date
+who interviewed, who drafted (the grading pass), who reviewed (blank)
+the call, advance, considering or pass, and one sentence of why
+a table: six dimensions, each with a score or N/A and the moment in the
+    transcript that backs it
+the checked quotes, grouped by dimension
+then one line each:
+    recommendation
+    screen score, with how many of the six were scored
+    the AI fluency gate: cleared, or ended the candidacy
+    standout strength
+    biggest risk or gap
+    one-line verdict
+    what the work sample should test, if advancing
+    integrity flags, each with a quote or a minute mark
+    what the candidate raised: comp, location, timing, work authorization
+    draft against final: the draft's call and score, mine, what changed
+a closing note: drafted for review, with the two record fields and the
+    log line not yet applied
 ```
 
 </Depth>

@@ -123,13 +123,13 @@ None of that is clever. The cleverness budget went into finding the facts.
 
 ## What one request does
 
-The worker checks the signature, then normalizes the request before it looks anything up. It floors the timestamp to the whole second and snaps the width up to 320, 640 or 1280 pixels, 640 if none is given. The cache key is the path plus those two values. The signature isn't in it, so a link signed for one viewer warms the cache for the next.
+The worker checks the signature, then normalizes the request before it looks anything up. It floors the timestamp to the whole second and rounds the width up to one of a few fixed sizes, with a default if none is given. The cache key is the path plus those two values. The signature isn't in it, so a link signed for one viewer warms the cache for the next.
 
-A hit never reaches the container. A miss becomes one authenticated POST to the service.
+A hit never reaches the container. A miss becomes one authenticated call to the service.
 
-The service signs its own read-only storage URL, good for five minutes, and runs ffprobe on it before ffmpeg. The probe is there because the duration column in our database was empty across the catalog, so the service clamps the timestamp against what the file says. Ask for a moment past the end and the seek backs off 500 ms from the end, because an input seek at or past the last frame emits nothing. You get the last frame.
+The service signs its own short-lived, read-only storage URL and runs ffprobe on it before ffmpeg. The probe is there so the service can clamp the timestamp against what the file itself says. Ask for a moment past the end and the seek backs off 500 ms from the end, because an input seek at or past the last frame emits nothing. You get the last frame.
 
-A timecode's ffmpeg call gets 20 seconds. The worker gives the whole request 25, so the service's timeout fires first, and it retries once on a server error. A finished frame stays at the edge for 30 days and the browser is told to keep it for one. Failures cache too. A video with no usable frame won't grow one, so that answer holds for four hours; a server error holds for 60 seconds. The edge cache won't store an error response, so the worker stores an empty 200 carrying the failure code and the intended status in headers, and replays the real status on a hit.
+The ffmpeg call has a shorter timeout than the worker gives the whole request, so the service's timeout fires first, and the worker retries once on a server error. A finished frame stays at the edge for weeks, and the browser is told to keep it for much less. Failures cache too. A video with no usable frame won't grow one, so that answer holds for hours; a server error holds for about a minute. The edge cache won't store an error response, so the worker stores an empty success response that records the failure and the intended status, and replays the real status on a hit.
 
 ffmpeg will open whatever a media file points it at, so every call carries a protocol whitelist of `https,tls,tcp,crypto`, and a crafted file can't make it read a local path or reach an internal host. ffmpeg also prints its input URL in error output, so the service strips the query string from any URL before it logs, and the storage signature stays out of the logs.
 
@@ -145,16 +145,17 @@ The cost sentence above describes the service as it launched. Once web thumbnail
 
 The cache key, as pseudocode of the worker's logic:
 
-```ts
-// pseudocode
-const at = raw === "auto" ? "auto" : Math.floor(tMs / 1000) * 1000;
-const w = width === null ? 640 : ([320, 640, 1280].find((b) => b >= width) ?? 1280);
+```text
+moment = "auto" if the caller asked for auto,
+         otherwise the timestamp floored to the whole second
+width  = the smallest allowed size that fits the requested width,
+         or the default if none was given
 
-let key = `${origin}${path}?at=${at}&w=${w}`; // no signature
-if (at === "auto") key += "&v=4";
+key = video path + moment + width      (the signature is left out)
+if moment is "auto": key = key + the selection version
 ```
 
-Only the auto key carries a version. A numeric frame is reproducible byte for byte, so its key never needs one. An auto frame depends on the rejection thresholds, and the edge holds frames for 30 days, so every change to selection ships with a version bump: 2 for the blue test, 3 for the lower blue cutoff, 4 for the black test. A retired version is never reused.
+Only the auto key carries a version. A numeric frame is reproducible byte for byte, so its key never needs one. An auto frame depends on the rejection thresholds, and the edge holds frames for weeks, so every change to selection ships with a version bump. A retired version is never reused.
 
 The probe that runs before every extraction:
 
@@ -170,7 +171,13 @@ ffprobe -v error \
 
 ## at=auto mode
 
-<Depth max={2}>
+<Depth max={1}>
+
+All of this runs as one small service. Ask it for `at=auto` in place of a timestamp and it picks the frame. Old tapes open on dead signal, a blue screen or black, so it checks the opening 15 seconds, drops those frames and picks from the rest.
+
+</Depth>
+
+<Depth min={2} max={2}>
 
 Ask for `at=auto` in place of a timestamp and the service picks the frame. Old tapes open on dead signal, a blue screen or black, so it checks the opening 15 seconds, drops those frames and picks from the rest.
 
@@ -184,7 +191,7 @@ The rejection thresholds come from calibrating on real tapes. Saturated leaders 
 
 </Depth>
 
-Near-black detection uses YHIGH -- the 90th-percentile luma -- to catch dead-signal black frames.<Note id="5" /><Depth inline max={2}> A frame goes only when nine-tenths of it or more sits near black.</Depth><Depth inline min={3}> The threshold is 32 (TV black 16 plus analog noise headroom). Real content runs YHIGH 110-214, so the filter drops only dead frames.</Depth>
+Near-black detection uses YHIGH -- the 90th-percentile luma -- to catch dead-signal black frames.<Note id="5" /><Depth inline max={2}> A frame is dropped only when nine-tenths or more of it sits near black.</Depth><Depth inline min={3}> The threshold is 32 (TV black 16 plus analog noise headroom). Real content runs YHIGH 110-214, so the filter drops only dead frames.</Depth>
 
 <Depth min={3}>
 
@@ -226,9 +233,7 @@ signalstats reads raw decoded values, so the same blue reads 240 in TV range and
 
 The black test came next. True black and fades read YHIGH 16 to 25. The saturated blue leader reads 19, so both tests catch it.
 
-The mid-tape retry is a three-second window centered on the midpoint, and only a video longer than 15 seconds gets one. The two ffmpeg calls get 15 and 8 seconds, 23 together, to stay inside the worker's 25.
-
-The night the blue test shipped, a capacity test ran cold batches of old analog tapes through production. Of about 45 distinct tapes, six opened on blue for the whole 15 seconds. Five recovered on the mid-tape retry with frames from 62 to 83 minutes in, and before the filter those five posters would have been blue. The sixth was dead at both windows and got the error.
+The mid-tape retry is a three-second window centered on the midpoint, and only a video longer than 15 seconds gets one. The two ffmpeg calls split a time budget that fits inside the worker's timeout.
 
 Auto costs more than a timecode, because it decodes a 15-second window where a timecode decodes a fraction of a second. It is the same round trip, and a longer one.
 
@@ -258,28 +263,20 @@ When every frame is rejected, ffmpeg exits 0 with zero bytes on stdout and a war
 
 The retry logic, as pseudocode:
 
-```python
-# pseudocode
-OPENING_MS, FALLBACK_MS, MIN_FALLBACK_MS = 15_000, 3_000, 500
+```text
+try the opening window: the first 15 seconds
+    a frame survived -> return it
 
-def auto_frame(url, duration_ms, width):
-    frame = representative(url, start_ms=0, window_ms=OPENING_MS, timeout_s=15)
-    if frame:
-        return frame
+the video is no longer than 15 seconds -> fail, "no usable frame"
 
-    if duration_ms <= OPENING_MS:
-        return precondition_failed("auto_blue_exhausted")
-    window_ms = min(FALLBACK_MS, duration_ms - OPENING_MS)
-    if window_ms < MIN_FALLBACK_MS:
-        return precondition_failed("auto_blue_exhausted")
+retry window = 3 seconds, or whatever is left after the opening if that is less
+the retry window is under half a second -> fail, "no usable frame"
 
-    start_ms = clamp(duration_ms // 2 - window_ms // 2,
-                     OPENING_MS, duration_ms - window_ms)
-    frame = representative(url, start_ms, window_ms, timeout_s=8)
-    return frame or precondition_failed("auto_blue_exhausted")
+center the retry window on the midpoint of the video,
+    kept clear of the opening and inside the end
+    a frame survived -> return it
+    otherwise -> fail, "no usable frame"
 ```
-
-The reason string says blue because it predates the black test. It covers both now, and I kept the name so nothing reading it had to change.
 
 The tests run real ffmpeg against synthetic fixtures built to the sampled envelopes: ULOW 179 kept and 180 dropped at the default cutoff, YHIGH 33 kept and 32 dropped, and a frame with a dim 15 percent strip kept. Customer tapes are for local validation only and never get committed. The fixture that proves auto reaches real content is 3 seconds of black, 3 of color bars and 12 of a test pattern:
 
@@ -289,7 +286,7 @@ ffmpeg -f lavfi -i 'color=c=black:s=160x120:r=30:d=3' \
   -f lavfi -i 'testsrc2=s=160x120:r=30:d=12' \
   -filter_complex '[0:v][1:v][2:v]concat=n=3:v=1:a=0,format=yuv420p[v]' \
   -map '[v]' -c:v libx264 -preset fast -crf 32 -movflags +faststart \
-  fixture_18s.mp4
+  fixture.mp4
 ```
 
 </Depth>

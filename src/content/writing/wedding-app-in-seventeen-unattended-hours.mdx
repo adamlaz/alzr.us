@@ -99,7 +99,8 @@ request at 4.5 MB; a 1080p iPhone video runs about 60 MB a minute. iPhones
 have no background upload either, so the resilience has to live in the page:
 each phone makes a small gallery copy first, so the photo shows up for
 everyone within seconds, then sends the original in resumable parts and
-keeps trying as long as the page is open.</Depth> The map hit its own browser limit.
+keeps trying as long as the page is open.</Depth><Depth inline max={1}> The gallery has a
+venue map, and it hit a browser limit.</Depth><Depth inline min={2}> The map hit its own browser limit.</Depth>
 Both platforms mostly strip GPS before a web page sees the file,<Note id="2" />
 so pins come from an opt-in location prompt instead.
 

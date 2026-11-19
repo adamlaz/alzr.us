@@ -14,7 +14,6 @@ import PullQuote from '../../components/post/PullQuote.astro';
 import Footnotes from '../../components/post/Footnotes.astro';
 import Note from '../../components/post/Note.astro';
 import FounderHabitsDiagram from '../../components/post/FounderHabitsDiagram.astro';
-import FounderOperatorWeek from '../../components/post/FounderOperatorWeek.astro';
 import FounderOperatorRetro from '../../components/post/FounderOperatorRetro.astro';
 
 I have shifted between founder mode and operator mode more than once over
@@ -74,53 +73,32 @@ as an operator.
 
 <Depth min={4}>
 
-On the team I run now, in late 2026, the fixed part of that calendar is
-small. Monday has a 30-minute kickoff, and Tuesday through Friday each
-get a 15-minute standup: what you worked on, what's next, blockers. The
-kickoff sets the week's outcomes and the standups report progress
-against them.
-
-<FounderOperatorWeek />
+The fixed part of that calendar can stay small. My practice is a short
+kickoff at the start of the week and a short standup on the other days:
+what you worked on, what's next, blockers. The kickoff sets the week's
+outcomes and the standups report progress against them.
 
 The kickoff runs in a fixed order. It opens on gaps, meaning any
 committed outcome that is missing an owner, a date or a "done when"
 line. Last week comes next, and each owner marks their commitments done,
 partial or missed in the room. For this week, owners propose one to
-three outcomes for each quarterly goal they carry. Blockers follow, then
-two minutes on what ships Wednesday. A teammate runs the meeting. I run
-only the last step: ship or slip, and approve the release.
-
-The standup host rotates weekly through the team in alphabetical order.
-The host keeps time and asks "anything parked?" before ending.
-
-An earlier version of this failed. We had written standup updates, and
-we retired them because the updates were exhaustive and nobody read
-them. The replacement we agreed to try is a short recap after each
-standup: blockers and who is clearing them, decisions, follow-ups with
-owners, and parked items, with no per-person play-by-play. It runs as a
-two-week trial with a keep-or-kill date.
+three outcomes for each quarterly goal they carry. Blockers come last.
 
 </Depth>
 
 <Depth min={5}>
 
-The kickoff's first two tabs, as pseudocode of the board filters:
+The gap check that opens the kickoff, as pseudocode:
 
 ```python
-STAGES  = ["Idea", "Candidate", "Committed", "In Progress", "Shipped", "Dropped"]
-RESULTS = ["Proposed", "Done", "Partial", "Missed"]   # set by the owner, in the room
-
-def gaps(outcomes):                  # the kickoff opens here
+def gaps(outcomes):
     return [o for o in outcomes
             if o.stage in ("Committed", "In Progress")
             and not (o.owner and o.target_date and o.done_when)]
-
-def last_week(outcomes, cycle):      # each owner marks a result
-    return [o for o in outcomes if o.cycle == cycle.previous]
 ```
 
-A weekly commitment is an outcome row carrying the week and one of those
-four results. Owners mark their own rows.
+A weekly commitment is an outcome carrying the week and a result: done,
+partial or missed. Owners mark their own.
 
 </Depth>
 
@@ -138,7 +116,7 @@ were the whole week.
 
 <Depth min={4}>
 
-The handful that matter get written down. Our product planning docs end
+The handful that matter get written down. My planning docs end
 with a decision log, and each entry has five fields: status, date,
 context, decision, consequences. The log is append-only. An accepted
 entry never gets rewritten. A new entry supersedes it and the old one's
@@ -150,13 +128,12 @@ future reader who lacked the context, and it was a real trade-off with
 alternatives someone could have picked. I took that test from Matt
 Pocock's open-source
 [skills repo](https://github.com/mattpocock/skills); the five fields
-were already our format. Deliberate departures from the obvious path are
+were already my format. Deliberate departures from the obvious path are
 the entries worth the most, because they stop the next engineer from
 "fixing" something that was intentional.
 
-The log also showed me how loosely I talk. I told leadership "we can"
-drop a vendor tool from next year's budget, and one of my agents filed
-it as an accepted decision. It was a proposal. Now only "we will", "go",
+The log also showed me how loosely I talk. I said "we can" about a
+change, and one of my agents filed it as an accepted decision. It was a proposal. Now only "we will", "go",
 "agree", "do it" or an explicit pick from options counts as decided. "We
 can", "we could" and "I think we should" get filed as proposed, with the
 question left open.
@@ -203,43 +180,6 @@ dashboard. In operator mode information comes through people. The team
 is the filter. If the team is calibrated, the read is clear. If the team
 is not calibrated, the read is distorted, and calibrating it is the
 operator's job.
-
-</Depth>
-
-<Depth min={4}>
-
-Calibrating starts with agreeing how to read the numbers before anyone
-argues about what they mean. On a recent offer test my position was that
-we wouldn't need statistical significance. We needed shared comfort that
-the conclusions we drew from the reporting we had were reliable and
-intuitive. That comes from using the same definitions every time, saying
-which orders are left out and why, checking whether the pattern holds
-across days, order sizes and sources, and knowing what a few big orders
-swing. A read date written into a plan is a placeholder, so the plan
-names the trigger instead.
-
-The other channel is the one-on-one. With one direct report I run a
-monthly development one-on-one that is explicitly not a status update,
-because standup already owns the in-flight work. Their agenda goes
-first, and my target is to talk 30% of the time. It opens with four
-standing checks: what's on their mind, time off, a pulse on their
-quarterly goals, and a friction check that asks what's in their way,
-me included. When there's room, one rotating theme takes the rest:
-growth, role and craft, level and pay, or feedback in both directions.
-
-</Depth>
-
-<Depth min={5}>
-
-The guardrails I keep open during that one-on-one:
-
-- After a question, count to five before filling the silence.
-- If it drifts tactical, say that standup owns that and go back to them.
-- A level or pay question I can't answer in the room gets a date for a
-  real answer. I never improvise pay.
-- If I'm talking more than they are, stop, ask a question and wait.
-- Never cancel. Only reschedule.
-- Do my own action items before the next one.
 
 </Depth>
 
@@ -299,11 +239,7 @@ path.
 Opinion last has a written form. When I review someone else's quarterly
 goals or planning doc, my comments go in as questions and suggestions:
 "what do you think about", "worth considering". I'm direct only about
-work I own. I still miss. In November 2026 I had a plan for a research
-effort drafted in full, with tasks and a message to an outside
-contractor, before the two people who own that work had weighed in. I
-deleted the message and pitched the plan to the owners first, as an
-idea, with the call left to them.
+work I own.
 
 In the room, the guide I run retros from carries the same rule: if one
 person starts driving the discussion, I ask the others by name what
@@ -368,7 +304,7 @@ quality line when the team would ship.
 <Depth min={4}>
 
 Holding the line is easier when the line is written before the work
-starts. Every committed outcome on our board carries an owner, a date
+starts. Every committed outcome on a board I run carries an owner, a date
 and a "done when" line, and the kickoff opens on the outcomes missing
 any of the three. Another rule from my 2023 notes covers the same
 ground: define how you'll know it worked before you start, because
@@ -512,15 +448,6 @@ modes I wasn't running. *Operator mode in the abstract* and *operator
 mode when the team is calibrating to whether you'll actually sit in the
 chair* are different shapes of the same skill, and the second one only
 shows up when nobody else is doing it for you.
-
-</Depth>
-
-<Depth min={4}>
-
-One count of the founder reflex surviving: in November 2026 a cleanup of
-my own task board took my in-progress list from 51 rows to 13, one row
-for each thing I was driving that week. A list of 51 says I was still
-saying yes by default.
 
 </Depth>
 
